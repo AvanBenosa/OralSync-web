@@ -27,6 +27,7 @@ import PatientOverView from '../patient-profile-modules/overview';
 import PatientProgressNotes from '../patient-profile-modules/progress-note';
 import PatientMedicalHistory from '../patient-profile-modules/medical-history';
 import PatientDentalChart from '../patient-profile-modules/dental-chart';
+import PatientDentalPhoto from '../patient-profile-modules/photos';
 
 const resolveProfilePictureSrc = (profilePicture?: string): string => {
   if (!profilePicture?.trim()) {
@@ -445,6 +446,12 @@ export const PatientProfileModule: FunctionComponent<PatientProfileProps> = (
             />
           ) : activeTab === 'dental-chart' ? (
             <PatientDentalChart
+              patientId={patientId}
+              onRegisterMobileReload={setMobileReload}
+              patientLabel={patientInfoLabel}
+            />
+          ) : activeTab === 'photos' ? (
+            <PatientDentalPhoto
               patientId={patientId}
               onRegisterMobileReload={setMobileReload}
               patientLabel={patientInfoLabel}
