@@ -23,6 +23,7 @@ import {
   DentalChartCondition,
   PatientDentalChartModel,
   PatientDentalChartStateProps,
+  getDentalChartConditionLabel,
   getToothDisplayLabel,
   getToothIdFromToothNumber,
 } from '../api/types';
@@ -64,7 +65,7 @@ const buildConditionGroups = (items: PatientDentalChartModel[]): ToothConditionG
       }
 
       return {
-        label: condition,
+        label: getDentalChartConditionLabel(condition),
         teeth,
         fillColor: CONDITION_COLORS[condition].fillColor,
         outlineColor: CONDITION_COLORS[condition].outlineColor,
@@ -294,7 +295,7 @@ const PatientDentalChartTable: FunctionComponent<PatientDentalChartStateProps> =
                           </Typography>
                           <div className={sharedStyles.mobileMeta}>
                             <Typography component="span" className={sharedStyles.mobileContact}>
-                              {item.condition || '--'}
+                              {getDentalChartConditionLabel(item.condition)}
                             </Typography>
                             <Typography component="span" className={sharedStyles.mobileContact}>
                               {getSurfaceSummary(item)}
@@ -309,8 +310,8 @@ const PatientDentalChartTable: FunctionComponent<PatientDentalChartStateProps> =
                   </TableCell>
                   {!isCompact ? (
                     <>
-                      <TableCell className={sharedStyles.tableBodyCell}>
-                        {item.condition || '--'}
+                    <TableCell className={sharedStyles.tableBodyCell}>
+                        {getDentalChartConditionLabel(item.condition)}
                       </TableCell>
                       <TableCell className={sharedStyles.tableBodyCell}>
                         {getSurfaceSummary(item)}

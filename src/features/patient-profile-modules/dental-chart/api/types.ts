@@ -26,6 +26,16 @@ export const DENTAL_CHART_SURFACE_OPTIONS = Object.values(DentalChartSurface).fi
   (item) => item !== DentalChartSurface.None
 );
 
+export const getDentalChartConditionLabel = (
+  condition?: DentalChartCondition | string
+): string => {
+  if (!condition?.trim()) {
+    return '--';
+  }
+
+  return condition.replace(/([a-z])([A-Z])/g, '$1 $2');
+};
+
 export const UNIVERSAL_TO_FDI_MAP: Record<number, string> = {
   1: '18',
   2: '17',

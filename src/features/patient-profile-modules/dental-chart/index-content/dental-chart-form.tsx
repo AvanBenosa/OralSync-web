@@ -27,6 +27,7 @@ import {
   PatientDentalChartImageModel,
   PatientDentalChartModel,
   PatientDentalChartStateProps,
+  getDentalChartConditionLabel,
   getToothDisplayLabel,
   getToothIdFromToothNumber,
   getToothNumberFromToothId,
@@ -418,7 +419,7 @@ const PatientDentalChartForm: FunctionComponent<PatientDentalChartFormProps> = (
                       <MenuItem value="">Select condition</MenuItem>
                       {DENTAL_CHART_CONDITION_OPTIONS.map((option) => (
                         <MenuItem key={option} value={option}>
-                          {option}
+                          {getDentalChartConditionLabel(option)}
                         </MenuItem>
                       ))}
                     </TextField>

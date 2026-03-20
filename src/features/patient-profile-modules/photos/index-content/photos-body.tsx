@@ -19,7 +19,7 @@ import {
   loadProtectedAssetObjectUrl,
   resolveApiAssetUrl,
 } from '../../../../common/services/api-client';
-import { getToothDisplayLabel } from '../../dental-chart/api/types';
+import { getDentalChartConditionLabel, getToothDisplayLabel } from '../../dental-chart/api/types';
 
 const PatientDentalPhotoBody: FunctionComponent<PatientDentalPhotoStateProps> = (
   props: PatientDentalPhotoStateProps
@@ -138,7 +138,7 @@ const PatientDentalPhotoBody: FunctionComponent<PatientDentalPhotoStateProps> = 
                           </div>
                         </TableCell>
                         <TableCell className={sharedStyles.tableBodyCell}>
-                          {item.condition || '--'}
+                          {getDentalChartConditionLabel(item.condition)}
                         </TableCell>
                       </TableRow>
                     );
@@ -180,7 +180,7 @@ const PatientDentalPhotoBody: FunctionComponent<PatientDentalPhotoStateProps> = 
                     'Unnamed image'}
                 </Typography>
                 <Typography className={localStyles.previewText}>
-                  Condition: {state.selectedItem.condition || '--'}
+                  Condition: {getDentalChartConditionLabel(state.selectedItem.condition)}
                 </Typography>
                 <Typography className={localStyles.previewText}>
                   Tooth remarks: {state.selectedItem.toothRemarks || '--'}
