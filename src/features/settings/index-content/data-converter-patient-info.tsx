@@ -93,10 +93,7 @@ const splitCombinedPatientName = (
 
   if (normalizedValue.includes(',')) {
     const [lastNamePart, remainingPart = ''] = normalizedValue.split(',', 2);
-    const remainingTokens = remainingPart
-      .trim()
-      .split(/\s+/)
-      .filter(Boolean);
+    const remainingTokens = remainingPart.trim().split(/\s+/).filter(Boolean);
 
     const filteredTokens =
       remainingTokens.length > 1 &&
@@ -187,7 +184,9 @@ const downloadConvertedCsv = (
   mappings: DataConverterColumnMapping[]
 ): void => {
   const activeMappings = mappings.filter((item) => item.targetField);
-  const hasSplitPatientName = activeMappings.some((item) => item.targetField === 'SplitPatientName');
+  const hasSplitPatientName = activeMappings.some(
+    (item) => item.targetField === 'SplitPatientName'
+  );
   const orderedHeaders = [
     ...(hasSplitPatientName ? ['FirstName', 'LastName', 'MiddleName'] : []),
     ...activeMappings
@@ -249,18 +248,15 @@ const PatientInfoDataConverter: FunctionComponent = (): JSX.Element => {
     [mappings]
   );
 
-  const missingRequiredFields = useMemo(
-    () => {
-      const hasSplitPatientName = selectedTargetFields.includes('SplitPatientName');
+  const missingRequiredFields = useMemo(() => {
+    const hasSplitPatientName = selectedTargetFields.includes('SplitPatientName');
 
-      if (hasSplitPatientName) {
-        return [];
-      }
+    if (hasSplitPatientName) {
+      return [];
+    }
 
-      return requiredTargetFields.filter((field) => !selectedTargetFields.includes(field));
-    },
-    [selectedTargetFields]
-  );
+    return requiredTargetFields.filter((field) => !selectedTargetFields.includes(field));
+  }, [selectedTargetFields]);
 
   const handleFileChange = async (event: ChangeEvent<HTMLInputElement>): Promise<void> => {
     const file = event.target.files?.[0];
@@ -395,12 +391,8 @@ const PatientInfoDataConverter: FunctionComponent = (): JSX.Element => {
             {targetFieldOptions.map((item) => (
               <Grid key={item.field} size={{ xs: 12, sm: 6, xl: 4 }}>
                 <Box className={styles.converterTargetFieldCard}>
-                  <Typography className={styles.converterTargetFieldTitle}>
-                    {item.label}
-                  </Typography>
-                  <Typography className={styles.converterTargetFieldMeta}>
-                    {item.helper}
-                  </Typography>
+                  <Typography className={styles.converterTargetFieldTitle}>{item.label}</Typography>
+                  <Typography className={styles.converterTargetFieldMeta}>{item.helper}</Typography>
                 </Box>
               </Grid>
             ))}

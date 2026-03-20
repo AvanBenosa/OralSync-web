@@ -11,11 +11,14 @@ import { HandleGetCurrentClinicProfile } from './clinic-profile/api/handlers';
 import { ClinicProfileStateModel } from './clinic-profile/api/types';
 import { HandleGetClinicUsers } from './create-user/api/handlers';
 import { CreateUserStateModel } from './create-user/api/types';
+import { HandleGetTemplateForms } from './template-form/api/handlers';
+import { TemplateFormStateModel } from './template-form/api/types';
 import ClinicProfileForm from './index-content/clinic-profile-form';
 import CreateUserManagement from './index-content/create-user-management';
 import DataConverter from './index-content/data-converter';
 import SettingsHeader from './index-content/settings-header';
 import styles from './style.scss.module.scss';
+import TemplateFormManagement from './template-form';
 import { SettingsProps } from './types';
 
 type SettingsTabId = 'clinic-profile' | 'create-user' | 'build-up' | 'data-converter';
@@ -43,6 +46,16 @@ const SettingsModule: FunctionComponent<SettingsProps> = (props: SettingsProps):
     search: '',
     totalItem: 0,
     clinicId: resolvedClinicId,
+  });
+  const [templateFormState, setTemplateFormState] = useState<TemplateFormStateModel>({
+    items: [],
+    selectedItem: null,
+    load: true,
+    totalItem: 0,
+    clinicId: resolvedClinicId,
+    openModal: false,
+    isUpdate: false,
+    isDelete: false,
   });
 
   const settingsTabs = useMemo(
@@ -171,6 +184,35 @@ const SettingsModule: FunctionComponent<SettingsProps> = (props: SettingsProps):
     }
   };
 
+  const loadTemplateForms = async (showToast: boolean = false): Promise<void> => {
+    setTemplateFormState((prev: TemplateFormStateModel) => ({
+      ...prev,
+      load: true,
+      clinicId: resolvedClinicId,
+    }));
+
+    try {
+      await HandleGetTemplateForms(
+        {
+          ...templateFormState,
+          load: true,
+          clinicId: resolvedClinicId,
+        },
+        setTemplateFormState,
+        resolvedClinicId
+      );
+
+      if (showToast) {
+        toast.info('Template forms have been refreshed.', toastConfig);
+      }
+    } catch {
+      setTemplateFormState((prev: TemplateFormStateModel) => ({
+        ...prev,
+        load: false,
+      }));
+    }
+  };
+
   useEffect(() => {
     setState((prev: ClinicProfileStateModel) => ({
       ...prev,
@@ -191,6 +233,10 @@ const SettingsModule: FunctionComponent<SettingsProps> = (props: SettingsProps):
 
     if (activeTab === 'create-user') {
       void loadClinicUsers(false);
+    }
+
+    if (activeTab === 'build-up') {
+      void loadTemplateForms(false);
     }
 
     return () => {
@@ -234,6 +280,9 @@ const SettingsModule: FunctionComponent<SettingsProps> = (props: SettingsProps):
             ) : null}
             {activeTab === 'create-user' ? (
               <CreateUserManagement state={createUserState} setState={setCreateUserState} />
+            ) : null}
+            {activeTab === 'build-up' ? (
+              <TemplateFormManagement state={templateFormState} setState={setTemplateFormState} />
             ) : null}
             {activeTab === 'data-converter' ? <DataConverter /> : null}
           </section>
