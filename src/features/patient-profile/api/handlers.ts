@@ -1,8 +1,16 @@
-import { DeletePatientProfile, GetPatientProfile, SendPatientEmail, UpdatePatientProfile } from './api';
+import {
+  DeletePatientProfile,
+  GetPatientProfile,
+  SendPatientEmail,
+  SendPatientSms,
+  UpdatePatientProfile,
+} from './api';
 import {
   PatientEmailRequestModel,
   PatientEmailResponseModel,
   PatientProfileModel,
+  PatientSmsRequestModel,
+  PatientSmsResponseModel,
   PatientStateModel,
 } from './types';
 
@@ -70,6 +78,25 @@ export const HandleSendPatientEmail = async (
   setState: Function
 ): Promise<PatientEmailResponseModel> => {
   const response = await SendPatientEmail(request);
+
+  setState((prev: PatientStateModel) => ({
+    ...prev,
+    openModal: false,
+    isEmail: false,
+    isDelete: false,
+    isUpdate: false,
+  }));
+
+  void state;
+  return response;
+};
+
+export const HandleSendPatientSms = async (
+  request: PatientSmsRequestModel,
+  state: PatientStateModel,
+  setState: Function
+): Promise<PatientSmsResponseModel> => {
+  const response = await SendPatientSms(request);
 
   setState((prev: PatientStateModel) => ({
     ...prev,

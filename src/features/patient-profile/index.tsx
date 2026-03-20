@@ -370,7 +370,7 @@ export const PatientProfileModule: FunctionComponent<PatientProfileProps> = (
                       })
                     }
                   >
-                    <MailOutlineRoundedIcon /> Send Mail
+                    <MailOutlineRoundedIcon /> Send Message
                   </button>
                 </div>
               </section>

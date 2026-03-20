@@ -34,6 +34,21 @@ export type PatientEmailResponseModel = {
   queuedAt: string;
 };
 
+export type PatientSmsRequestModel = {
+  patientId?: string;
+  recipientNumber: string;
+  message: string;
+  senderName?: string;
+  usePriority?: boolean;
+};
+
+export type PatientSmsResponseModel = {
+  queued: boolean;
+  recipientNumber: string;
+  message: string;
+  queuedAt: string;
+};
+
 export type PatientProfileMobileReloadConfig = {
   onReload?: () => void;
   disabled?: boolean;

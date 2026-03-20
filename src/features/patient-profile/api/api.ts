@@ -11,12 +11,15 @@ import {
   PatientEmailRequestModel,
   PatientEmailResponseModel,
   PatientProfileModel,
+  PatientSmsRequestModel,
+  PatientSmsResponseModel,
 } from './types';
 
 const PATIENT_PROFILE_ENDPOINT = '/api/dmd/patient-profile/get-patient-profile';
 const UPDATE_PATIENT_PROFILE_ENDPOINT = '/api/dmd/patient/put-patient';
 const DELETE_PATIENT_ENDPOINT = '/api/dmd/patient-profile/delete-patient';
 const SEND_PATIENT_EMAIL_ENDPOINT = '/api/dmd/patient-profile/send-email';
+const SEND_PATIENT_SMS_ENDPOINT = '/api/dmd/patient-profile/send-sms';
 const patientProfileRequestCache = new Map<string, Promise<PatientProfileModel>>();
 const patientProfileResponseCache = new Map<
   string,
@@ -130,6 +133,23 @@ export const SendPatientEmail = async (
   try {
     const response = await apiClient.post<PatientEmailResponseModel>(SEND_PATIENT_EMAIL_ENDPOINT, request);
     return CustomSuccessResponse(response, 'Queued patient email') as PatientEmailResponseModel;
+  } catch (error) {
+    if (isAxiosError(error)) {
+      await ExceptionResponse(error);
+    }
+    throw error;
+  }
+};
+
+export const SendPatientSms = async (
+  request: PatientSmsRequestModel
+): Promise<PatientSmsResponseModel> => {
+  try {
+    const response = await apiClient.post<PatientSmsResponseModel>(
+      SEND_PATIENT_SMS_ENDPOINT,
+      request
+    );
+    return CustomSuccessResponse(response, 'Queued patient sms') as PatientSmsResponseModel;
   } catch (error) {
     if (isAxiosError(error)) {
       await ExceptionResponse(error);
