@@ -1,0 +1,1005 @@
+@import '../../common/styles/variables.scss';
+
+.wrapper {
+  width: 100%;
+  min-height: 100vh;
+  padding: 16px 24px;
+  box-sizing: border-box;
+  font-family: $font-family;
+  background: radial-gradient(circle at top left, rgba(79, 130, 176, 0.12), transparent 30%),
+    linear-gradient(180deg, #f7fafc 0%, #eef3f7 100%);
+  overflow-x: hidden;
+}
+
+.bodyWrapper {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.listContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.listHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 20px;
+  border: 1px solid rgba(194, 208, 220, 0.9);
+  border-radius: 20px;
+  box-sizing: border-box;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(243, 248, 252, 0.98));
+  box-shadow: 0 16px 40px rgba(28, 56, 86, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.headerInfo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  width: 100%;
+}
+
+.headerIcon {
+  width: 48px;
+  height: 48px;
+  flex: 0 0 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
+  border: 1px solid rgba(174, 198, 218, 0.9);
+  background: linear-gradient(180deg, #f1f7fc 0%, #dbe9f5 100%);
+}
+
+.headerIconSvg {
+  font-size: 24px !important;
+  color: #2f6db3;
+}
+
+.headerText {
+  min-width: 0;
+  flex: 1;
+}
+
+.headerTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.headerTitle {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+  color: #143a63;
+}
+
+.headerBadge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 0 12px;
+  border: 1px solid rgba(184, 205, 223, 0.9);
+  border-radius: 999px;
+  background: rgba(236, 244, 251, 0.95);
+  color: #355b80;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.headerDescription {
+  margin: 8px 0 0;
+  color: #5e7891;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.tabsSection {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.tabList {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  width: 100%;
+  padding: 6px;
+  border: 1px solid rgba(194, 208, 220, 0.92);
+  border-radius: 18px;
+  max-width: 100%;
+  box-sizing: border-box;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(244, 249, 253, 0.96));
+  box-shadow: 0 14px 32px rgba(28, 56, 86, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.tabButton {
+  border: 0;
+  background: transparent;
+  color: #46627e;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 10px 14px;
+  border-radius: 12px;
+  cursor: pointer;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: background-color 120ms ease, color 120ms ease, transform 120ms ease;
+  min-width: 0;
+
+  &:hover {
+    transform: translateY(-1px);
+    background: rgba(48, 113, 174, 0.08);
+  }
+}
+
+.tabButtonActive {
+  background: rgba(48, 113, 174, 0.12) !important;
+  color: #1d6fb6 !important;
+}
+
+.tabButtonIcon {
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: rgba(47, 109, 179, 0.1);
+
+  svg {
+    font-size: 18px !important;
+  }
+}
+
+.tabPanel {
+  min-height: 540px;
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+  padding: 24px;
+  border: 1px solid rgba(194, 208, 220, 0.92);
+  border-radius: 20px;
+  box-sizing: border-box;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(243, 248, 252, 0.98));
+  box-shadow: 0 16px 40px rgba(28, 56, 86, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.tabPanelHeader {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  max-width: 720px;
+}
+
+.tabPanelIcon {
+  width: 56px;
+  height: 56px;
+  flex: 0 0 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 16px;
+  border: 1px solid rgba(174, 198, 218, 0.9);
+  background: linear-gradient(180deg, #f1f7fc 0%, #dbe9f5 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.95), 0 10px 18px rgba(52, 95, 141, 0.12);
+
+  svg {
+    font-size: 28px !important;
+    color: #2f6db3;
+  }
+}
+
+.tabPanelText {
+  min-width: 0;
+}
+
+.tabPanelTitle {
+  margin: 0;
+  color: #143a63;
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.tabPanelDescription {
+  margin: 8px 0 0;
+  color: #5e7891;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.dualPanelGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  margin-top: 24px;
+  align-items: start;
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.formPanel {
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+  padding: 20px;
+  border: 1px solid rgba(194, 208, 220, 0.92);
+  border-radius: 18px;
+  box-sizing: border-box;
+  background: linear-gradient(180deg, rgba(250, 252, 254, 0.96), rgba(239, 244, 248, 0.98));
+  box-shadow: 0 12px 28px rgba(24, 50, 79, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.formPanelUpdating {
+  border-color: rgba(74, 125, 184, 0.38);
+  background: linear-gradient(180deg, rgba(240, 247, 255, 0.98), rgba(230, 239, 249, 0.98));
+  box-shadow: 0 16px 34px rgba(42, 88, 151, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.92);
+}
+
+.formPanelHeader {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 18px;
+  min-width: 0;
+}
+
+.formPanelIcon {
+  width: 46px;
+  height: 46px;
+  flex: 0 0 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
+  border: 1px solid rgba(174, 198, 218, 0.9);
+  background: linear-gradient(180deg, #f1f7fc 0%, #dbe9f5 100%);
+
+  svg {
+    font-size: 24px !important;
+    color: #2f6db3;
+  }
+}
+
+.formPanelTitle {
+  margin: 0;
+  color: #143a63;
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.formPanelDescription {
+  margin: 6px 0 0;
+  color: #5e7891;
+  font-size: 13px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.inlineCheckboxCard {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid rgba(206, 218, 229, 0.95);
+  border-radius: 14px;
+  box-sizing: border-box;
+  background: rgba(255, 255, 255, 0.88);
+
+  :global(.MuiFormControlLabel-root) {
+    margin-left: 0;
+    margin-right: 0;
+    align-items: flex-start;
+  }
+
+  :global(.MuiFormControlLabel-label) {
+    line-height: 1.45;
+  }
+}
+
+.daySelectorGroup {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-width: 0;
+}
+
+.dayChipButton {
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid rgba(191, 207, 221, 0.95);
+  border-radius: 999px;
+  background: rgba(245, 249, 252, 0.96);
+  color: #46627e;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 120ms ease, color 120ms ease, transform 120ms ease;
+
+  &:hover {
+    transform: translateY(-1px);
+  }
+}
+
+.dayChipButtonActive {
+  border-color: rgba(48, 113, 174, 0.28);
+  background: rgba(48, 113, 174, 0.12);
+  color: #1d6fb6;
+}
+
+.formActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 20px;
+  min-width: 0;
+}
+
+.mediaCard {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: 100%;
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid rgba(206, 218, 229, 0.95);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.bannerPreview {
+  min-height: 180px;
+  border: 1px dashed rgba(47, 109, 179, 0.24);
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(239, 246, 252, 0.96), rgba(225, 237, 247, 0.98));
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bannerPreviewPlaceholder {
+  color: #5e7891 !important;
+  font-size: 15px !important;
+  font-weight: 800 !important;
+  text-align: center;
+  padding: 0 14px;
+}
+
+.mediaCardTitle {
+  color: #17344f !important;
+  font-size: 15px !important;
+  font-weight: 800 !important;
+}
+
+.mediaCardText {
+  color: #5e7891 !important;
+  font-size: 13px !important;
+  line-height: 1.6 !important;
+  margin-top: 4px !important;
+}
+
+.mediaCardCaption {
+  display: block;
+  margin-top: 10px !important;
+  color: #6a8094 !important;
+  word-break: break-word;
+}
+
+.qrCard {
+  align-items: center;
+  justify-content: space-between;
+}
+
+.qrCardHeader {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.qrCanvas {
+  width: 100%;
+  min-height: 180px;
+  border: 1px dashed rgba(47, 109, 179, 0.24);
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(243, 248, 252, 0.98));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+.userListSurface {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 760px;
+  overflow: auto;
+  min-width: 0;
+}
+
+.userListCard {
+  width: 100%;
+  max-width: 100%;
+  padding: 14px 16px;
+  border: 1px solid rgba(206, 218, 229, 0.95);
+  border-radius: 16px;
+  box-sizing: border-box;
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: 0 8px 18px rgba(36, 60, 91, 0.04);
+}
+
+.userListCardActive {
+  border-color: rgba(74, 125, 184, 0.4);
+  background: linear-gradient(180deg, rgba(241, 247, 254, 0.98), rgba(233, 241, 250, 0.98));
+  box-shadow: 0 12px 24px rgba(42, 88, 151, 0.1);
+}
+
+.userListRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.userListIdentity {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  min-width: 0;
+  flex: 1;
+}
+
+.userListAvatar {
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #eef6fc 0%, #d9e9f6 100%);
+  border: 1px solid rgba(174, 198, 218, 0.9);
+
+  svg {
+    font-size: 22px !important;
+    color: #2f6db3;
+  }
+}
+
+.userListContent {
+  min-width: 0;
+}
+
+.userListName {
+  color: #1f4467 !important;
+  font-size: 16px !important;
+  font-weight: 800 !important;
+  word-break: break-word;
+}
+
+.userListMeta {
+  color: #6f8297 !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  word-break: break-word;
+}
+
+.userListEmail {
+  color: #45647f !important;
+  font-size: 13px !important;
+  word-break: break-word;
+}
+
+.userListActions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
+.userListActionButton {
+  width: 36px;
+  height: 36px;
+  border: 1px solid rgba(191, 207, 221, 0.95) !important;
+  border-radius: 12px !important;
+  background: rgba(248, 251, 253, 0.98) !important;
+  color: #2f6db3 !important;
+
+  &:hover {
+    background: rgba(232, 241, 250, 0.98) !important;
+  }
+}
+
+.userListDeleteButton {
+  color: #b53e47 !important;
+
+  &:hover {
+    background: rgba(250, 234, 236, 0.98) !important;
+  }
+}
+
+.userListCancelButton {
+  border-color: rgba(210, 115, 122, 0.45) !important;
+  background: rgba(252, 241, 242, 0.98) !important;
+  color: #b53e47 !important;
+
+  &:hover {
+    background: rgba(250, 234, 236, 0.98) !important;
+  }
+}
+
+.emptyMiniState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 220px;
+  padding: 20px;
+  border: 1px dashed rgba(191, 207, 221, 0.95);
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(248, 251, 253, 0.98), rgba(240, 246, 250, 0.98));
+  text-align: center;
+}
+
+.emptyMiniTitle {
+  color: #1f4467 !important;
+  font-size: 18px !important;
+  font-weight: 800 !important;
+}
+
+.emptyMiniText {
+  max-width: 280px;
+  color: #73869b !important;
+  font-size: 13px !important;
+  line-height: 1.6 !important;
+}
+
+.primaryActionButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 0 16px;
+  border: 1px solid #284c8f;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #2d58a6 0%, #1f4385 100%);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: 0 10px 20px rgba(39, 78, 152, 0.2);
+
+  svg {
+    font-size: 18px !important;
+  }
+}
+
+.secondaryActionButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 0 16px;
+  border: 1px solid rgba(185, 199, 213, 0.98);
+  border-radius: 12px;
+  background: rgba(247, 250, 252, 0.98);
+  color: #48627c;
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.converterSurface {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin-top: 12px;
+}
+
+.converterTabsSection {
+  margin-top: 10px;
+}
+
+.converterHeroCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px;
+  border: 1px solid rgba(194, 208, 220, 0.92);
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(239, 247, 255, 0.98), rgba(249, 252, 255, 0.98));
+  box-shadow: 0 14px 30px rgba(24, 50, 79, 0.06);
+}
+
+.converterHeroTitle {
+  margin: 0;
+  color: #163b62 !important;
+  font-size: 18px !important;
+  font-weight: 800 !important;
+}
+
+.converterHeroText {
+  margin: 8px 0 0 !important;
+  color: #5f7891 !important;
+  font-size: 13px !important;
+  line-height: 1.6 !important;
+  max-width: 760px;
+}
+
+.converterFieldPanel {
+  padding: 20px;
+  border: 1px solid rgba(194, 208, 220, 0.92);
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(250, 252, 254, 0.96), rgba(239, 244, 248, 0.98));
+}
+
+.converterTargetFieldCard {
+  height: 100%;
+  padding: 14px;
+  border: 1px solid rgba(206, 218, 229, 0.95);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.converterTargetFieldTitle {
+  color: #17344f !important;
+  font-size: 14px !important;
+  font-weight: 800 !important;
+}
+
+.converterTargetFieldMeta {
+  margin-top: 4px !important;
+  color: #6a8094 !important;
+  font-size: 12px !important;
+}
+
+.converterMappingGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.converterMappingCard {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid rgba(206, 218, 229, 0.95);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.converterMappingHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.converterMappingSourceTitle {
+  color: #17344f !important;
+  font-size: 14px !important;
+  font-weight: 800 !important;
+  word-break: break-word;
+}
+
+.converterMappingSourceMeta {
+  color: #6a8094 !important;
+  font-size: 12px !important;
+}
+
+.converterPreviewList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.converterPreviewTableWrapper {
+  overflow: auto;
+  border: 1px solid rgba(206, 218, 229, 0.95);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.converterPreviewTitle {
+  padding: 14px 14px 0 !important;
+  color: #17344f !important;
+  font-size: 14px !important;
+  font-weight: 800 !important;
+}
+
+@media (max-width: 768px) {
+  .wrapper {
+    min-height: calc(100vh - 56px);
+    padding: 72px 10px 84px;
+  }
+
+  .listHeader {
+    align-items: flex-start;
+    padding: 16px;
+    border-radius: 18px;
+  }
+
+  .tabList {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding: 4px;
+    gap: 4px;
+    overflow: hidden;
+  }
+
+  .tabButton {
+    font-size: 12px;
+    width: 100%;
+    justify-content: center;
+    white-space: normal;
+    padding: 9px 10px;
+    gap: 6px;
+    text-align: center;
+  }
+
+  .tabPanel {
+    min-height: 420px;
+    padding: 14px;
+    border-radius: 18px;
+  }
+
+  .tabPanelHeader {
+    align-items: flex-start;
+  }
+
+  .dualPanelGrid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+    margin-top: 16px;
+  }
+
+  .formPanel {
+    padding: 14px;
+    border-radius: 16px;
+  }
+
+  .formPanelHeader {
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 14px;
+    flex-wrap: nowrap;
+  }
+
+  .formPanelIcon {
+    width: 42px;
+    height: 42px;
+    flex: 0 0 42px;
+    border-radius: 12px;
+
+    svg {
+      font-size: 22px !important;
+    }
+  }
+
+  .formActions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .bannerPreview,
+  .qrCanvas {
+    min-height: 160px;
+  }
+
+  .userListSurface {
+    max-height: none;
+    overflow: visible;
+  }
+
+  .userListCard {
+    padding: 12px;
+  }
+
+  .userListRow {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .userListIdentity {
+    align-items: center;
+  }
+
+  .userListActions {
+    align-self: flex-end;
+  }
+
+  .primaryActionButton,
+  .secondaryActionButton {
+    width: 100%;
+  }
+
+  .converterHeroCard {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .converterMappingGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .headerInfo {
+    align-items: flex-start;
+  }
+
+  .headerTitleRow {
+    gap: 8px;
+  }
+
+  .headerTitle {
+    font-size: 16px;
+  }
+
+  .headerBadge {
+    min-height: 26px;
+    padding: 0 10px;
+    font-size: 9px;
+  }
+
+  .headerDescription {
+    font-size: 12px;
+  }
+
+  .tabButton {
+    padding: 8px 10px;
+  }
+
+  .daySelectorGroup {
+    gap: 6px;
+  }
+
+  .dayChipButton {
+    min-height: 34px;
+    padding: 0 12px;
+    font-size: 12px;
+  }
+
+  .tabButtonIcon {
+    width: 24px;
+    height: 24px;
+    border-radius: 8px;
+
+    svg {
+      font-size: 16px !important;
+    }
+  }
+
+  .formPanelTitle {
+    font-size: 16px;
+  }
+
+  .formPanelDescription {
+    font-size: 12px;
+  }
+
+  .formActions {
+    gap: 10px;
+  }
+
+  .userListIdentity {
+    align-items: flex-start;
+  }
+
+  .userListAvatar {
+    width: 38px;
+    height: 38px;
+    flex: 0 0 38px;
+    border-radius: 12px;
+
+    svg {
+      font-size: 20px !important;
+    }
+  }
+
+  .userListName {
+    font-size: 15px !important;
+  }
+
+  .userListMeta,
+  .userListEmail {
+    font-size: 12px !important;
+  }
+}
+
+@media (max-width: 420px) {
+  .wrapper {
+    padding: 70px 8px 84px;
+  }
+
+  .listHeader,
+  .tabPanel,
+  .formPanel {
+    border-radius: 14px;
+  }
+
+  .headerIcon {
+    width: 42px;
+    height: 42px;
+    flex: 0 0 42px;
+  }
+
+  .tabList {
+    grid-template-columns: 1fr;
+  }
+
+  .tabButton {
+    font-size: 11px;
+  }
+
+  .headerInfo,
+  .formPanelHeader {
+    gap: 10px;
+  }
+
+  .headerTitleRow {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .headerBadge {
+    align-self: flex-start;
+  }
+
+  .formPanelHeader {
+    flex-direction: row;
+  }
+
+  .inlineCheckboxCard {
+    padding: 10px;
+  }
+
+  .daySelectorGroup {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .dayChipButton {
+    width: 100%;
+    justify-content: center;
+  }
+}

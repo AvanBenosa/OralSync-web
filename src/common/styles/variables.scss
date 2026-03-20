@@ -1,0 +1,109 @@
+// DEFAULTS
+$default-background-color: #ffffff !default;
+$default-wapper-border-color: #ffffff !default;
+$default-wapper-border-radius: 1px !default;
+$default-wapper-margin: 0px 20px !default;
+$default-wapper-padding: 0px 25px !default;
+$default-wapper-height: 687px !default;
+$default-wapper-box-shadow: 1px 1px 8px rgba(0, 0, 0, 0.1) !default;
+$default-wapper-overflow-y: scroll !default;
+
+$default-header-line-height: 24px !default;
+$default-header-color: #3b5574 !default;
+$default-header-font-size: 14px !default;
+$default-header-margin: 0px !default;
+$default-header-padding-bottom: 10px !default;
+
+$default-body-padding: 10px 0px !default;
+
+$default-footer-padding: 5px 0px !default;
+
+$default-item-header-font-size: 16px !default;
+$default-item-header-line-height: 24px !default;
+$default-item-header-color: #3b5574 !default;
+
+$default-padding-10-0: 10px 0px !default;
+$default-padding-0-5: 0px 5px !default;
+$default-margin-5-0: 5px 0px !default;
+
+// BREAKPOINTS
+$breakpoint-smaller-phone: 480px !default;
+$breakpoint-phone: 767px !default;
+$breakpoint-tablet: 768px !default;
+$breakpoint-desktop: 992px !default;
+
+//COLOURS
+$primary-text-color: #2c2c2c !default;
+$secondary-text-color: #ffba35 !default;
+$text-color-white: #fff !default;
+$text-color-error: #ff5050 !default;
+$text-color-black: #000 !default;
+$text-color-blue: #0061d3 !default;
+
+$primary-bg-color: #fff !default;
+$header-bg-color: #fafafa !default;
+$secondary-bg-color: #373737 !default;
+$background-color: #e5e5e5 !default;
+$textfield-color: #999999 !default;
+
+$accent-color: #ff5050 !default;
+$shadow-color: rgba(163, 163, 163, 0.25) !default;
+
+$text-input-focus-color: darken($primary-bg-color, 40%);
+$input-disabled-bg-color: hsl(
+  0,
+  0%,
+  95%
+); //Following react-select disabled bg color. Do not change coz react-select style is hard to override
+
+$primary-button-color: #373737 !default;
+$secondary-button-color: #ffba35 !default;
+$danger-button-color: #ff5050 !default;
+$dark-button-color: #373737 !default;
+$light-button-color: #f1f1f1 !default;
+$link-button-color: #f1f1f1 !default;
+$success-button-color: #0cad39 !default;
+$update-button-color: #0aa516 !default;
+$delete-button-color: #ff5050 !default;
+$background-button-color: #f6f6f6 !default;
+
+$organization-settings-color: #f2f2f2 !default;
+$organization-button-color: #3b5574 !default;
+$organization-margin: 10px !default;
+$organization-border-color: #ffffff !default;
+$organization-data-color: #757272 !default;
+$organization-line-border: #dddddd !default;
+
+$search-bar-color: #ddd !default;
+
+$success-color: #53de6a !default;
+$warning-color: #ffba35 !default;
+$info-color: #007aff !default;
+$error-color: #ff5050 !default;
+
+//SIZES
+$header-height: 49px !default;
+$sidenav-desktop-width: 219px !default;
+
+//hr colours
+$hr-light-gray: #dadada;
+
+//icons colours
+$icon-gray: #979797;
+
+$font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+  'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+
+$font-family-code: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+  monospace;
+
+$border-radius: 3px;
+$height-32px: 32px;
+
+$transition-fast: 200ms;
+$transition-slow: 300ms;
+
+$base-font-size: 14px;
+$font-weight-normal: 400;
+$font-weight-semibold: 600;
+$font-weight-bold: 700;

@@ -1,0 +1,1596 @@
+@import '../../common/styles/variables.scss';
+
+.wrapper {
+  width: 100%;
+  min-height: 100vh;
+  padding: 16px 24px;
+  font-family: $font-family;
+  background: radial-gradient(circle at top left, rgba(86, 131, 178, 0.12), transparent 28%),
+    linear-gradient(180deg, #f7fafc 0%, #eef3f7 100%);
+}
+
+.bodyWrapper {
+  width: 100%;
+}
+
+.listContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.announcementBanner {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  overflow: hidden;
+  padding: 18px 20px;
+  border: 1px solid rgba(184, 205, 223, 0.95);
+  border-radius: 22px;
+  background: linear-gradient(135deg, rgba(24, 66, 104, 0.98), rgba(37, 104, 150, 0.94));
+  box-shadow: 0 22px 40px rgba(21, 50, 79, 0.18);
+}
+
+.announcementAccent {
+  position: absolute;
+  inset: auto -40px -60px auto;
+  width: 180px;
+  height: 180px;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.24), transparent 65%);
+  pointer-events: none;
+}
+
+.announcementContent {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  min-width: 0;
+}
+
+.announcementIcon {
+  width: 54px;
+  height: 54px;
+  flex: 0 0 54px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
+.announcementIconSvg {
+  font-size: 26px !important;
+  color: #ffffff;
+}
+
+.announcementText {
+  min-width: 0;
+}
+
+.announcementEyebrow {
+  color: rgba(221, 236, 250, 0.8);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.announcementTitle {
+  margin: 6px 0 0;
+  color: #ffffff;
+  font-size: 24px;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.announcementMessage {
+  max-width: 820px;
+  margin: 10px 0 0;
+  color: rgba(240, 247, 253, 0.95);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.announcementMeta {
+  margin-top: 12px;
+  color: rgba(214, 229, 243, 0.82);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.announcementCloseButton {
+  position: relative;
+  z-index: 1;
+  width: 38px;
+  min-width: 38px;
+  height: 38px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 120ms ease, background-color 120ms ease;
+
+  &:hover {
+    transform: translateY(-1px);
+    background: rgba(255, 255, 255, 0.18);
+  }
+
+  svg {
+    font-size: 20px !important;
+  }
+}
+
+.listHeader {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 18px;
+  padding: 16px 18px;
+  border: 1px solid rgba(194, 208, 220, 0.9);
+  border-radius: 20px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(243, 248, 252, 0.98));
+  box-shadow: 0 16px 40px rgba(28, 56, 86, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.listHeader::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(135deg, rgba(59, 117, 172, 0.06), transparent 42%);
+}
+
+.headerInfo {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.headerIcon {
+  width: 46px;
+  height: 46px;
+  flex: 0 0 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
+  border: 1px solid rgba(174, 198, 218, 0.9);
+  background: linear-gradient(180deg, #f1f7fc 0%, #dbe9f5 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.95), 0 10px 18px rgba(52, 95, 141, 0.12);
+}
+
+.headerIconSvg {
+  font-size: 22px !important;
+  color: #2f6db3;
+}
+
+.headerText {
+  min-width: 0;
+}
+
+.headerTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.headerTitle {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: #143a63;
+}
+
+.headerBadge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 0 12px;
+  border: 1px solid rgba(184, 205, 223, 0.9);
+  border-radius: 999px;
+  background: rgba(236, 244, 251, 0.95);
+  color: #355b80;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.headerSubtitle {
+  margin: 4px 0 0;
+  color: #678097;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.headerActions {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.actionButton {
+  border: 1px solid transparent;
+  border-radius: 12px;
+  min-height: 38px;
+  padding: 0 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 120ms ease, box-shadow 120ms ease, filter 120ms ease;
+
+  &:hover {
+    transform: translateY(-1px);
+  }
+}
+
+.actionButtonIcon {
+  font-size: 18px !important;
+}
+
+.appointmentButton {
+  border-color: #284c8f;
+  background: linear-gradient(180deg, #2d58a6 0%, #1f4385 100%);
+  box-shadow: 0 10px 20px rgba(39, 78, 152, 0.2);
+}
+
+.reloadButton {
+  min-width: 38px;
+  width: 38px;
+  justify-content: center;
+  padding: 0;
+  border-color: rgba(174, 198, 218, 0.95);
+  background: linear-gradient(180deg, #f2f7fc 0%, #dfeaf5 100%);
+  box-shadow: 0 10px 20px rgba(62, 98, 141, 0.12);
+  color: #2f6db3;
+
+  &:disabled {
+    cursor: default;
+    opacity: 0.7;
+    transform: none;
+  }
+}
+
+.addPatientButton {
+  border-color: #f18f91;
+  background: linear-gradient(180deg, #ff9f92 0%, #ff7c71 100%);
+  box-shadow: 0 10px 20px rgba(238, 125, 110, 0.22);
+}
+
+.metricsGrid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 14px;
+  align-items: stretch;
+}
+
+.chartsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  align-items: stretch;
+}
+
+.dashboardListsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  align-items: stretch;
+}
+
+.metricCard {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  padding: 18px;
+  border: 1px solid rgba(201, 214, 225, 0.92);
+  border-radius: 20px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.97), rgba(244, 248, 252, 0.98));
+  box-shadow: 0 14px 30px rgba(30, 58, 89, 0.07);
+  transition:
+    transform 140ms ease,
+    box-shadow 140ms ease,
+    border-color 140ms ease,
+    background 140ms ease;
+
+  &:hover {
+    transform: translateY(-3px);
+    border-color: rgba(116, 162, 203, 0.92);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 1), rgba(238, 245, 251, 0.99));
+    box-shadow: 0 18px 34px rgba(30, 58, 89, 0.12);
+
+    .metricIconWrap {
+      transform: scale(1.04);
+    }
+  }
+}
+
+.metricIconWrap {
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 52px;
+  transition: transform 140ms ease;
+
+  svg {
+    font-size: 24px !important;
+  }
+}
+
+.metricAccentCoral {
+  background: linear-gradient(180deg, #fff1eb 0%, #ffe3db 100%);
+  color: #df6d5d;
+}
+
+.metricAccentBlue {
+  background: linear-gradient(180deg, #eef5ff 0%, #dbe8fb 100%);
+  color: #295a9a;
+}
+
+.metricAccentCyan {
+  background: linear-gradient(180deg, #ecfafd 0%, #dbf3f8 100%);
+  color: #2b8da0;
+}
+
+.metricAccentGreen {
+  background: linear-gradient(180deg, #effcf2 0%, #daf4e1 100%);
+  color: #228151;
+}
+
+.metricAccentGold {
+  background: linear-gradient(180deg, #fff8e4 0%, #ffefbf 100%);
+  color: #b78618;
+}
+
+.metricContent {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.metricLabel {
+  color: #688199;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  line-height: 1.35;
+}
+
+.metricValue {
+  color: #163d65;
+  font-size: 24px;
+  font-weight: 800;
+  line-height: 1;
+  min-height: 24px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.chartCard {
+  border: 1px solid rgba(194, 208, 220, 0.92) !important;
+  border-radius: 24px !important;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.98),
+    rgba(242, 247, 251, 0.99)
+  ) !important;
+  box-shadow: 0 18px 36px rgba(24, 50, 79, 0.08) !important;
+}
+
+.chartCardCompact {
+  grid-row: span 1;
+}
+
+.chartCardExpanded {
+  grid-row: span 1;
+}
+
+.chartCardContent {
+  padding: 16px !important;
+}
+
+.chartCardContentCompact {
+  padding: 12px !important;
+}
+
+.chartCardContentExpanded {
+  padding: 16px !important;
+}
+
+.chartTitle {
+  color: #163d65 !important;
+  font-size: 16px !important;
+  font-weight: 800 !important;
+  line-height: 1.15 !important;
+}
+
+.chartSubtitle {
+  margin-top: 2px !important;
+  color: #7790a7 !important;
+  font-size: 11px !important;
+  line-height: 1.45 !important;
+}
+
+.chartChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid rgba(184, 205, 223, 0.92);
+  border-radius: 999px;
+  background: rgba(236, 244, 251, 0.92);
+}
+
+.chartChipIcon {
+  font-size: 16px !important;
+  color: #2e67ab;
+}
+
+.chartChipText {
+  color: #355b80 !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  line-height: 1 !important;
+}
+
+.chartIconButton {
+  border: 1px solid rgba(184, 205, 223, 0.92) !important;
+  color: #2e67ab !important;
+}
+
+.muiChartWrap {
+  margin-top: 10px;
+  width: 100%;
+  overflow: hidden;
+}
+
+.chartPlaceholder {
+  min-height: 220px;
+  margin-top: 10px;
+  padding: 16px;
+  border: 1px dashed rgba(191, 207, 221, 0.95);
+  border-radius: 20px;
+  background: linear-gradient(180deg, rgba(247, 251, 253, 0.98), rgba(239, 245, 249, 0.98));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.chartPlaceholderTitle {
+  color: #173d65 !important;
+  font-size: 16px !important;
+  font-weight: 800 !important;
+}
+
+.chartPlaceholderText {
+  max-width: 280px;
+  margin-top: 6px !important;
+  color: #7390a8 !important;
+  font-size: 12px !important;
+  line-height: 1.5 !important;
+}
+
+.chartSummaryRow {
+  margin-top: 4px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(217, 227, 235, 0.95);
+}
+
+.calendarHeader {
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.calendarDayLabel {
+  color: #7290ab !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.calendarGrid {
+  margin-top: 8px;
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.calendarGridCompact {
+  gap: 4px;
+}
+
+.calendarGridExpanded {
+  gap: 6px;
+}
+
+.calendarCell {
+  min-height: 74px;
+  padding: 8px 6px;
+  border: 1px solid rgba(211, 223, 233, 0.95);
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  position: relative;
+  overflow: hidden;
+}
+
+.calendarCellCompact {
+  min-height: 58px;
+  padding: 6px 4px;
+  border-radius: 12px;
+  gap: 4px;
+}
+
+.calendarCellExpanded {
+  min-height: 74px;
+}
+
+.calendarDate {
+  font-size: 12px !important;
+  font-weight: 800 !important;
+  line-height: 1 !important;
+  position: absolute;
+  top: 8px;
+  left: 8px;
+}
+
+.calendarCount {
+  font-size: 18px !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+}
+
+.calendarCountBadge {
+  width: 34px;
+  height: 34px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65);
+}
+
+.calendarCountBadgeCompact {
+  width: 28px;
+  height: 28px;
+  border-radius: 10px;
+
+  .calendarCount {
+    font-size: 14px !important;
+  }
+}
+
+.calendarCountBadgeExpanded {
+  width: 34px;
+  height: 34px;
+}
+
+.calendarCountBadgeToday {
+  background: linear-gradient(180deg, #2f6db3 0%, #255892 100%);
+
+  .calendarCount {
+    color: #ffffff !important;
+  }
+}
+
+.calendarCountBadgeActive {
+  background: linear-gradient(180deg, #55a6f0 0%, #2f7fce 100%);
+
+  .calendarCount {
+    color: #ffffff !important;
+  }
+}
+
+.calendarCountBadgeIdle {
+  background: linear-gradient(180deg, #eef3f7 0%, #dde5ed 100%);
+
+  .calendarCount {
+    color: #6d8196 !important;
+  }
+}
+
+.calendarCountText {
+  font-size: 8px !important;
+  font-weight: 800 !important;
+  line-height: 1 !important;
+  color: #6d8298 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.revenueList {
+  margin-top: 18px;
+}
+
+.revenueLabel {
+  color: #173d65 !important;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+}
+
+.revenueAmount {
+  color: #6d849b !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  white-space: nowrap;
+}
+
+.revenueBar {
+  margin-top: 10px;
+  height: 10px !important;
+  border-radius: 999px !important;
+  background: rgba(225, 234, 242, 0.95) !important;
+
+  :global(.MuiLinearProgress-bar) {
+    border-radius: 999px;
+    background: linear-gradient(90deg, #3b75ac 0%, #5b96c9 100%);
+  }
+}
+
+.lineChartWrap {
+  margin-top: 18px;
+}
+
+.lineChartSvg {
+  width: 100%;
+  height: 220px;
+  display: block;
+}
+
+.lineChartLabels {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.lineChartLabel {
+  color: #7890a7 !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  text-align: center;
+}
+
+.chartDivider {
+  margin: 16px 0 !important;
+  border-color: rgba(217, 227, 235, 0.95) !important;
+}
+
+.chartSummaryIcon {
+  font-size: 18px !important;
+  color: #2f6db3;
+}
+
+.chartSummaryText {
+  color: #678097 !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+}
+
+.chartSummaryValue {
+  color: #163d65 !important;
+  font-size: 16px !important;
+  font-weight: 800 !important;
+}
+
+.dashboardListHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.dashboardListTitleWrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.dashboardListIcon {
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #eef6ff 0%, #dceaf8 100%);
+  color: #2f6db3;
+
+  svg {
+    font-size: 20px !important;
+  }
+}
+
+.dashboardListCount {
+  min-width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: rgba(236, 244, 251, 0.95);
+  border: 1px solid rgba(184, 205, 223, 0.92);
+  color: #355b80 !important;
+  font-size: 13px !important;
+  font-weight: 800 !important;
+}
+
+.dashboardListBody {
+  margin-top: 16px;
+  max-height: 150px;
+  min-height: 150px;
+  overflow-y: auto;
+  padding-right: 4px;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(181, 198, 214, 0.95);
+    border-radius: 999px;
+  }
+}
+
+.dashboardListItem {
+  padding: 5px 0;
+  border-bottom: 1px solid rgba(223, 232, 239, 0.95);
+
+  &:last-child {
+    border-bottom: 0;
+  }
+}
+
+.dashboardListPrimaryRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.dashboardListName {
+  color: #173d65 !important;
+  font-size: 13px !important;
+  font-weight: 800 !important;
+  line-height: 1.35 !important;
+}
+
+.dashboardListBadge {
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: rgba(236, 244, 251, 0.95);
+  border: 1px solid rgba(190, 208, 224, 0.95);
+  color: #58718c !important;
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  white-space: nowrap;
+}
+
+.dashboardListTime {
+  color: #2f6db3 !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  white-space: nowrap;
+}
+
+.dashboardListReason {
+  margin-top: 3px !important;
+  color: #6f879f !important;
+  font-size: 11px !important;
+  line-height: 1.55 !important;
+}
+
+.dashboardListEmpty {
+  min-height: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  border: 1px dashed rgba(191, 207, 221, 0.95);
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(248, 251, 253, 0.98), rgba(240, 246, 250, 0.98));
+}
+
+.dashboardListEmptyText {
+  color: #73869b !important;
+  font-size: 14px !important;
+  line-height: 1.6 !important;
+  text-align: center;
+}
+
+.dashboardGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(300px, 0.95fr);
+  gap: 14px;
+  align-items: start;
+}
+
+.primaryColumn,
+.secondaryColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.surfaceCard {
+  padding: 18px;
+  border: 1px solid rgba(194, 208, 220, 0.92);
+  border-radius: 22px;
+  background: linear-gradient(180deg, rgba(250, 252, 254, 0.98), rgba(240, 245, 249, 0.99));
+  box-shadow: 0 18px 36px rgba(24, 50, 79, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.cardTitle {
+  margin: 0;
+  color: #163d65;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.cardSubtitle {
+  margin: 4px 0 0;
+  color: #7a8ea3;
+  font-size: 13px;
+}
+
+.cardBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 30px;
+  padding: 0 10px;
+  border: 1px solid rgba(184, 205, 223, 0.9);
+  border-radius: 999px;
+  background: rgba(236, 244, 251, 0.95);
+  color: #355b80;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.badgeIcon {
+  font-size: 16px !important;
+}
+
+.chartWrap {
+  padding: 16px 14px 8px;
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(245, 249, 252, 0.96));
+  border: 1px solid rgba(211, 221, 230, 0.92);
+}
+
+.chartSvg {
+  width: 100%;
+  height: 220px;
+  display: block;
+}
+
+.chartGrid {
+  line {
+    stroke: rgba(183, 202, 220, 0.45);
+    stroke-dasharray: 5 7;
+  }
+}
+
+.chartLabels {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 4px;
+  color: #7890a7;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.patientTable {
+  border: 1px solid rgba(207, 219, 229, 0.92);
+  border-radius: 18px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.patientTableHead {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(120px, 0.8fr) minmax(140px, 1fr);
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(224, 232, 238, 0.92);
+  background: linear-gradient(180deg, #f9fbfd 0%, #eef4f8 100%);
+  color: #26496d;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.patientRowButton {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(120px, 0.8fr) minmax(140px, 1fr);
+  gap: 12px;
+  align-items: center;
+  padding: 14px 16px;
+  color: #314a63;
+  text-align: left;
+  cursor: pointer;
+  border-bottom: 1px solid rgba(232, 237, 242, 0.92);
+  transition: background-color 120ms ease;
+
+  &:hover {
+    background: rgba(236, 244, 251, 0.65);
+  }
+
+  &:last-child {
+    border-bottom: 0;
+  }
+}
+
+.patientName {
+  color: #173d65;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.patientMeta {
+  color: #688199;
+  font-size: 13px;
+}
+
+.scheduleList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.scheduleItem {
+  display: grid;
+  grid-template-columns: 58px 44px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid rgba(211, 221, 230, 0.92);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.94);
+}
+
+.scheduleItemHighlight {
+  border-color: rgba(57, 96, 169, 0.3);
+  background: linear-gradient(180deg, #2d4da1 0%, #233e87 100%);
+  box-shadow: 0 16px 28px rgba(40, 74, 145, 0.24);
+
+  .scheduleTime,
+  .scheduleName {
+    color: #ffffff;
+  }
+
+  .scheduleReason {
+    color: rgba(238, 245, 255, 0.84);
+  }
+}
+
+.scheduleTime {
+  color: #48647e;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.scheduleAvatar {
+  width: 44px !important;
+  height: 44px !important;
+  font-size: 18px !important;
+  font-weight: 800 !important;
+  background: linear-gradient(180deg, #e8f1fb 0%, #cfdef2 100%) !important;
+  color: #2d5d9a !important;
+}
+
+.scheduleText {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.scheduleName {
+  color: #163d65;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.scheduleReason {
+  color: #7890a7;
+  font-size: 13px;
+}
+
+.noteCard {
+  padding: 18px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(236, 245, 255, 0.92), rgba(247, 250, 253, 0.98));
+  border: 1px solid rgba(201, 214, 225, 0.92);
+}
+
+.noteLead {
+  margin: 0;
+  color: #173d65;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.7;
+}
+
+.noteText {
+  margin: 10px 0 0;
+  color: #698097;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.loadingState {
+  min-height: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  max-width: 420px;
+  margin: 20px auto;
+  padding: 30px 20px;
+  border: 1px dashed rgba(191, 207, 221, 0.95);
+  border-radius: 22px;
+  background: linear-gradient(180deg, rgba(248, 251, 253, 0.98), rgba(240, 246, 250, 0.98));
+}
+
+.emptyStateIcon {
+  width: 58px;
+  height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 18px;
+  background: linear-gradient(180deg, #ebf4fb 0%, #d7e7f4 100%);
+}
+
+.emptyStateGlyph {
+  font-size: 30px !important;
+  color: #5f8db9;
+}
+
+.emptyStateTitle {
+  color: #1f4467 !important;
+  font-size: 20px !important;
+  font-weight: 800 !important;
+  line-height: 1.2 !important;
+}
+
+.emptyStateText {
+  max-width: 340px;
+  color: #73869b !important;
+  font-size: 14px !important;
+  line-height: 1.6 !important;
+  text-align: center;
+}
+
+@media (max-width: 1100px) {
+  .chartsGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .dashboardListsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboardGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .wrapper {
+    min-height: calc(100vh - 56px);
+    padding: 68px 12px 72px;
+  }
+
+  .announcementBanner {
+    gap: 14px;
+    padding: 16px;
+    border-radius: 18px;
+  }
+
+  .announcementContent {
+    gap: 12px;
+  }
+
+  .announcementIcon {
+    width: 44px;
+    height: 44px;
+    flex-basis: 44px;
+    border-radius: 14px;
+  }
+
+  .announcementIconSvg {
+    font-size: 22px !important;
+  }
+
+  .announcementTitle {
+    font-size: 18px;
+  }
+
+  .announcementMessage {
+    margin-top: 8px;
+    font-size: 12px;
+    line-height: 1.6;
+  }
+
+  .announcementMeta {
+    margin-top: 10px;
+    font-size: 11px;
+  }
+
+  .listHeader {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    padding: 12px;
+    border-radius: 18px;
+  }
+
+  .headerInfo {
+    gap: 10px;
+  }
+
+  .headerIcon {
+    width: 40px;
+    height: 40px;
+    flex-basis: 40px;
+    border-radius: 12px;
+  }
+
+  .headerIconSvg {
+    font-size: 18px !important;
+  }
+
+  .headerTitle {
+    font-size: 16px;
+  }
+
+  .headerSubtitle {
+    margin-top: 2px;
+    font-size: 12px;
+  }
+
+  .headerActions {
+    display: grid;
+    gap: 8px;
+  }
+
+  .actionButton {
+    min-height: 34px;
+    padding: 0 12px;
+    border-radius: 10px;
+    font-size: 11px;
+  }
+
+  .actionButtonIcon {
+    font-size: 16px !important;
+  }
+
+  .metricsGrid {
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(160px, 1fr);
+    grid-template-columns: none;
+    gap: 8px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding-bottom: 2px;
+    scroll-snap-type: x proximity;
+
+    &::-webkit-scrollbar {
+      height: 6px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: rgba(181, 198, 214, 0.95);
+      border-radius: 999px;
+    }
+  }
+
+  .chartsGrid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .dashboardListsGrid {
+    gap: 12px;
+  }
+
+  .metricCard {
+    min-width: 160px;
+    padding: 10px 8px;
+    gap: 6px;
+    border-radius: 14px;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    scroll-snap-align: start;
+  }
+
+  .metricIconWrap {
+    width: 32px;
+    height: 32px;
+    flex-basis: 32px;
+    border-radius: 10px;
+
+    svg {
+      font-size: 16px !important;
+    }
+  }
+
+  .metricContent {
+    gap: 2px;
+    align-items: center;
+  }
+
+  .metricLabel {
+    font-size: 9px;
+    line-height: 1.2;
+    letter-spacing: 0.03em;
+  }
+
+  .metricValue {
+    font-size: 16px;
+    min-height: 16px;
+  }
+
+  .chartCardContent {
+    padding: 14px !important;
+  }
+
+  .chartTitle {
+    font-size: 15px !important;
+  }
+
+  .chartSubtitle {
+    font-size: 10px !important;
+  }
+
+  .muiChartWrap {
+    margin-top: 8px;
+  }
+
+  .chartPlaceholder {
+    min-height: 190px;
+    margin-top: 8px;
+    padding: 14px;
+    border-radius: 16px;
+  }
+
+  .chartPlaceholderTitle {
+    font-size: 14px !important;
+  }
+
+  .chartPlaceholderText {
+    font-size: 11px !important;
+  }
+
+  .dashboardListBody {
+    max-height: 220px;
+    min-height: auto;
+  }
+
+  .dashboardListItem {
+    padding: 7px 0;
+  }
+
+  .dashboardListName {
+    font-size: 12px !important;
+  }
+
+  .dashboardListReason {
+    font-size: 10px !important;
+  }
+
+  .calendarHeader,
+  .calendarGrid {
+    gap: 6px;
+  }
+
+  .calendarCell {
+    min-height: 74px;
+    padding: 8px 6px;
+    border-radius: 12px;
+  }
+
+  .calendarDate {
+    font-size: 12px !important;
+  }
+
+  .calendarCount {
+    font-size: 18px !important;
+  }
+
+  .calendarCountBadge {
+    width: 36px;
+    height: 36px;
+    border-radius: 12px;
+  }
+
+  .calendarCountText,
+  .lineChartLabel {
+    font-size: 10px !important;
+  }
+
+  .patientTableHead,
+  .patientRowButton {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .patientTableHead {
+    display: none;
+  }
+
+  .patientRowButton {
+    gap: 4px;
+  }
+
+  .scheduleItem {
+    grid-template-columns: 52px 40px minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 420px) {
+  .announcementBanner {
+    align-items: stretch;
+    gap: 12px;
+    padding: 14px;
+    border-radius: 16px;
+  }
+
+  .announcementContent {
+    gap: 10px;
+  }
+
+  .announcementIcon {
+    width: 40px;
+    height: 40px;
+    flex-basis: 40px;
+    border-radius: 12px;
+  }
+
+  .announcementIconSvg {
+    font-size: 20px !important;
+  }
+
+  .announcementTitle {
+    font-size: 16px;
+  }
+
+  .announcementMessage {
+    font-size: 11px;
+  }
+
+  .announcementCloseButton {
+    width: 34px;
+    min-width: 34px;
+    height: 34px;
+    border-radius: 10px;
+  }
+
+  .listHeader {
+    gap: 10px;
+    padding: 10px;
+    border-radius: 16px;
+  }
+
+  .headerInfo {
+    gap: 8px;
+  }
+
+  .headerIcon {
+    width: 36px;
+    height: 36px;
+    flex-basis: 36px;
+    border-radius: 10px;
+  }
+
+  .headerIconSvg {
+    font-size: 16px !important;
+  }
+
+  .headerTitle {
+    font-size: 15px;
+  }
+
+  .actionButton {
+    min-height: 32px;
+    padding: 0 10px;
+    font-size: 10px;
+  }
+
+  .actionButtonIcon {
+    font-size: 14px !important;
+  }
+
+  .metricsGrid {
+    gap: 4px;
+  }
+
+  .chartCardContent {
+    padding: 12px !important;
+  }
+
+  .chartSummaryRow {
+    margin-top: 4px;
+    padding-top: 8px;
+  }
+
+  .chartPlaceholder {
+    min-height: 170px;
+    padding: 12px;
+    border-radius: 14px;
+  }
+
+  .chartPlaceholderTitle {
+    font-size: 13px !important;
+  }
+
+  .chartPlaceholderText {
+    font-size: 10px !important;
+  }
+
+  .dashboardListHeader {
+    gap: 10px;
+  }
+
+  .dashboardListTitleWrap {
+    gap: 10px;
+  }
+
+  .dashboardListIcon {
+    width: 34px;
+    height: 34px;
+    flex-basis: 34px;
+    border-radius: 12px;
+
+    svg {
+      font-size: 18px !important;
+    }
+  }
+
+  .dashboardListCount {
+    min-width: 28px;
+    height: 28px;
+    font-size: 12px !important;
+  }
+
+  .dashboardListItem {
+    padding: 6px 0;
+  }
+
+  .dashboardListTime {
+    font-size: 10px !important;
+  }
+
+  .dashboardListReason {
+    font-size: 10px !important;
+  }
+
+  .metricCard {
+    min-width: 144px;
+    padding: 8px 6px;
+    gap: 4px;
+    border-radius: 12px;
+  }
+
+  .metricIconWrap {
+    width: 28px;
+    height: 28px;
+    flex-basis: 28px;
+    border-radius: 8px;
+
+    svg {
+      font-size: 14px !important;
+    }
+  }
+
+  .metricLabel {
+    font-size: 8px;
+  }
+
+  .metricValue {
+    font-size: 14px;
+    min-height: 14px;
+  }
+
+  .chartChip {
+    min-height: 30px;
+    padding: 0 10px;
+  }
+
+  .calendarHeader,
+  .calendarGrid {
+    gap: 4px;
+  }
+
+  .calendarCell {
+    min-height: 68px;
+    padding: 6px 5px;
+    border-radius: 10px;
+  }
+
+  .calendarDate {
+    font-size: 11px !important;
+  }
+
+  .calendarCount {
+    font-size: 16px !important;
+  }
+
+  .calendarCountBadge {
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+  }
+
+  .calendarCountText {
+    font-size: 8px !important;
+  }
+}

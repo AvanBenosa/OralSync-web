@@ -1,0 +1,175 @@
+@import '../css/variables.scss';
+
+$centerColor: $secondary-color;
+$blockSize: 1em;
+$delay: .065s;
+$duration: .88s;
+$startingColor: #a6ccfa; // Turquoise
+$endingColor: #2860a0; //
+
+// Calculate some values
+$blockMargin: calc(#{$blockSize} / 3);
+$loaderSize: calc(#{$blockSize} * 3 + #{$blockMargin} * 2);
+
+@mixin translate($x, $y) {
+  transform: translate($x, $y);
+  -webkit-transform: translate($x, $y);
+}
+
+@mixin background($value) {
+  background: $value;
+  -webkit-background: $value;
+}
+
+@mixin animation-delay($delay ) {
+  -webkit-animation-delay: $delay;
+  animation-delay: $delay;
+}
+
+@mixin animation($ani1: null, $ani2: null) {
+  @if ($ani2 !=null) {
+    -webkit-animation: $ani1, $ani2;
+    animation: $ani1, $ani2;
+  }
+
+  @else if ($ani1 !=null) {
+    -webkit-animation: $ani1;
+    animation: $ani1;
+  }
+}
+
+.root {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rootFullPage {
+  width: 100%;
+  height: 100vh;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loader {
+  position: absolute;
+  top: calc(50% - ($loaderSize/2));
+  left: calc(50% - ($loaderSize/2) - 10px);
+  width: $loaderSize;
+  height: $loaderSize;
+
+  span {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: inline-block;
+    opacity: 0;
+    width: $blockSize;
+    height: $blockSize;
+    background: $startingColor;
+    @include animation(show $duration step-end infinite alternate,
+      pulse $duration linear infinite alternate);
+  }
+}
+
+
+.loader span:nth-child(1) {
+  @include translate(0, 0);
+  @include animation-delay(1 * $delay);
+}
+
+.loader span:nth-child(2) {
+  @include translate(calc(#{$blockSize} + #{$blockMargin}), 0);
+  @include animation-delay(2 * $delay);
+}
+
+.loader span:nth-child(3) {
+  @include translate(calc(#{$blockSize} * 2 + #{$blockMargin} * 2), 0);
+  @include animation-delay(3 * $delay);
+}
+
+.loader span:nth-child(4) {
+  @include translate(0, calc(#{$blockSize} + #{$blockMargin}));
+  @include animation-delay(5 * $delay);
+}
+
+.loader span:nth-child(5) {
+  background: $centerColor !important; 
+  @include translate(calc(#{$blockSize} + #{$blockMargin}), calc(#{$blockSize} + #{$blockMargin}));
+  @include animation-delay(2 * $delay);
+}
+
+.loader span:nth-child(6) {
+  @include translate(calc(#{$blockSize} * 2 + #{$blockMargin} * 2), calc(#{$blockSize} + #{$blockMargin}));
+  @include animation-delay(7 * $delay);
+}
+
+.loader span:nth-child(7) {
+  @include translate(0, calc(#{$blockSize} * 2 + #{$blockMargin} * 2));
+  @include animation-delay(6 * $delay);
+}
+
+.loader span:nth-child(8) {
+  @include translate(calc(#{$blockSize} + #{$blockMargin}), calc(#{$blockSize} * 2 + #{$blockMargin} * 2));
+  @include animation-delay(4 * $delay);
+}
+
+.loader span:nth-child(9) {
+  @include translate(calc(#{$blockSize} * 2 + #{$blockMargin} * 2), calc(#{$blockSize} * 2 + #{$blockMargin} * 2));
+  @include animation-delay(8 * $delay); 
+}
+
+@-webkit-keyframes pulse {
+
+  from,
+  40% {
+    background: $startingColor;
+  }
+
+  to {
+    background: $endingColor;
+  }
+}
+
+@-webkit-keyframes show {
+
+  from,
+  40% {
+    opacity: 0;
+  }
+
+  41%,
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes pulse {
+
+  from,
+  40% {
+    background: $startingColor;
+  }
+
+  to {
+    background: $endingColor;
+  }
+}
+
+@keyframes show {
+
+  from,
+  40% {
+    opacity: 0;
+  }
+
+  41%,
+  to {
+    opacity: 1;
+  }
+}
