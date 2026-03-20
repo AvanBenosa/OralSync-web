@@ -339,10 +339,21 @@
   box-shadow: 0 8px 14px rgba(72, 124, 176, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.7);
 }
 
+.viewButton {
+  border-color: #a7d1db;
+  background: linear-gradient(180deg, #effdff 0%, #d9f3f8 100%);
+  box-shadow: 0 8px 14px rgba(60, 127, 148, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
 .deleteButton {
   border-color: #ecc2ca;
   background: linear-gradient(180deg, #fff2f4 0%, #ffe1e6 100%);
   box-shadow: 0 8px 14px rgba(186, 75, 99, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+.iconView {
+  font-size: 18px !important;
+  color: #2e7b90;
 }
 
 .iconEdit {
@@ -502,8 +513,8 @@
   }
 
   .mobileActions .iconEdit,
+  .mobileActions .iconView,
   .mobileActions .iconDelete {
     font-size: 16px !important;
   }
-
 }

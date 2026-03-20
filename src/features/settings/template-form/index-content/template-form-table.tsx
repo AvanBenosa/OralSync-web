@@ -2,7 +2,9 @@ import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import ArticleRoundedIcon from '@mui/icons-material/ArticleRounded';
 import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
+import EmailRoundedIcon from '@mui/icons-material/EmailRounded';
 import PreviewRoundedIcon from '@mui/icons-material/PreviewRounded';
+import SmsRoundedIcon from '@mui/icons-material/SmsRounded';
 import {
   Alert,
   Button,
@@ -19,9 +21,18 @@ import { FunctionComponent, JSX, useMemo } from 'react';
 
 import styles from '../../style.scss.module.scss';
 import patientStyles from '../../../patient/style.scss.module.scss';
-import { TemplateFormModel, TemplateFormStateProps } from '../api/types';
+import {
+  getTemplateItemKey,
+  getTemplateTypeContent,
+  TemplateFormModel,
+  TemplateFormStateProps,
+  TemplateType,
+} from '../api/types';
 
 type TemplateFormTableProps = TemplateFormStateProps & {
+  templateType: TemplateType;
+  items: TemplateFormModel[];
+  selectedItem: TemplateFormModel | null;
   statusMessage: string;
   submitError: string;
   onOpenCreate: () => void;
@@ -49,6 +60,9 @@ const TemplateFormTable: FunctionComponent<TemplateFormTableProps> = (
   const {
     state,
     setState,
+    templateType,
+    items,
+    selectedItem,
     statusMessage,
     submitError,
     onOpenCreate,
@@ -56,14 +70,26 @@ const TemplateFormTable: FunctionComponent<TemplateFormTableProps> = (
     onOpenDelete,
     onClearMessages,
   } = props;
+  const templateTypeContent = useMemo(() => getTemplateTypeContent(templateType), [templateType]);
 
   const sortedItems = useMemo(
     () =>
-      [...state.items].sort((leftItem, rightItem) =>
+      [...items].sort((leftItem, rightItem) =>
         (leftItem.templateName || '').localeCompare(rightItem.templateName || '')
       ),
-    [state.items]
+    [items]
   );
+
+  const listIcon = useMemo(() => {
+    switch (templateType) {
+      case TemplateType.Email:
+        return <EmailRoundedIcon />;
+      case TemplateType.Sms:
+        return <SmsRoundedIcon />;
+      default:
+        return <ArticleRoundedIcon />;
+    }
+  }, [templateType]);
 
   const handleSelect = (item: TemplateFormModel): void => {
     onClearMessages();
@@ -78,20 +104,18 @@ const TemplateFormTable: FunctionComponent<TemplateFormTableProps> = (
       <section className={`${styles.formPanel} ${styles.templateListPanel}`}>
         <div className={styles.formPanelHeader}>
           <div className={styles.formPanelIcon} aria-hidden="true">
-            <ArticleRoundedIcon />
+            {listIcon}
           </div>
           <div>
-            <h3 className={styles.formPanelTitle}>Template Forms</h3>
-            <p className={styles.formPanelDescription}>
-              Manage reusable clinic form templates and preview their content before use.
-            </p>
+            <h3 className={styles.formPanelTitle}>{templateTypeContent.listTitle}</h3>
+            <p className={styles.formPanelDescription}>{templateTypeContent.listDescription}</p>
           </div>
         </div>
 
         <div className={styles.templateToolbar}>
           <div>
             <Typography className={styles.userListMeta}>
-              {state.totalItem} template{state.totalItem === 1 ? '' : 's'}
+              {sortedItems.length} {templateTypeContent.pluralLabel}
             </Typography>
           </div>
 
@@ -101,7 +125,7 @@ const TemplateFormTable: FunctionComponent<TemplateFormTableProps> = (
             variant="contained"
             startIcon={<AddRoundedIcon />}
           >
-            Add Template
+            {templateTypeContent.addButtonLabel}
           </Button>
         </div>
 
@@ -119,16 +143,19 @@ const TemplateFormTable: FunctionComponent<TemplateFormTableProps> = (
                   <TableRow>
                     <TableCell colSpan={2}>
                       <div className={styles.emptyMiniState}>
-                        <Typography className={styles.emptyMiniTitle}>Loading templates</Typography>
+                        <Typography className={styles.emptyMiniTitle}>
+                          {templateTypeContent.loadingTitle}
+                        </Typography>
                         <Typography className={styles.emptyMiniText}>
-                          Fetching template forms from your clinic settings.
+                          {templateTypeContent.loadingText}
                         </Typography>
                       </div>
                     </TableCell>
                   </TableRow>
                 ) : sortedItems.length ? (
                   sortedItems.map((item) => {
-                    const isSelected = item.id === state.selectedItem?.id;
+                    const isSelected =
+                      getTemplateItemKey(item) === getTemplateItemKey(selectedItem);
 
                     return (
                       <TableRow
@@ -180,9 +207,11 @@ const TemplateFormTable: FunctionComponent<TemplateFormTableProps> = (
                   <TableRow>
                     <TableCell colSpan={2}>
                       <div className={styles.emptyMiniState}>
-                        <Typography className={styles.emptyMiniTitle}>No template forms</Typography>
+                        <Typography className={styles.emptyMiniTitle}>
+                          {templateTypeContent.emptyTitle}
+                        </Typography>
                         <Typography className={styles.emptyMiniText}>
-                          Create your first template from the add button above.
+                          {templateTypeContent.emptyText}
                         </Typography>
                       </div>
                     </TableCell>
@@ -211,22 +240,20 @@ const TemplateFormTable: FunctionComponent<TemplateFormTableProps> = (
             <PreviewRoundedIcon />
           </div>
           <div>
-            <h3 className={styles.formPanelTitle}>Template Preview</h3>
-            <p className={styles.formPanelDescription}>
-              Review the selected template content exactly as it will be shown.
-            </p>
+            <h3 className={styles.formPanelTitle}>{templateTypeContent.previewTitle}</h3>
+            <p className={styles.formPanelDescription}>{templateTypeContent.previewDescription}</p>
           </div>
         </div>
 
         <div className={styles.templatePreviewSurface}>
-          {state.selectedItem ? (
+          {selectedItem ? (
             <>
               <div className={styles.templatePreviewMeta}>
                 <Typography className={styles.userListName}>
-                  {state.selectedItem.templateName || 'Untitled template'}
+                  {selectedItem.templateName || 'Untitled template'}
                 </Typography>
                 <Typography className={styles.userListMeta}>
-                  Last template date: {formatDateLabel(state.selectedItem.date)}
+                  Last template date: {formatDateLabel(selectedItem.date)}
                 </Typography>
               </div>
               <div className={styles.templatePreviewScroll}>
@@ -234,7 +261,7 @@ const TemplateFormTable: FunctionComponent<TemplateFormTableProps> = (
                   className={styles.templatePreviewHtml}
                   dangerouslySetInnerHTML={{
                     __html:
-                      state.selectedItem.templateContent?.trim() ||
+                      selectedItem.templateContent?.trim() ||
                       '<p>No template content available.</p>',
                   }}
                 />
@@ -242,9 +269,11 @@ const TemplateFormTable: FunctionComponent<TemplateFormTableProps> = (
             </>
           ) : (
             <div className={styles.emptyMiniState}>
-              <Typography className={styles.emptyMiniTitle}>No template selected</Typography>
+              <Typography className={styles.emptyMiniTitle}>
+                {templateTypeContent.previewEmptyTitle}
+              </Typography>
               <Typography className={styles.emptyMiniText}>
-                Choose a template from the left panel to preview it here.
+                {templateTypeContent.previewEmptyText}
               </Typography>
             </div>
           )}

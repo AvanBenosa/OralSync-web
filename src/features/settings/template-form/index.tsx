@@ -1,24 +1,73 @@
 import { Dialog } from '@mui/material';
 import { isAxiosError } from 'axios';
-import { FunctionComponent, JSX, useState } from 'react';
+import { FunctionComponent, JSX, useEffect, useMemo, useState } from 'react';
 
 import { HandleCreateTemplateForm, HandleUpdateTemplateForm } from './api/handlers';
-import { TemplateFormFormValues, TemplateFormModel, TemplateFormStateProps } from './api/types';
+import {
+  getTemplateItemKey,
+  getTemplateTypeContent,
+  isTemplateOfType,
+  TemplateFormFormValues,
+  TemplateFormModel,
+  TemplateFormStateProps,
+  TemplateType,
+} from './api/types';
 import TemplateFormForm from './index-content/template-form-form';
 import TemplateFormTable from './index-content/template-form-table';
 import TemplateFormDeleteModal from './modal/modal';
 
-const TemplateFormManagement: FunctionComponent<TemplateFormStateProps> = (
-  props: TemplateFormStateProps
+type TemplateFormManagementProps = TemplateFormStateProps & {
+  templateType: TemplateType;
+};
+
+const TemplateFormManagement: FunctionComponent<TemplateFormManagementProps> = (
+  props: TemplateFormManagementProps
 ): JSX.Element => {
-  const { state, setState } = props;
+  const { state, setState, templateType } = props;
   const [statusMessage, setStatusMessage] = useState('');
   const [submitError, setSubmitError] = useState('');
+  const templateTypeContent = useMemo(() => getTemplateTypeContent(templateType), [templateType]);
+  const filteredItems = useMemo(
+    () => state.items.filter((item) => isTemplateOfType(item, templateType)),
+    [state.items, templateType]
+  );
+  const selectedItem = useMemo(
+    () => (isTemplateOfType(state.selectedItem, templateType) ? state.selectedItem : null),
+    [state.selectedItem, templateType]
+  );
 
   const clearMessages = (): void => {
     setStatusMessage('');
     setSubmitError('');
   };
+
+  useEffect(() => {
+    if (state.openModal || state.load) {
+      return;
+    }
+
+    const selectedItemStillExists = selectedItem
+      ? filteredItems.some((item) => getTemplateItemKey(item) === getTemplateItemKey(selectedItem))
+      : false;
+
+    if (selectedItemStillExists) {
+      return;
+    }
+
+    const nextSelectedItem = filteredItems[0] || null;
+
+    if (
+      getTemplateItemKey(nextSelectedItem) === getTemplateItemKey(state.selectedItem) &&
+      Boolean(nextSelectedItem) === Boolean(state.selectedItem)
+    ) {
+      return;
+    }
+
+    setState((prev) => ({
+      ...prev,
+      selectedItem: nextSelectedItem,
+    }));
+  }, [filteredItems, selectedItem, setState, state.load, state.openModal, state.selectedItem]);
 
   const handleOpenCreate = (): void => {
     clearMessages();
@@ -80,15 +129,16 @@ const TemplateFormManagement: FunctionComponent<TemplateFormStateProps> = (
       templateName: values.templateName.trim(),
       templateContent: values.templateContent.trim(),
       date: values.date || new Date().toISOString(),
+      type: templateType,
     };
 
     try {
       if (state.isUpdate && request.id) {
         await HandleUpdateTemplateForm(request, state, setState);
-        setStatusMessage('Template form has been updated successfully.');
+        setStatusMessage(templateTypeContent.updateSuccessMessage);
       } else {
         await HandleCreateTemplateForm(request, state, setState);
-        setStatusMessage('Template form has been created successfully.');
+        setStatusMessage(templateTypeContent.createSuccessMessage);
       }
     } catch (error) {
       if (isAxiosError(error)) {
@@ -97,7 +147,9 @@ const TemplateFormManagement: FunctionComponent<TemplateFormStateProps> = (
         );
       } else {
         setSubmitError(
-          state.isUpdate ? 'Unable to update template form.' : 'Unable to create template form.'
+          state.isUpdate
+            ? templateTypeContent.updateErrorMessage
+            : templateTypeContent.createErrorMessage
         );
       }
     }
@@ -108,6 +160,9 @@ const TemplateFormManagement: FunctionComponent<TemplateFormStateProps> = (
       <TemplateFormTable
         state={state}
         setState={setState}
+        templateType={templateType}
+        items={filteredItems}
+        selectedItem={selectedItem}
         statusMessage={statusMessage}
         submitError={submitError}
         onOpenCreate={handleOpenCreate}
@@ -126,12 +181,14 @@ const TemplateFormManagement: FunctionComponent<TemplateFormStateProps> = (
           <TemplateFormDeleteModal
             state={state}
             setState={setState}
-            onDeleteSuccess={() => setStatusMessage('Template form has been deleted successfully.')}
+            templateType={templateType}
+            onDeleteSuccess={() => setStatusMessage(templateTypeContent.deleteSuccessMessage)}
           />
         ) : (
           <TemplateFormForm
             state={state}
             setState={setState}
+            templateType={templateType}
             submitError={submitError}
             onClose={handleCloseDialog}
             onSubmit={handleSubmit}

@@ -187,6 +187,7 @@ const PatientProfileEmailModal: FunctionComponent<PatientProfileStateProps> = (
                   fullWidth
                   label="Recipient Number"
                   name="recipientNumber"
+                  disabled
                   value={values.recipientNumber}
                   onChange={handleChange}
                   onBlur={handleBlur}

@@ -32,6 +32,7 @@ export interface AuthUser {
   email: string;
   clinicId?: string | null;
   clinicName?: string;
+  bannerImagePath?: string;
   isDataPrivacyAccepted?: boolean;
   isLocked?: boolean;
   role: string;
@@ -159,7 +160,9 @@ export const getRegistrationStatus = async (): Promise<RegistrationStatusRespons
 
   const request = (async (): Promise<RegistrationStatusResponse> => {
     try {
-      const response = await apiClient.get<RegistrationStatusResponse>(REGISTRATION_STATUS_ENDPOINT);
+      const response = await apiClient.get<RegistrationStatusResponse>(
+        REGISTRATION_STATUS_ENDPOINT
+      );
       registrationStatusResponseCache.set(requestKey, {
         data: response.data,
         cachedAt: Date.now(),

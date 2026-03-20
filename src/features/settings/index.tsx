@@ -13,12 +13,12 @@ import { HandleGetClinicUsers } from './create-user/api/handlers';
 import { CreateUserStateModel } from './create-user/api/types';
 import { HandleGetTemplateForms } from './template-form/api/handlers';
 import { TemplateFormStateModel } from './template-form/api/types';
+import BuildUp from './index-content/build-up';
 import ClinicProfileForm from './index-content/clinic-profile-form';
 import CreateUserManagement from './index-content/create-user-management';
 import DataConverter from './index-content/data-converter';
 import SettingsHeader from './index-content/settings-header';
 import styles from './style.scss.module.scss';
-import TemplateFormManagement from './template-form';
 import { SettingsProps } from './types';
 
 type SettingsTabId = 'clinic-profile' | 'create-user' | 'build-up' | 'data-converter';
@@ -282,7 +282,7 @@ const SettingsModule: FunctionComponent<SettingsProps> = (props: SettingsProps):
               <CreateUserManagement state={createUserState} setState={setCreateUserState} />
             ) : null}
             {activeTab === 'build-up' ? (
-              <TemplateFormManagement state={templateFormState} setState={setTemplateFormState} />
+              <BuildUp state={templateFormState} setState={setTemplateFormState} />
             ) : null}
             {activeTab === 'data-converter' ? <DataConverter /> : null}
           </section>

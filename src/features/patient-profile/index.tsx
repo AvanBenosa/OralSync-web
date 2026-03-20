@@ -28,6 +28,7 @@ import PatientProgressNotes from '../patient-profile-modules/progress-note';
 import PatientMedicalHistory from '../patient-profile-modules/medical-history';
 import PatientDentalChart from '../patient-profile-modules/dental-chart';
 import PatientDentalPhoto from '../patient-profile-modules/photos';
+import PatientForms from '../patient-profile-modules/patient-forms';
 
 const resolveProfilePictureSrc = (profilePicture?: string): string => {
   if (!profilePicture?.trim()) {
@@ -132,7 +133,9 @@ export const PatientProfileModule: FunctionComponent<PatientProfileProps> = (
 
     try {
       const profile = await HandleGetPatientProfile(setState, patientId, undefined, forceRefresh);
-      const hasProfileData = Boolean(profile && (profile.id || profile.patientNumber || profile.firstName));
+      const hasProfileData = Boolean(
+        profile && (profile.id || profile.patientNumber || profile.firstName)
+      );
 
       if (!hasProfileData) {
         setState((prev: PatientStateModel) => ({
@@ -264,7 +267,8 @@ export const PatientProfileModule: FunctionComponent<PatientProfileProps> = (
   ]
     .filter(Boolean)
     .join(' ');
-  const patientDisplayLabel = patientDisplayName || state.profile?.patientNumber || 'Selected patient';
+  const patientDisplayLabel =
+    patientDisplayName || state.profile?.patientNumber || 'Selected patient';
   const patientInfoLabel = state.profile?.patientNumber
     ? `${state.profile.patientNumber}${patientDisplayName ? ` • ${patientDisplayName}` : ''}`
     : patientDisplayLabel;
@@ -455,6 +459,13 @@ export const PatientProfileModule: FunctionComponent<PatientProfileProps> = (
               patientId={patientId}
               onRegisterMobileReload={setMobileReload}
               patientLabel={patientInfoLabel}
+            />
+          ) : activeTab === 'forms' ? (
+            <PatientForms
+              patientId={patientId}
+              onRegisterMobileReload={setMobileReload}
+              patientLabel={patientInfoLabel}
+              patientProfile={state.profile}
             />
           ) : (
             <section className={styles.maintenancePanel}>

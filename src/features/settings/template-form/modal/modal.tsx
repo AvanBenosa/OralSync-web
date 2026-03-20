@@ -4,28 +4,41 @@ import { isAxiosError } from 'axios';
 
 import DeleteConfirmModalContent from '../../../../common/modal/modal';
 import { HandleDeleteTemplateForm } from '../api/handlers';
-import { TemplateFormModel, TemplateFormStateProps } from '../api/types';
+import {
+  getTemplateTypeContent,
+  TemplateFormModel,
+  TemplateFormStateProps,
+  TemplateType,
+} from '../api/types';
 
 type TemplateFormDeleteModalProps = TemplateFormStateProps & {
+  templateType: TemplateType;
   onDeleteSuccess: () => void;
 };
 
-const formatTemplateName = (template?: TemplateFormModel | null): string => {
+const formatTemplateName = (
+  templateType: TemplateType,
+  template?: TemplateFormModel | null
+): string => {
   if (template?.templateName?.trim()) {
     return template.templateName.trim();
   }
 
-  return 'this template form';
+  return getTemplateTypeContent(templateType).deleteFallbackLabel;
 };
 
 const TemplateFormDeleteModal: FunctionComponent<TemplateFormDeleteModalProps> = (
   props: TemplateFormDeleteModalProps
 ): JSX.Element => {
-  const { state, setState, onDeleteSuccess } = props;
+  const { state, setState, templateType, onDeleteSuccess } = props;
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string>('');
+  const templateTypeContent = useMemo(() => getTemplateTypeContent(templateType), [templateType]);
 
-  const templateLabel = useMemo(() => formatTemplateName(state.selectedItem), [state.selectedItem]);
+  const templateLabel = useMemo(
+    () => formatTemplateName(templateType, state.selectedItem),
+    [state.selectedItem, templateType]
+  );
 
   const handleClose = (): void => {
     setErrorMessage('');
@@ -55,7 +68,7 @@ const TemplateFormDeleteModal: FunctionComponent<TemplateFormDeleteModalProps> =
           typeof error.response?.data === 'string' ? error.response.data : error.message
         );
       } else {
-        setErrorMessage('Unable to delete template form.');
+        setErrorMessage(templateTypeContent.deleteErrorMessage);
       }
     } finally {
       setIsSubmitting(false);
@@ -64,7 +77,7 @@ const TemplateFormDeleteModal: FunctionComponent<TemplateFormDeleteModalProps> =
 
   return (
     <DeleteConfirmModalContent
-      title="Delete Template Form"
+      title={templateTypeContent.deleteTitle}
       errorMessage={errorMessage}
       isSubmitting={isSubmitting}
       onCancel={handleClose}

@@ -1,10 +1,16 @@
 import { Alert, Button, DialogActions, DialogContent, DialogTitle, TextField } from '@mui/material';
 import { FunctionComponent, JSX, useEffect, useMemo, useState } from 'react';
 
-import { TemplateFormFormValues, TemplateFormStateProps } from '../api/types';
+import {
+  getTemplateTypeContent,
+  TemplateFormFormValues,
+  TemplateFormStateProps,
+  TemplateType,
+} from '../api/types';
 import TemplateFormEditor from './template-form-editor';
 
 type TemplateFormFormProps = TemplateFormStateProps & {
+  templateType: TemplateType;
   submitError: string;
   onClose: () => void;
   onSubmit: (values: TemplateFormFormValues) => Promise<void>;
@@ -16,6 +22,7 @@ const createInitialValues = (): TemplateFormFormValues => ({
   templateName: '',
   templateContent: '',
   date: null,
+  type: undefined,
 });
 
 const toFormValues = (
@@ -23,7 +30,8 @@ const toFormValues = (
   templateName?: string,
   templateContent?: string,
   id?: string,
-  date?: string | null
+  date?: string | null,
+  type?: TemplateType | null
 ): TemplateFormFormValues =>
   isUpdate
     ? {
@@ -31,14 +39,16 @@ const toFormValues = (
         templateName: templateName || '',
         templateContent: templateContent || '',
         date: date || null,
+        type: type ?? undefined,
       }
     : createInitialValues();
 
 const TemplateFormForm: FunctionComponent<TemplateFormFormProps> = (
   props: TemplateFormFormProps
 ): JSX.Element => {
-  const { state, submitError, onClose, onSubmit, onClearMessages } = props;
+  const { state, templateType, submitError, onClose, onSubmit, onClearMessages } = props;
   const [formValues, setFormValues] = useState<TemplateFormFormValues>(createInitialValues);
+  const templateTypeContent = useMemo(() => getTemplateTypeContent(templateType), [templateType]);
 
   useEffect(() => {
     setFormValues(
@@ -47,7 +57,8 @@ const TemplateFormForm: FunctionComponent<TemplateFormFormProps> = (
         state.selectedItem?.templateName,
         state.selectedItem?.templateContent,
         state.selectedItem?.id,
-        state.selectedItem?.date
+        state.selectedItem?.date,
+        state.selectedItem?.type
       )
     );
   }, [
@@ -57,11 +68,12 @@ const TemplateFormForm: FunctionComponent<TemplateFormFormProps> = (
     state.selectedItem?.templateContent,
     state.selectedItem?.templateName,
     state.selectedItem?.date,
+    state.selectedItem?.type,
   ]);
 
   const dialogTitle = useMemo(
-    () => (state.isUpdate ? 'Edit Template Form' : 'Create Template Form'),
-    [state.isUpdate]
+    () => (state.isUpdate ? templateTypeContent.editTitle : templateTypeContent.createTitle),
+    [state.isUpdate, templateTypeContent]
   );
 
   const handleFieldChange = (field: keyof TemplateFormFormValues, value: string): void => {

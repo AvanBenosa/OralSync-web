@@ -21,6 +21,7 @@ type TemplateFormEditorProps = {
   onChange: (value: string) => void;
   onFocus?: () => void;
   placeholder?: string;
+  label?: string;
 };
 
 type ToolbarAction = {
@@ -36,7 +37,13 @@ const EMPTY_EDITOR_HTML = '<p></p>';
 const TemplateFormEditor: FunctionComponent<TemplateFormEditorProps> = (
   props: TemplateFormEditorProps
 ): JSX.Element => {
-  const { value, onChange, onFocus, placeholder = 'Write your template content here...' } = props;
+  const {
+    value,
+    onChange,
+    onFocus,
+    placeholder = 'Write your template content here...',
+    label = 'Template Content',
+  } = props;
 
   const editor = useEditor({
     extensions: [
@@ -167,7 +174,7 @@ const TemplateFormEditor: FunctionComponent<TemplateFormEditorProps> = (
 
   return (
     <div className={styles.templateEditorField}>
-      <label className={styles.templateEditorLabel}>Template Content</label>
+      <label className={styles.templateEditorLabel}>{label}</label>
 
       <div className={styles.templateEditorShell}>
         <div className={styles.templateEditorToolbar}>

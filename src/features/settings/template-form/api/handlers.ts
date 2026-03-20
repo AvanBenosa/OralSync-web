@@ -5,7 +5,12 @@ import {
   GetTemplateForms,
   UpdateTemplateForm,
 } from './api';
-import { TemplateFormFormValues, TemplateFormModel, TemplateFormStateModel } from './types';
+import {
+  normalizeTemplateType,
+  TemplateFormFormValues,
+  TemplateFormModel,
+  TemplateFormStateModel,
+} from './types';
 
 export const HandleGetTemplateForms = async (
   state: TemplateFormStateModel,
@@ -13,7 +18,10 @@ export const HandleGetTemplateForms = async (
   clinicId?: string | null
 ): Promise<void> => {
   const response = await GetTemplateForms(clinicId);
-  const nextItems = response.items || [];
+  const nextItems = (response.items || []).map((item) => ({
+    ...item,
+    type: normalizeTemplateType(item.type),
+  }));
   const nextSelectedItem =
     nextItems.find((item) => item.id === state.selectedItem?.id) || nextItems[0] || null;
 
@@ -32,16 +40,21 @@ export const HandleCreateTemplateForm = async (
   setState: Dispatch<SetStateAction<TemplateFormStateModel>>
 ): Promise<TemplateFormModel> => {
   const response = await CreateTemplateForm(request);
+  const createdItem: TemplateFormModel = {
+    ...response,
+    type: normalizeTemplateType(response.type ?? request.type),
+  };
+
   setState((prev) => ({
     ...prev,
-    items: [response, ...prev.items],
-    selectedItem: response,
+    items: [createdItem, ...prev.items],
+    selectedItem: createdItem,
     totalItem: prev.totalItem + 1,
     openModal: false,
     isUpdate: false,
     isDelete: false,
   }));
-  return response;
+  return createdItem;
 };
 
 export const HandleUpdateTemplateForm = async (
@@ -50,15 +63,20 @@ export const HandleUpdateTemplateForm = async (
   setState: Dispatch<SetStateAction<TemplateFormStateModel>>
 ): Promise<TemplateFormModel> => {
   const response = await UpdateTemplateForm(request);
+  const updatedItem: TemplateFormModel = {
+    ...response,
+    type: normalizeTemplateType(response.type ?? request.type),
+  };
+
   setState((prev) => ({
     ...prev,
-    items: prev.items.map((item) => (item.id === response.id ? response : item)),
-    selectedItem: response,
+    items: prev.items.map((item) => (item.id === updatedItem.id ? updatedItem : item)),
+    selectedItem: updatedItem,
     openModal: false,
     isUpdate: false,
     isDelete: false,
   }));
-  return response;
+  return updatedItem;
 };
 
 export const HandleDeleteTemplateForm = async (
