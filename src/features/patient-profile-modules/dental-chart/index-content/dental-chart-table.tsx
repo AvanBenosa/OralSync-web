@@ -31,11 +31,13 @@ import TableLoadingSkeleton from '../../../../common/components/TableLoadingSkel
 const CONDITION_COLORS: Record<DentalChartCondition, { fillColor: string; outlineColor: string }> = {
   [DentalChartCondition.Healthy]: { fillColor: '#b9e5c9', outlineColor: '#2f9a58' },
   [DentalChartCondition.Cavity]: { fillColor: '#ffd0d0', outlineColor: '#d84a4a' },
-  [DentalChartCondition.Filled]: { fillColor: '#d7ecff', outlineColor: '#3176c5' },
+  [DentalChartCondition.FilledComposite]: { fillColor: '#d7ecff', outlineColor: '#3176c5' },
+  [DentalChartCondition.FilledAmalgam]: { fillColor: '#d7ecff', outlineColor: '#3176c5' },
+  [DentalChartCondition.FilledTemporary]: { fillColor: '#d7ecff', outlineColor: '#3176c5' },
   [DentalChartCondition.Crown]: { fillColor: '#ffe5b8', outlineColor: '#d28a18' },
   [DentalChartCondition.Missing]: { fillColor: '#ebedf0', outlineColor: '#8a97a5' },
   [DentalChartCondition.Implant]: { fillColor: '#dcd6ff', outlineColor: '#6c5dd3' },
-  [DentalChartCondition.RootCanal]: { fillColor: '#ffe1b9', outlineColor: '#bf6d19' },
+  [DentalChartCondition.RootCanalTreated]: { fillColor: '#ffe1b9', outlineColor: '#bf6d19' },
 };
 
 const getSurfaceSummary = (item: PatientDentalChartModel): string =>

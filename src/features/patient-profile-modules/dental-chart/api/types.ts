@@ -3,11 +3,13 @@ import type { PatientProfileMobileReloadConfig } from '../../../patient-profile/
 export enum DentalChartCondition {
   Healthy = 'Healthy',
   Cavity = 'Cavity',
-  Filled = 'Filled',
+  FilledComposite = 'FilledComposite',
+  FilledTemporary = 'FilledTemporary',
+  FilledAmalgam = 'FilledAmalgam',
   Crown = 'Crown',
   Missing = 'Missing',
   Implant = 'Implant',
-  RootCanal = 'RootCanal',
+  RootCanalTreated = 'RootCanalTreated',
 }
 
 export enum DentalChartSurface {
