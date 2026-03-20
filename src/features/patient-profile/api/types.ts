@@ -22,9 +22,18 @@ export type PatientProfileModel = {
 
 export type PatientEmailRequestModel = {
   patientId?: string;
+  templateFormId?: string;
   recipientEmail: string;
   subject: string;
   body: string;
+  isBodyHtml?: boolean;
+  attachments?: PatientEmailAttachmentRequestModel[];
+};
+
+export type PatientEmailAttachmentRequestModel = {
+  fileName: string;
+  contentType: string;
+  base64Content: string;
 };
 
 export type PatientEmailResponseModel = {
@@ -32,6 +41,7 @@ export type PatientEmailResponseModel = {
   recipientEmail: string;
   subject: string;
   queuedAt: string;
+  attachmentCount?: number;
 };
 
 export type PatientSmsRequestModel = {

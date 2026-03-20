@@ -326,16 +326,6 @@ const PatientFormsForm: FunctionComponent<PatientFormStateProps> = (
       return;
     }
 
-    if (!formValues.formType.trim()) {
-      setSubmitError('Form type is required.');
-      return;
-    }
-
-    if (!formValues.reportTemplate.trim()) {
-      setSubmitError('Report template is required.');
-      return;
-    }
-
     const payload: PatientFormModel = {
       id: formValues.id.trim() || undefined,
       patientInfoId: state.patientId,

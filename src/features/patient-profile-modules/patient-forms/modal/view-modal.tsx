@@ -1,5 +1,4 @@
 import PictureAsPdfRoundedIcon from '@mui/icons-material/PictureAsPdfRounded';
-import PrintRoundedIcon from '@mui/icons-material/PrintRounded';
 import { Button, DialogActions, DialogContent, DialogTitle } from '@mui/material';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
@@ -9,51 +8,51 @@ import { buildPatientFormPdfFileName } from '../api/template-content';
 import { PatientFormStateProps } from '../api/types';
 import { PatientFormReportPreview } from '../index-content/patient-form-report-preview';
 
-const printPreviewDocument = (element: HTMLDivElement | null, title: string): void => {
-  if (!element) {
-    return;
-  }
+// const printPreviewDocument = (element: HTMLDivElement | null, title: string): void => {
+//   if (!element) {
+//     return;
+//   }
 
-  const printWindow = window.open('', '_blank', 'noopener,noreferrer,width=1100,height=800');
-  if (!printWindow) {
-    return;
-  }
+//   const printWindow = window.open('', '_blank', 'noopener,noreferrer,width=1100,height=800');
+//   if (!printWindow) {
+//     return;
+//   }
 
-  printWindow.document.open();
-  printWindow.document.write(`
-    <!doctype html>
-    <html>
-      <head>
-        <title>${title}</title>
-        <style>
-          @page {
-            size: auto;
-            margin: 16mm;
-          }
+//   printWindow.document.open();
+//   printWindow.document.write(`
+//     <!doctype html>
+//     <html>
+//       <head>
+//         <title>${title}</title>
+//         <style>
+//           @page {
+//             size: auto;
+//             margin: 16mm;
+//           }
 
-          body {
-            margin: 0;
-            padding: 24px;
-            background: #ffffff;
-            font-family: Arial, Helvetica, sans-serif;
-          }
+//           body {
+//             margin: 0;
+//             padding: 24px;
+//             background: #ffffff;
+//             font-family: Arial, Helvetica, sans-serif;
+//           }
 
-          img {
-            max-width: 100%;
-          }
-        </style>
-      </head>
-      <body>${element.outerHTML}</body>
-    </html>
-  `);
-  printWindow.document.close();
-  printWindow.focus();
+//           img {
+//             max-width: 100%;
+//           }
+//         </style>
+//       </head>
+//       <body>${element.outerHTML}</body>
+//     </html>
+//   `);
+//   printWindow.document.close();
+//   printWindow.focus();
 
-  setTimeout(() => {
-    printWindow.print();
-    printWindow.close();
-  }, 250);
-};
+//   setTimeout(() => {
+//     printWindow.print();
+//     printWindow.close();
+//   }, 250);
+// };
 
 const downloadPreviewAsPdf = async (
   element: HTMLDivElement | null,
@@ -161,13 +160,13 @@ const PatientFormsViewModal: FunctionComponent<PatientFormStateProps> = (
         >
           {isDownloadingPdf ? 'Preparing PDF...' : 'Download PDF'}
         </Button>
-        <Button
+        {/* <Button
           variant="contained"
           startIcon={<PrintRoundedIcon />}
           onClick={() => printPreviewDocument(reportRef.current, formTitle)}
         >
           Print
-        </Button>
+        </Button> */}
       </DialogActions>
     </>
   );

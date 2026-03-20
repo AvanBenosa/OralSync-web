@@ -1,5 +1,14 @@
 import * as yup from 'yup';
 
+const stripHtmlContent = (value?: string): string =>
+  (value || '')
+    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
 export const patientEmailValidationSchema = yup.object({
   recipientEmail: yup
     .string()
@@ -7,7 +16,15 @@ export const patientEmailValidationSchema = yup.object({
     .email('Enter a valid email address.')
     .required('Recipient email is required.'),
   subject: yup.string().trim().required('Subject is required.').max(150, 'Subject is too long.'),
-  body: yup.string().trim().required('Message is required.').max(5000, 'Message is too long.'),
+  body: yup
+    .string()
+    .required('Message is required.')
+    .test('message-required', 'Message is required.', (value) => stripHtmlContent(value).length > 0)
+    .test(
+      'message-length',
+      'Message is too long.',
+      (value) => stripHtmlContent(value).length <= 10000
+    ),
 });
 
 const isValidPhilippineMobileNumber = (value?: string): boolean => {
@@ -33,10 +50,8 @@ export const patientSmsValidationSchema = yup.object({
     .string()
     .trim()
     .required('Recipient mobile number is required.')
-    .test(
-      'valid-ph-mobile',
-      'Enter a valid Philippine mobile number.',
-      (value) => isValidPhilippineMobileNumber(value)
+    .test('valid-ph-mobile', 'Enter a valid Philippine mobile number.', (value) =>
+      isValidPhilippineMobileNumber(value)
     ),
   body: yup.string().trim().required('Message is required.').max(1000, 'Message is too long.'),
 });
