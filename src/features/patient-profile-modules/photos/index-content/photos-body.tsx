@@ -129,7 +129,9 @@ const PatientDentalPhotoBody: FunctionComponent<PatientDentalPhotoStateProps> = 
                         </TableCell>
                         <TableCell className={sharedStyles.tableBodyCell}>
                           <div className={localStyles.fileCell}>
-                            <span className={localStyles.fileName}>{item.fileName || '--'}</span>
+                            <span className={localStyles.fileName}>
+                              {item.originalFileName || item.fileName || '--'}
+                            </span>
                             <span className={localStyles.fileMeta}>
                               #{item.displayOrder || 1}
                             </span>
@@ -163,13 +165,19 @@ const PatientDentalPhotoBody: FunctionComponent<PatientDentalPhotoStateProps> = 
               <div className={localStyles.previewImageWrap}>
                 <img
                   src={previewUrl}
-                  alt={state.selectedItem.fileName || 'Selected dental photo'}
+                  alt={
+                    state.selectedItem.originalFileName ||
+                    state.selectedItem.fileName ||
+                    'Selected dental photo'
+                  }
                   className={localStyles.previewImage}
                 />
               </div>
               <Box className={localStyles.previewMeta}>
                 <Typography className={localStyles.previewFileName}>
-                  {state.selectedItem.fileName || 'Unnamed image'}
+                  {state.selectedItem.originalFileName ||
+                    state.selectedItem.fileName ||
+                    'Unnamed image'}
                 </Typography>
                 <Typography className={localStyles.previewText}>
                   Condition: {state.selectedItem.condition || '--'}

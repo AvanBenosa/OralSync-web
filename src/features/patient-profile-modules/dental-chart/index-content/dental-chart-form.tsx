@@ -257,6 +257,7 @@ const PatientDentalChartForm: FunctionComponent<PatientDentalChartFormProps> = (
         ...values.images,
         {
           fileName: response.fileName,
+          originalFileName: response.originalFileName || file.name,
           filePath: response.filePath,
           fileType: 2,
           fileMediaType: file.type,
@@ -491,7 +492,11 @@ const PatientDentalChartForm: FunctionComponent<PatientDentalChartFormProps> = (
                                 {previewSrc ? (
                                   <img
                                     src={previewSrc}
-                                    alt={image.fileName || `Tooth image ${index + 1}`}
+                                    alt={
+                                      image.originalFileName ||
+                                      image.fileName ||
+                                      `Tooth image ${index + 1}`
+                                    }
                                     className={localStyles.imagePreview}
                                   />
                                 ) : (
@@ -502,7 +507,7 @@ const PatientDentalChartForm: FunctionComponent<PatientDentalChartFormProps> = (
                               </div>
                               <div className={localStyles.imageCardFooter}>
                                 <Typography variant="caption" className={localStyles.imageFileName}>
-                                  {image.fileName || `Image ${index + 1}`}
+                                  {image.originalFileName || image.fileName || `Image ${index + 1}`}
                                 </Typography>
                                 <button
                                   type="button"

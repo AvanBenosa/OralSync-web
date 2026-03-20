@@ -111,6 +111,7 @@ export type PatientDentalChartImageModel = {
   id?: string;
   patientTeethId?: string;
   fileName?: string;
+  originalFileName?: string;
   filePath?: string;
   fileType?: number;
   fileMediaType?: string;

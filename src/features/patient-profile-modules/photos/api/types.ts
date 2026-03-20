@@ -15,6 +15,7 @@ export type PatientDentalPhotoModel = {
   condition?: DentalChartCondition;
   toothRemarks?: string;
   fileName?: string;
+  originalFileName?: string;
   filePath?: string;
   fileType?: number;
   fileMediaType?: string;

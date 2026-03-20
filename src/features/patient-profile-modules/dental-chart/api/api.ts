@@ -26,6 +26,7 @@ const DENTAL_CHART_RESPONSE_CACHE_TTL_MS = 5000;
 
 export type PatientDentalChartImageUploadResponse = {
   fileName: string;
+  originalFileName: string;
   filePath: string;
 };
 
