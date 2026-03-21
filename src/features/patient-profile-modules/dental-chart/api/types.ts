@@ -26,6 +26,61 @@ export const DENTAL_CHART_SURFACE_OPTIONS = Object.values(DentalChartSurface).fi
   (item) => item !== DentalChartSurface.None
 );
 
+export const toothConditionColors: Record<
+  DentalChartCondition,
+  {
+    fill: string;
+    stroke: string;
+    text: string;
+  }
+> = {
+  [DentalChartCondition.Healthy]: {
+    fill: '#E8F5E9',
+    stroke: '#43A047',
+    text: '#1B5E20',
+  },
+  [DentalChartCondition.Cavity]: {
+    fill: '#FFEBEE',
+    stroke: '#E53935',
+    text: '#B71C1C',
+  },
+  [DentalChartCondition.FilledComposite]: {
+    fill: '#E3F2FD',
+    stroke: '#1E88E5',
+    text: '#0D47A1',
+  },
+  [DentalChartCondition.FilledTemporary]: {
+    fill: '#FFF8E1',
+    stroke: '#F9A825',
+    text: '#F57F17',
+  },
+  [DentalChartCondition.FilledAmalgam]: {
+    fill: '#ECEFF1',
+    stroke: '#607D8B',
+    text: '#37474F',
+  },
+  [DentalChartCondition.Crown]: {
+    fill: '#F3E5F5',
+    stroke: '#8E24AA',
+    text: '#4A148C',
+  },
+  [DentalChartCondition.Missing]: {
+    fill: '#FAFAFA',
+    stroke: '#9E9E9E',
+    text: '#616161',
+  },
+  [DentalChartCondition.Implant]: {
+    fill: '#E0F7FA',
+    stroke: '#00838F',
+    text: '#006064',
+  },
+  [DentalChartCondition.RootCanalTreated]: {
+    fill: '#FFF3E0',
+    stroke: '#FB8C00',
+    text: '#E65100',
+  },
+};
+
 export const getDentalChartConditionLabel = (
   condition?: DentalChartCondition | string
 ): string => {

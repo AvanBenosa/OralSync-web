@@ -26,20 +26,9 @@ import {
   getDentalChartConditionLabel,
   getToothDisplayLabel,
   getToothIdFromToothNumber,
+  toothConditionColors,
 } from '../api/types';
 import TableLoadingSkeleton from '../../../../common/components/TableLoadingSkeleton';
-
-const CONDITION_COLORS: Record<DentalChartCondition, { fillColor: string; outlineColor: string }> = {
-  [DentalChartCondition.Healthy]: { fillColor: '#b9e5c9', outlineColor: '#2f9a58' },
-  [DentalChartCondition.Cavity]: { fillColor: '#ffd0d0', outlineColor: '#d84a4a' },
-  [DentalChartCondition.FilledComposite]: { fillColor: '#d7ecff', outlineColor: '#3176c5' },
-  [DentalChartCondition.FilledAmalgam]: { fillColor: '#d7ecff', outlineColor: '#3176c5' },
-  [DentalChartCondition.FilledTemporary]: { fillColor: '#d7ecff', outlineColor: '#3176c5' },
-  [DentalChartCondition.Crown]: { fillColor: '#ffe5b8', outlineColor: '#d28a18' },
-  [DentalChartCondition.Missing]: { fillColor: '#ebedf0', outlineColor: '#8a97a5' },
-  [DentalChartCondition.Implant]: { fillColor: '#dcd6ff', outlineColor: '#6c5dd3' },
-  [DentalChartCondition.RootCanalTreated]: { fillColor: '#ffe1b9', outlineColor: '#bf6d19' },
-};
 
 const getSurfaceSummary = (item: PatientDentalChartModel): string =>
   item.surfaces
@@ -67,11 +56,39 @@ const buildConditionGroups = (items: PatientDentalChartModel[]): ToothConditionG
       return {
         label: getDentalChartConditionLabel(condition),
         teeth,
-        fillColor: CONDITION_COLORS[condition].fillColor,
-        outlineColor: CONDITION_COLORS[condition].outlineColor,
+        fillColor: toothConditionColors[condition].fill,
+        outlineColor: toothConditionColors[condition].stroke,
       };
     })
     .filter(Boolean) as ToothConditionGroup[];
+
+const renderConditionBadge = (condition?: DentalChartCondition): JSX.Element | string => {
+  if (!condition) {
+    return '--';
+  }
+
+  const colors = toothConditionColors[condition];
+
+  return (
+    <span
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        minHeight: 28,
+        padding: '0 10px',
+        borderRadius: 999,
+        background: colors.fill,
+        border: `1px solid ${colors.stroke}`,
+        color: colors.text,
+        fontSize: 12,
+        fontWeight: 700,
+        lineHeight: 1,
+      }}
+    >
+      {getDentalChartConditionLabel(condition)}
+    </span>
+  );
+};
 
 const getChartStyles = (
   chartLayout: PatientDentalChartStateProps['state']['chartLayout'],
@@ -295,7 +312,7 @@ const PatientDentalChartTable: FunctionComponent<PatientDentalChartStateProps> =
                           </Typography>
                           <div className={sharedStyles.mobileMeta}>
                             <Typography component="span" className={sharedStyles.mobileContact}>
-                              {getDentalChartConditionLabel(item.condition)}
+                              {item.condition ? renderConditionBadge(item.condition) : '--'}
                             </Typography>
                             <Typography component="span" className={sharedStyles.mobileContact}>
                               {getSurfaceSummary(item)}
@@ -310,8 +327,8 @@ const PatientDentalChartTable: FunctionComponent<PatientDentalChartStateProps> =
                   </TableCell>
                   {!isCompact ? (
                     <>
-                    <TableCell className={sharedStyles.tableBodyCell}>
-                        {getDentalChartConditionLabel(item.condition)}
+                      <TableCell className={sharedStyles.tableBodyCell}>
+                        {renderConditionBadge(item.condition)}
                       </TableCell>
                       <TableCell className={sharedStyles.tableBodyCell}>
                         {getSurfaceSummary(item)}

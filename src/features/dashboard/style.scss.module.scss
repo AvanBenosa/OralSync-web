@@ -285,7 +285,7 @@
 
 .metricsGrid {
   display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 14px;
   align-items: stretch;
 }
@@ -309,6 +309,7 @@
   align-items: center;
   gap: 12px;
   min-width: 0;
+  min-height: 92px;
   padding: 18px;
   border: 1px solid rgba(201, 214, 225, 0.92);
   border-radius: 20px;
@@ -390,12 +391,13 @@
 
 .metricValue {
   color: #163d65;
-  font-size: 24px;
+  font-size: clamp(18px, 1.6vw, 24px);
   font-weight: 800;
-  line-height: 1;
-  min-height: 24px;
+  line-height: 1.05;
+  min-height: 20px;
   display: inline-flex;
   align-items: center;
+  min-width: 0;
 }
 
 .chartCard {
@@ -1130,6 +1132,37 @@
 }
 
 @media (max-width: 1100px) {
+  .metricsGrid {
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+  }
+
+  .metricCard {
+    min-height: 84px;
+    padding: 14px;
+    gap: 10px;
+    border-radius: 18px;
+  }
+
+  .metricIconWrap {
+    width: 44px;
+    height: 44px;
+    flex-basis: 44px;
+    border-radius: 14px;
+
+    svg {
+      font-size: 20px !important;
+    }
+  }
+
+  .metricLabel {
+    font-size: 10px;
+  }
+
+  .metricValue {
+    font-size: 20px;
+  }
+
   .chartsGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -1234,23 +1267,8 @@
   }
 
   .metricsGrid {
-    grid-auto-flow: column;
-    grid-auto-columns: minmax(160px, 1fr);
-    grid-template-columns: none;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 8px;
-    overflow-x: auto;
-    overflow-y: hidden;
-    padding-bottom: 2px;
-    scroll-snap-type: x proximity;
-
-    &::-webkit-scrollbar {
-      height: 6px;
-    }
-
-    &::-webkit-scrollbar-thumb {
-      background: rgba(181, 198, 214, 0.95);
-      border-radius: 999px;
-    }
   }
 
   .chartsGrid {
@@ -1263,20 +1281,20 @@
   }
 
   .metricCard {
-    min-width: 160px;
-    padding: 10px 8px;
-    gap: 6px;
+    min-width: 0;
+    min-height: 72px;
+    padding: 10px;
+    gap: 8px;
     border-radius: 14px;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
-    text-align: center;
-    scroll-snap-align: start;
+    text-align: left;
   }
 
   .metricIconWrap {
-    width: 32px;
-    height: 32px;
-    flex-basis: 32px;
+    width: 36px;
+    height: 36px;
+    flex-basis: 36px;
     border-radius: 10px;
 
     svg {
@@ -1286,7 +1304,7 @@
 
   .metricContent {
     gap: 2px;
-    align-items: center;
+    align-items: flex-start;
   }
 
   .metricLabel {
@@ -1470,7 +1488,8 @@
   }
 
   .metricsGrid {
-    gap: 4px;
+    gap: 6px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .chartCardContent {
@@ -1534,7 +1553,8 @@
   }
 
   .metricCard {
-    min-width: 144px;
+    min-width: 0;
+    min-height: 66px;
     padding: 8px 6px;
     gap: 4px;
     border-radius: 12px;
