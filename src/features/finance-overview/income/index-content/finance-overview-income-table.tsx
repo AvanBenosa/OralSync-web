@@ -20,7 +20,6 @@ import TableLoadingSkeleton from '../../../../common/components/TableLoadingSkel
 import { toValidDateDisplay } from '../../../../common/helpers/toValidateDateDisplay';
 import type { FinanceIncomeModel, FinanceIncomeStateProps } from '../api/types';
 import styles from '../../style.scss.module.scss';
-import HighlightText from '../../../../common/components/Highlight';
 
 type PaymentStatus = 'pending' | 'paid';
 
@@ -220,10 +219,7 @@ const FinanceOverviewIncomeTable: FunctionComponent<FinanceIncomeStateProps> = (
                       <div className={styles.mobileRowInline}>
                         <div className={styles.mobileMain}>
                           <Typography component="span" className={styles.mobileName}>
-                            <HighlightText
-                              query={state.search}
-                              text={item.patientName || item.patientNumber || '--'}
-                            />
+                            {item.patientName || item.patientNumber || '--'}
                           </Typography>
                           <div className={styles.mobileMeta}>
                             <Typography component="span" className={styles.mobileContact}>
@@ -245,10 +241,7 @@ const FinanceOverviewIncomeTable: FunctionComponent<FinanceIncomeStateProps> = (
                     ) : (
                       <div>
                         <Typography sx={{ fontWeight: 700, color: '#1f4467' }}>
-                          <HighlightText
-                            query={state.search}
-                            text={item.patientName || item.patientNumber || '--'}
-                          />
+                          {item.patientName || item.patientNumber || '--'}
                         </Typography>
                       </div>
                     )}
