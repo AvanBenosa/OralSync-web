@@ -471,6 +471,7 @@ export const PatientProfileModule: FunctionComponent<PatientProfileProps> = (
               patientId={patientId}
               onRegisterMobileReload={setMobileReload}
               patientLabel={patientInfoLabel}
+              patientProfile={state.profile}
             />
           ) : activeTab === 'photos' ? (
             <PatientDentalPhoto

@@ -164,12 +164,14 @@ export const PatientDentalChart: FunctionComponent<PatientDentalChartProps> = (
                 setState={setState}
                 onReload={handleReload}
                 patientLabel={props.patientLabel}
+                patientProfile={props.patientProfile}
               />
               <div className={sharedStyles.listItem}>
                 <PatientDentalChartTable
                   state={state}
                   setState={setState}
                   patientLabel={props.patientLabel}
+                  patientProfile={props.patientProfile}
                 />
               </div>
             </div>
@@ -184,12 +186,17 @@ export const PatientDentalChart: FunctionComponent<PatientDentalChartProps> = (
         maxWidth={state.isDelete ? 'sm' : 'md'}
       >
         {state.isDelete ? (
-          <PatientDentalChartDeleteModal state={state} setState={setState} />
+          <PatientDentalChartDeleteModal
+            state={state}
+            setState={setState}
+            patientProfile={props.patientProfile}
+          />
         ) : (
           <PatientDentalChartForm
             state={state}
             setState={setState}
             patientLabel={props.patientLabel}
+            patientProfile={props.patientProfile}
           />
         )}
       </Dialog>

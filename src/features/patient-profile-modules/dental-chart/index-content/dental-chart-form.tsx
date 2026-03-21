@@ -20,6 +20,7 @@ import { Odontogram, ToothDetail } from 'react-odontogram';
 
 import localStyles from '../style.scss.module.scss';
 import {
+  DentalChartKind,
   DENTAL_CHART_CONDITION_OPTIONS,
   DENTAL_CHART_SURFACE_OPTIONS,
   DentalChartCondition,
@@ -27,7 +28,9 @@ import {
   PatientDentalChartImageModel,
   PatientDentalChartModel,
   PatientDentalChartStateProps,
+  getDentalChartKind,
   getDentalChartConditionLabel,
+  getDentalChartMaxTeeth,
   getToothDisplayLabel,
   getToothIdFromToothNumber,
   getToothNumberFromToothId,
@@ -58,10 +61,12 @@ type PatientDentalChartFormValues = {
 
 const createInitialValues = (
   selectedItem?: PatientDentalChartModel,
-  selectedToothId?: string
+  selectedToothId?: string,
+  chartKind: DentalChartKind = 'adult'
 ): PatientDentalChartFormValues => ({
   id: selectedItem?.id || '',
-  toothId: getToothIdFromToothNumber(selectedItem?.toothNumber) || selectedToothId || '',
+  toothId:
+    getToothIdFromToothNumber(selectedItem?.toothNumber, chartKind) || selectedToothId || '',
   condition: selectedItem?.condition || '',
   remarks: selectedItem?.remarks || '',
   surfaces: (selectedItem?.surfaces || [])
@@ -75,11 +80,12 @@ const createInitialValues = (
 const PatientDentalChartForm: FunctionComponent<PatientDentalChartFormProps> = (
   props: PatientDentalChartFormProps
 ): JSX.Element => {
-  const { state, setState, patientLabel } = props;
+  const { state, setState, patientLabel, patientProfile } = props;
   const [imagePreviewMap, setImagePreviewMap] = useState<Record<string, string>>({});
   const [selectedFileName, setSelectedFileName] = useState<string>('');
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [uploadError, setUploadError] = useState('');
+  const chartKind = getDentalChartKind(patientProfile);
 
   const dialogTitle = useMemo(
     () => (state.isUpdate ? 'Update Dental Chart Item' : 'Add Dental Chart Item'),
@@ -186,7 +192,7 @@ const PatientDentalChartForm: FunctionComponent<PatientDentalChartFormProps> = (
   };
 
   const handleSubmit = async (values: PatientDentalChartFormValues): Promise<void> => {
-    const toothNumber = getToothNumberFromToothId(values.toothId);
+    const toothNumber = getToothNumberFromToothId(values.toothId, chartKind);
 
     if (!toothNumber) {
       throw new Error('Please select a tooth from the chart.');
@@ -234,7 +240,7 @@ const PatientDentalChartForm: FunctionComponent<PatientDentalChartFormProps> = (
       return;
     }
 
-    const toothNumber = getToothNumberFromToothId(values.toothId);
+    const toothNumber = getToothNumberFromToothId(values.toothId, chartKind);
     if (!state.patientId || !toothNumber) {
       setUploadError('Please select a tooth before uploading images.');
       event.target.value = '';
@@ -315,7 +321,7 @@ const PatientDentalChartForm: FunctionComponent<PatientDentalChartFormProps> = (
       <Formik
         enableReinitialize
         validateOnChange={false}
-        initialValues={createInitialValues(state.selectedItem, state.selectedToothId)}
+        initialValues={createInitialValues(state.selectedItem, state.selectedToothId, chartKind)}
         onSubmit={async (values, { setSubmitting, setStatus }): Promise<void> => {
           setStatus(undefined);
 
@@ -365,21 +371,46 @@ const PatientDentalChartForm: FunctionComponent<PatientDentalChartFormProps> = (
                       <h4 className={localStyles.toothPickerTitle}>Tooth Picker</h4>
                     </div>
                     <span className={localStyles.toothPickerValue}>
-                      {getToothDisplayLabel(getToothNumberFromToothId(values.toothId))}
+                      {getToothDisplayLabel(
+                        getToothNumberFromToothId(values.toothId, chartKind),
+                        chartKind
+                      )}
                     </span>
                   </div>
                   <div className={localStyles.toothPickerChart}>
                     <Odontogram
-                      key={values.toothId || 'empty-tooth-selection'}
+                      key={`${chartKind}-${values.toothId || 'empty-tooth-selection'}`}
                       singleSelect
                       notation="Universal"
                       layout="square"
+                      maxTeeth={getDentalChartMaxTeeth(chartKind)}
                       defaultSelected={values.toothId ? [values.toothId] : []}
+                      tooltip={{
+                        placement: 'top',
+                        content: (payload): JSX.Element | null => {
+                          if (!payload) {
+                            return null;
+                          }
+
+                          return (
+                            <>
+                              <div>
+                                Tooth:{' '}
+                                {getToothDisplayLabel(
+                                  getToothNumberFromToothId(payload.id, chartKind),
+                                  chartKind
+                                )}
+                              </div>
+                              <div>Type: {payload.type}</div>
+                            </>
+                          );
+                        },
+                      }}
                       onChange={(selectedTeeth: ToothDetail[]): void => {
                         const selectedTooth = selectedTeeth[selectedTeeth.length - 1];
                         setFieldValue('toothId', selectedTooth?.id || '');
                       }}
-                      styles={{ minWidth: 1080 }}
+                      styles={{ minWidth: chartKind === 'child' ? 760 : 1080 }}
                     />
                   </div>
                 </div>
@@ -399,7 +430,10 @@ const PatientDentalChartForm: FunctionComponent<PatientDentalChartFormProps> = (
                     <TextField
                       label="Tooth"
                       name="tooth"
-                      value={getToothDisplayLabel(getToothNumberFromToothId(values.toothId))}
+                      value={getToothDisplayLabel(
+                        getToothNumberFromToothId(values.toothId, chartKind),
+                        chartKind
+                      )}
                       fullWidth
                       size="small"
                       disabled

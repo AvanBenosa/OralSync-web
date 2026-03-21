@@ -6,28 +6,33 @@ import DeleteConfirmModalContent from '../../../../common/modal/modal';
 import {
   PatientDentalChartModel,
   PatientDentalChartStateProps,
+  getDentalChartKind,
   getToothDisplayLabel,
 } from '../api/types';
 import { HandleDeletePatientDentalChartItem } from '../api/handlers';
 
-const formatDentalChartLabel = (item?: PatientDentalChartModel): string => {
+const formatDentalChartLabel = (
+  item?: PatientDentalChartModel,
+  chartKind: 'adult' | 'child' = 'adult'
+): string => {
   if (!item?.toothNumber) {
     return 'this dental chart item';
   }
 
-  return getToothDisplayLabel(item.toothNumber);
+  return getToothDisplayLabel(item.toothNumber, chartKind);
 };
 
 const PatientDentalChartDeleteModal: FunctionComponent<PatientDentalChartStateProps> = (
   props: PatientDentalChartStateProps
 ): JSX.Element => {
-  const { state, setState } = props;
+  const { state, setState, patientProfile } = props;
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string>('');
+  const chartKind = getDentalChartKind(patientProfile);
 
   const chartItemLabel = useMemo(
-    () => formatDentalChartLabel(state.selectedItem),
-    [state.selectedItem]
+    () => formatDentalChartLabel(state.selectedItem, chartKind),
+    [chartKind, state.selectedItem]
   );
 
   const handleClose = (): void => {

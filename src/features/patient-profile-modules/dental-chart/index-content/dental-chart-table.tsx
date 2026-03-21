@@ -21,11 +21,15 @@ import sharedStyles from '../../styles.module.scss';
 import localStyles from '../style.scss.module.scss';
 import {
   DentalChartCondition,
+  DentalChartKind,
   PatientDentalChartModel,
   PatientDentalChartStateProps,
+  getDentalChartKind,
   getDentalChartConditionLabel,
+  getDentalChartMaxTeeth,
   getToothDisplayLabel,
   getToothIdFromToothNumber,
+  getToothNumberFromToothId,
   toothConditionColors,
 } from '../api/types';
 import TableLoadingSkeleton from '../../../../common/components/TableLoadingSkeleton';
@@ -41,12 +45,15 @@ const getTooltipRemarks = (remarks?: string): string => {
   return value ? value : '--';
 };
 
-const buildConditionGroups = (items: PatientDentalChartModel[]): ToothConditionGroup[] =>
+const buildConditionGroups = (
+  items: PatientDentalChartModel[],
+  chartKind: DentalChartKind
+): ToothConditionGroup[] =>
   Object.values(DentalChartCondition)
     .map((condition) => {
       const teeth = items
         .filter((item) => item.condition === condition)
-        .map((item) => getToothIdFromToothNumber(item.toothNumber))
+        .map((item) => getToothIdFromToothNumber(item.toothNumber, chartKind))
         .filter(Boolean) as string[];
 
       if (teeth.length === 0) {
@@ -93,32 +100,37 @@ const renderConditionBadge = (condition?: DentalChartCondition): JSX.Element | s
 const getChartStyles = (
   chartLayout: PatientDentalChartStateProps['state']['chartLayout'],
   circleHalf: PatientDentalChartStateProps['state']['circleHalf'],
-  circleZoom: PatientDentalChartStateProps['state']['circleZoom']
+  circleZoom: PatientDentalChartStateProps['state']['circleZoom'],
+  chartKind: DentalChartKind
 ): Record<string, string | number> =>
   chartLayout === 'circle'
     ? circleHalf === 'full'
       ? { width: `${Math.round(420 * circleZoom)}px` }
       : { width: 'clamp(280px, 74%, 520px)' }
-    : { minWidth: 940 };
+    : { minWidth: chartKind === 'child' ? 720 : 940 };
 
 const PatientDentalChartTable: FunctionComponent<PatientDentalChartStateProps> = (
   props: PatientDentalChartStateProps
 ): JSX.Element => {
-  const { state, setState } = props;
+  const { state, setState, patientProfile } = props;
   const theme = useTheme();
   const isCompact = useMediaQuery(theme.breakpoints.down('md'));
+  const chartKind = getDentalChartKind(patientProfile);
   const showRemarksColumn = state.chartLayout !== 'circle';
   const columnCount = isCompact ? 1 : showRemarksColumn ? 5 : 4;
 
-  const conditionGroups = useMemo(() => buildConditionGroups(state.items), [state.items]);
+  const conditionGroups = useMemo(
+    () => buildConditionGroups(state.items, chartKind),
+    [chartKind, state.items]
+  );
   const itemByToothId = useMemo(
     () =>
       new Map(
         state.items
-          .map((item) => [getToothIdFromToothNumber(item.toothNumber), item] as const)
+          .map((item) => [getToothIdFromToothNumber(item.toothNumber, chartKind), item] as const)
           .filter(([toothId]) => Boolean(toothId))
       ),
-    [state.items]
+    [chartKind, state.items]
   );
 
   const handleChartSelect = (selectedTeeth: ToothDetail[]): void => {
@@ -130,7 +142,7 @@ const PatientDentalChartTable: FunctionComponent<PatientDentalChartStateProps> =
     }
 
     const selectedItem = state.items.find(
-      (item) => getToothIdFromToothNumber(item.toothNumber) === selectedToothId
+      (item) => getToothIdFromToothNumber(item.toothNumber, chartKind) === selectedToothId
     );
 
     setState({
@@ -194,12 +206,15 @@ const PatientDentalChartTable: FunctionComponent<PatientDentalChartStateProps> =
       </div>
       <div className={localStyles.chartPreview}>
         <Odontogram
-          key={`dental-chart-preview-${state.chartLayout}-${state.circleHalf}-${state.openModal ? 'open' : 'closed'}-${state.selectedToothId || 'none'}`}
+          key={`dental-chart-preview-${chartKind}-${state.chartLayout}-${state.circleHalf}-${
+            state.openModal ? 'open' : 'closed'
+          }-${state.selectedToothId || 'none'}`}
           notation="Universal"
           teethConditions={conditionGroups}
           showLabels
           layout={state.chartLayout}
           showHalf={state.chartLayout === 'circle' ? state.circleHalf : 'full'}
+          maxTeeth={getDentalChartMaxTeeth(chartKind)}
           tooltip={{
             placement: 'top',
             content: (payload): JSX.Element | null => {
@@ -211,18 +226,21 @@ const PatientDentalChartTable: FunctionComponent<PatientDentalChartStateProps> =
 
               return (
                 <>
-                  <div>Tooth: {payload.notations.universal}</div>
-                  <div>Type: {payload.type}</div>
                   <div>
-                    Universal: {payload.notations.universal}, Palmer: {payload.notations.palmer}
+                    Tooth:{' '}
+                    {getToothDisplayLabel(
+                      getToothNumberFromToothId(payload.id, chartKind),
+                      chartKind
+                    )}
                   </div>
+                  <div>Type: {payload.type}</div>
                   <div>Remarks: {getTooltipRemarks(item?.remarks)}</div>
                 </>
               );
             },
           }}
           onChange={handleChartSelect}
-          styles={getChartStyles(state.chartLayout, state.circleHalf, state.circleZoom)}
+          styles={getChartStyles(state.chartLayout, state.circleHalf, state.circleZoom, chartKind)}
         />
       </div>
     </div>
@@ -308,7 +326,7 @@ const PatientDentalChartTable: FunctionComponent<PatientDentalChartStateProps> =
                       <div className={sharedStyles.mobileRowInline}>
                         <div className={sharedStyles.mobileMain}>
                           <Typography component="span" className={sharedStyles.mobileName}>
-                            {getToothDisplayLabel(item.toothNumber)}
+                            {getToothDisplayLabel(item.toothNumber, chartKind)}
                           </Typography>
                           <div className={sharedStyles.mobileMeta}>
                             <Typography component="span" className={sharedStyles.mobileContact}>
@@ -319,10 +337,12 @@ const PatientDentalChartTable: FunctionComponent<PatientDentalChartStateProps> =
                             </Typography>
                           </div>
                         </div>
-                        <div className={sharedStyles.mobileActions}>{renderActionButtons(item)}</div>
+                        <div className={sharedStyles.mobileActions}>
+                          {renderActionButtons(item)}
+                        </div>
                       </div>
                     ) : (
-                      getToothDisplayLabel(item.toothNumber)
+                      getToothDisplayLabel(item.toothNumber, chartKind)
                     )}
                   </TableCell>
                   {!isCompact ? (
@@ -352,18 +372,16 @@ const PatientDentalChartTable: FunctionComponent<PatientDentalChartStateProps> =
     </div>
   );
 
-  return (
-    state.chartLayout === 'circle' && !isCompact ? (
-      <div className={localStyles.circlePageLayout}>
-        <div className={localStyles.circlePageChartPane}>{chartPanel}</div>
-        <div className={localStyles.circlePageTablePane}>{tablePanel}</div>
-      </div>
-    ) : (
-      <>
-        {chartPanel}
-        {tablePanel}
-      </>
-    )
+  return state.chartLayout === 'circle' && !isCompact ? (
+    <div className={localStyles.circlePageLayout}>
+      <div className={localStyles.circlePageChartPane}>{chartPanel}</div>
+      <div className={localStyles.circlePageTablePane}>{tablePanel}</div>
+    </div>
+  ) : (
+    <>
+      {chartPanel}
+      {tablePanel}
+    </>
   );
 };
 
