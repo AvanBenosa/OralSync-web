@@ -22,6 +22,13 @@ import styles from '../style.scss.module.scss';
 import { AppointmentModel, AppointmentStateProps } from '../api/types';
 import HighlightText from '../../../../common/components/Highlight';
 
+type AppointmentStatusTone =
+  | 'pending'
+  | 'scheduled'
+  | 'completed'
+  | 'cancelled'
+  | 'noShow';
+
 const formatAppointmentDate = (value?: string | Date, format: string = 'MMM DD, YYYY, hh:mm A') =>
   toValidDateDisplay(value, format);
 
@@ -52,42 +59,34 @@ const formatAppointmentLabel = (value?: string): string => {
     .replace(/^no show$/i, 'No Show');
 };
 
-const getAppointmentTimingStatus = (item: AppointmentModel): 'today' | 'past' | undefined => {
-  if (!item.appointmentDateFrom) {
+const getAppointmentStatusTone = (status?: string): AppointmentStatusTone | undefined => {
+  if (!status?.trim()) {
     return undefined;
   }
 
-  const fromDate =
-    item.appointmentDateFrom instanceof Date
-      ? item.appointmentDateFrom
-      : new Date(item.appointmentDateFrom);
+  const normalizedValue = status.trim().toLowerCase().replace(/[\s-]+/g, '');
 
-  if (Number.isNaN(fromDate.getTime())) {
-    return undefined;
+  if (normalizedValue === 'pending') {
+    return 'pending';
   }
 
-  const now = new Date();
-  const isSameDay =
-    fromDate.getFullYear() === now.getFullYear() &&
-    fromDate.getMonth() === now.getMonth() &&
-    fromDate.getDate() === now.getDate();
-
-  if (!isSameDay) {
-    return undefined;
+  if (normalizedValue === 'scheduled') {
+    return 'scheduled';
   }
 
-  const toDate =
-    item.appointmentDateTo instanceof Date
-      ? item.appointmentDateTo
-      : item.appointmentDateTo
-      ? new Date(item.appointmentDateTo)
-      : fromDate;
-
-  if (!Number.isNaN(toDate.getTime()) && toDate.getTime() <= now.getTime()) {
-    return 'past';
+  if (normalizedValue === 'completed') {
+    return 'completed';
   }
 
-  return 'today';
+  if (normalizedValue === 'cancelled' || normalizedValue === 'canceled') {
+    return 'cancelled';
+  }
+
+  if (normalizedValue === 'noshow') {
+    return 'noShow';
+  }
+
+  return undefined;
 };
 
 const AppointmentTable: FunctionComponent<AppointmentStateProps> = (
@@ -97,7 +96,55 @@ const AppointmentTable: FunctionComponent<AppointmentStateProps> = (
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
-  const columnCount = isMobile ? 1 : 5;
+  const columnCount = isMobile ? 1 : 6;
+
+  const getStatusRowClassName = (statusTone?: AppointmentStatusTone): string | undefined => {
+    if (statusTone === 'pending') {
+      return styles.pendingAppointmentRow;
+    }
+
+    if (statusTone === 'scheduled') {
+      return styles.scheduledAppointmentRow;
+    }
+
+    if (statusTone === 'completed') {
+      return styles.completedAppointmentRow;
+    }
+
+    if (statusTone === 'cancelled') {
+      return styles.cancelledAppointmentRow;
+    }
+
+    if (statusTone === 'noShow') {
+      return styles.noShowAppointmentRow;
+    }
+
+    return undefined;
+  };
+
+  const getStatusPillClassName = (statusTone?: AppointmentStatusTone): string | undefined => {
+    if (statusTone === 'pending') {
+      return styles.pendingStatusPill;
+    }
+
+    if (statusTone === 'scheduled') {
+      return styles.scheduledStatusPill;
+    }
+
+    if (statusTone === 'completed') {
+      return styles.completedStatusPill;
+    }
+
+    if (statusTone === 'cancelled') {
+      return styles.cancelledStatusPill;
+    }
+
+    if (statusTone === 'noShow') {
+      return styles.noShowStatusPill;
+    }
+
+    return undefined;
+  };
 
   const renderActionButtons = (item: AppointmentModel): JSX.Element => (
     <div className={`${styles.buttonContainer} ${styles.tableButtonContainer}`}>
@@ -166,6 +213,7 @@ const AppointmentTable: FunctionComponent<AppointmentStateProps> = (
                 { width: '70%' },
                 { width: '58%' },
                 { kind: 'rounded', width: 108, height: 24 },
+                { width: '42%' },
                 { kind: 'actions', align: 'right' },
               ]}
               mobileConfig={{
@@ -192,66 +240,80 @@ const AppointmentTable: FunctionComponent<AppointmentStateProps> = (
               </TableCell>
             </TableRow>
           ) : (
-            state.items.map((item, index) => (
-              <TableRow
-                hover
-                key={item.id ?? `appointment-${index}`}
-                className={
-                  getAppointmentTimingStatus(item) === 'today'
-                    ? styles.todayAppointmentRow
-                    : getAppointmentTimingStatus(item) === 'past'
-                    ? styles.pastAppointmentRow
-                    : undefined
-                }
-              >
-                <TableCell className={styles.tableBodyCell}>
-                  {isMobile ? (
-                    <div className={styles.mobileRowInline}>
-                      <div className={styles.mobileMain}>
-                        <Typography component="span" className={styles.mobileName}>
+            state.items.map((item, index) => {
+              const statusTone = getAppointmentStatusTone(item.status);
+              const statusLabel = formatAppointmentLabel(item.status);
+              const statusPillClassName = getStatusPillClassName(statusTone);
+
+              return (
+                <TableRow
+                  hover
+                  key={item.id ?? `appointment-${index}`}
+                  className={getStatusRowClassName(statusTone)}
+                >
+                  <TableCell className={styles.tableBodyCell}>
+                    {isMobile ? (
+                      <div className={styles.mobileRowInline}>
+                        <div className={styles.mobileMain}>
+                          <Typography component="span" className={styles.mobileName}>
+                            <HighlightText query={state.search} text={item.patientName} />
+                          </Typography>
+                          <div className={styles.mobileMeta}>
+                            <Typography component="span" className={styles.mobileContact}>
+                              {formatAppointmentRange(item)}
+                            </Typography>
+                            {statusPillClassName ? (
+                              <span className={`${styles.statusPill} ${statusPillClassName}`}>
+                                {statusLabel}
+                              </span>
+                            ) : (
+                              <Typography component="span" className={styles.mobileContact}>
+                                {statusLabel}
+                              </Typography>
+                            )}
+                          </div>
+                        </div>
+                        <div className={styles.mobileActions}>{renderActionButtons(item)}</div>
+                      </div>
+                    ) : (
+                      <div>
+                        <Typography sx={{ fontWeight: 700, color: '#1f4467' }}>
                           <HighlightText query={state.search} text={item.patientName} />
                         </Typography>
-                        <Typography component="span" className={styles.mobileContact}>
-                          {formatAppointmentRange(item)}
-                        </Typography>
-                        <Typography component="span" className={styles.mobileStatus}>
-                          {formatAppointmentLabel(item.status)}
+                        <Typography sx={{ fontSize: 12, color: '#6f8297' }}>
+                          {item.patientNumber || '--'}
                         </Typography>
                       </div>
-                      <div className={styles.mobileActions}>{renderActionButtons(item)}</div>
-                    </div>
-                  ) : (
-                    <div>
-                      <Typography sx={{ fontWeight: 700, color: '#1f4467' }}>
-                        <HighlightText query={state.search} text={item.patientName} />
-                      </Typography>
-                      <Typography sx={{ fontSize: 12, color: '#6f8297' }}>
-                        {item.patientNumber || '--'}
-                      </Typography>
-                    </div>
-                  )}
-                </TableCell>
-                {!isMobile ? (
-                  <>
-                    <TableCell className={styles.tableBodyCell}>
-                      {formatAppointmentRange(item)}
-                    </TableCell>
-                    <TableCell className={styles.tableBodyCell}>
-                      {item.reasonForVisit || '--'}
-                    </TableCell>
-                    <TableCell className={styles.tableBodyCell}>
-                      {formatAppointmentLabel(item.status)}
-                    </TableCell>
-                    <TableCell className={styles.tableBodyCell}>
-                      {formatAppointmentLabel(item.appointmentType)}
-                    </TableCell>
-                    <TableCell className={styles.tableBodyCell} align="right">
-                      {renderActionButtons(item)}
-                    </TableCell>
-                  </>
-                ) : null}
-              </TableRow>
-            ))
+                    )}
+                  </TableCell>
+                  {!isMobile ? (
+                    <>
+                      <TableCell className={styles.tableBodyCell}>
+                        {formatAppointmentRange(item)}
+                      </TableCell>
+                      <TableCell className={styles.tableBodyCell}>
+                        {item.reasonForVisit || '--'}
+                      </TableCell>
+                      <TableCell className={styles.tableBodyCell}>
+                        {statusPillClassName ? (
+                          <span className={`${styles.statusPill} ${statusPillClassName}`}>
+                            {statusLabel}
+                          </span>
+                        ) : (
+                          statusLabel
+                        )}
+                      </TableCell>
+                      <TableCell className={styles.tableBodyCell}>
+                        {formatAppointmentLabel(item.appointmentType)}
+                      </TableCell>
+                      <TableCell className={styles.tableBodyCell} align="right">
+                        {renderActionButtons(item)}
+                      </TableCell>
+                    </>
+                  ) : null}
+                </TableRow>
+              );
+            })
           )}
         </TableBody>
       </Table>

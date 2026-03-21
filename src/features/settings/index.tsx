@@ -1,7 +1,7 @@
 import { FunctionComponent, JSX, useEffect, useMemo, useRef, useState } from 'react';
 import BusinessRoundedIcon from '@mui/icons-material/BusinessRounded';
 import ConstructionRoundedIcon from '@mui/icons-material/ConstructionRounded';
-import HardwareRoundedIcon from '@mui/icons-material/HardwareRounded';
+import MapRoundedIcon from '@mui/icons-material/MapRounded';
 import PersonAddAlt1RoundedIcon from '@mui/icons-material/PersonAddAlt1Rounded';
 import { useSearchParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
@@ -21,7 +21,7 @@ import SettingsHeader from './index-content/settings-header';
 import styles from './style.scss.module.scss';
 import { SettingsProps } from './types';
 
-type SettingsTabId = 'clinic-profile' | 'create-user' | 'build-up' | 'data-converter';
+type SettingsTabId = 'clinic-profile' | 'create-user' | 'build-up' | 'data-mapping';
 
 const SettingsModule: FunctionComponent<SettingsProps> = (props: SettingsProps): JSX.Element => {
   const { clinicId } = props;
@@ -85,10 +85,10 @@ const SettingsModule: FunctionComponent<SettingsProps> = (props: SettingsProps):
           'Use this tab for clinic build up details, setup options, and operational configuration items.',
       },
       {
-        id: 'data-converter' as const,
-        label: 'Data converter',
-        icon: <HardwareRoundedIcon />,
-        title: 'Data converter',
+        id: 'data-mapping' as const,
+        label: 'Data Mapping',
+        icon: <MapRoundedIcon />,
+        title: 'Data Mapping',
         description:
           'Use this tab for clinic build up details, setup options, and operational configuration items.',
       },
@@ -284,7 +284,7 @@ const SettingsModule: FunctionComponent<SettingsProps> = (props: SettingsProps):
             {activeTab === 'build-up' ? (
               <BuildUp state={templateFormState} setState={setTemplateFormState} />
             ) : null}
-            {activeTab === 'data-converter' ? <DataConverter /> : null}
+            {activeTab === 'data-mapping' ? <DataConverter /> : null}
           </section>
         </div>
       </div>
