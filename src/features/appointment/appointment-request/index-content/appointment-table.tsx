@@ -119,7 +119,7 @@ const AppointmentTable: FunctionComponent<AppointmentStateProps> = (
 ): JSX.Element => {
   const { state, setState } = props;
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   const columnCount = isMobile ? 1 : 5;
 
@@ -237,6 +237,9 @@ const AppointmentTable: FunctionComponent<AppointmentStateProps> = (
                         </Typography>
                         <Typography component="span" className={styles.mobileContact}>
                           {formatAppointmentRange(item)}
+                        </Typography>
+                        <Typography component="span" className={styles.mobileStatus}>
+                          {formatAppointmentLabel(item.status)}
                         </Typography>
                       </div>
                       <div className={styles.mobileActions}>{renderActionButtons(item)}</div>

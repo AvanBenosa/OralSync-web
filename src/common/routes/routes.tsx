@@ -9,6 +9,7 @@ import LogoutThankYou from '../../features/login/logout-thank-you';
 import PatientModule from '../../features/patient';
 import PatientProfileModule from '../../features/patient-profile';
 import AppointmentModule from '../../features/appointment/appointment-request';
+import FinanceOverview from '../../features/finance-overview';
 import SettingsModule from '../../features/settings';
 import AdminDashboard from '../../features/admin-portal/dashboard';
 import ClinicLockModule from '../../features/admin-portal/clinic-locks';
@@ -33,6 +34,10 @@ const AppRoutes = () => {
           <Route path="/dashboard" element={<UserIndexPage clinicId={user?.clinicId ?? undefined} />} />
           <Route path="/patient" element={<PatientModule clinicId={user?.clinicId ?? undefined} />} />
           <Route path="/appointment" element={<AppointmentModule clinicId={user?.clinicId ?? undefined} />} />
+          <Route
+            path="/finance-overview"
+            element={<FinanceOverview clinicId={user?.clinicId ?? undefined} />}
+          />
           <Route path="/settings" element={<SettingsModule clinicId={user?.clinicId ?? undefined} />} />
           <Route path="/patient-profile/:patientId" element={<PatientProfileModule clinicId={user?.clinicId ?? undefined} />} />
         </Route>

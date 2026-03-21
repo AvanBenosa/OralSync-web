@@ -26,7 +26,7 @@ export const GetPatientProgressNoteItems = async (
   patientId?: string,
   forceRefresh: boolean = false
 ): Promise<PatientProgressNoteModel[]> => {
-  const requestKey = patientId?.trim() || 'current-patient';
+  const requestKey = patientId?.trim() ? `patient:${patientId.trim()}` : 'clinic-progress-notes';
 
   if (forceRefresh) {
     progressNoteResponseCache.delete(requestKey);
@@ -48,9 +48,11 @@ export const GetPatientProgressNoteItems = async (
   const request = (async (): Promise<PatientProgressNoteModel[]> => {
     try {
       const response = await apiClient.get<PatientProgressNoteModel[]>(PROGRESS_NOTE_ENDPOINT, {
-        params: {
-          PatientInfoId: patientId,
-        },
+        params: patientId?.trim()
+          ? {
+              PatientInfoId: patientId,
+            }
+          : undefined,
       });
 
       const responseData = SuccessResponse(response, ResponseMethod.Fetch, undefined, false) || [];

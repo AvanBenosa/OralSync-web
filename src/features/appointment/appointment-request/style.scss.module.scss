@@ -26,6 +26,7 @@
 }
 
 .listHeader {
+  position: relative;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -37,7 +38,18 @@
   box-shadow: 0 16px 40px rgba(28, 56, 86, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
+.listHeader::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(135deg, rgba(59, 117, 172, 0.06), transparent 42%);
+}
+
 .headerTabsSection {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -46,6 +58,8 @@
 }
 
 .headerInfo {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -138,6 +152,8 @@
 }
 
 .headerActions {
+  position: relative;
+  z-index: 1;
   display: flex;
   justify-content: flex-end;
   align-items: center;
@@ -206,6 +222,7 @@
   width: 100%;
   min-width: 0;
   justify-content: flex-end;
+  flex-wrap: wrap;
 }
 
 .searchInput {
@@ -218,6 +235,26 @@
   color: #324b63;
   font-size: 13px;
   outline: none;
+  transition: border-color 120ms ease, box-shadow 120ms ease, background-color 120ms ease;
+
+  &::placeholder {
+    color: #8493a1;
+  }
+
+  &:focus {
+    border-color: #6b9ac9;
+    background: #ffffff;
+    box-shadow: 0 0 0 4px rgba(75, 130, 186, 0.12);
+  }
+}
+
+.headerActionControls {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex: 0 1 auto;
+  min-width: 0;
 }
 
 .reloadButton {
@@ -256,8 +293,11 @@
 .buttonContainer {
   display: flex;
   align-items: center;
+  justify-content: flex-start;
+  width: auto;
   gap: 8px;
-  flex-shrink: 0;
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .actionPillButton {
@@ -274,10 +314,17 @@
   color: #ffffff;
   font-size: 14px;
   font-weight: 700;
-  transition: transform 120ms ease, box-shadow 120ms ease;
+  letter-spacing: -0.01em;
+  transition: transform 120ms ease, box-shadow 120ms ease, filter 120ms ease,
+    border-color 120ms ease;
 
   &:hover {
     transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(0);
+    filter: saturate(0.96);
   }
 }
 
@@ -293,6 +340,9 @@
 }
 
 .listItem {
+  position: relative;
+  display: flex;
+  flex-direction: column;
   flex: 1 1 auto;
   min-height: 0;
   max-height: calc(100vh - 170px);
@@ -382,6 +432,14 @@
     border-bottom: 1px solid rgba(220, 228, 236, 0.95);
     background: linear-gradient(180deg, #f9fbfd 0%, #eef4f8 100%);
   }
+
+  :global(.MuiTableBody-root .MuiTableRow-root:hover) {
+    background: rgba(236, 244, 251, 0.65);
+  }
+
+  :global(.MuiTableBody-root .MuiTableRow-root:last-child .MuiTableCell-root) {
+    border-bottom: 0;
+  }
 }
 
 .tableHeaderCell {
@@ -431,6 +489,17 @@
   border: 1px solid transparent;
   border-radius: 12px;
   cursor: pointer;
+  transition: transform 120ms ease, box-shadow 120ms ease, filter 120ms ease,
+    border-color 120ms ease;
+
+  &:hover {
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(0);
+    filter: saturate(0.96);
+  }
 }
 
 .tableActionButton {
@@ -442,11 +511,13 @@
 .editButton {
   border-color: #a8c3dc;
   background: linear-gradient(180deg, #f0f7ff 0%, #dcecff 100%);
+  box-shadow: 0 8px 14px rgba(72, 124, 176, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.7);
 }
 
 .deleteButton {
   border-color: #ecc2ca;
   background: linear-gradient(180deg, #fff2f4 0%, #ffe1e6 100%);
+  box-shadow: 0 8px 14px rgba(186, 75, 99, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.7);
 }
 
 .iconEdit {
@@ -478,17 +549,45 @@
   color: #1f4467 !important;
   font-size: 16px !important;
   font-weight: 700 !important;
+  line-height: 1.2 !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .mobileContact {
   margin: 0 !important;
   color: #6f8297 !important;
   font-size: 12px !important;
+  line-height: 1.2 !important;
+}
+
+.mobileStatus {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  min-height: 24px;
+  padding: 0 10px;
+  border: 1px solid rgba(47, 109, 179, 0.18);
+  border-radius: 999px;
+  background: rgba(47, 109, 179, 0.1);
+  color: #24598b !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.01em;
+  line-height: 1 !important;
+  white-space: nowrap;
 }
 
 .mobileActions {
   display: flex;
   justify-content: flex-end;
+  flex: 0 0 auto;
+}
+
+.mobileActions .buttonContainer {
+  width: auto;
+  gap: 6px;
 }
 
 .emptyState {
@@ -976,18 +1075,67 @@
 @media (max-width: 1100px) {
   .listHeader {
     flex-wrap: wrap;
-    align-items: flex-start;
+    align-items: stretch;
+  }
+
+  .headerInfo {
+    flex: 1 1 100%;
   }
 
   .headerTabsSection {
     width: 100%;
     order: 3;
-    justify-content: flex-start;
+    justify-content: stretch;
   }
 
   .headerActions {
     width: 100%;
     flex: 1 1 100%;
+    order: 2;
+  }
+
+  .searchForm {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    padding: 6px;
+    border-radius: 16px;
+    justify-content: stretch;
+  }
+
+  .searchInput {
+    width: 100%;
+    min-width: 0;
+    max-width: none;
+  }
+
+  .headerActionControls {
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .buttonContainer {
+    gap: 6px;
+    flex-wrap: wrap;
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .actionPillButton {
+    width: 100%;
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+
+  .tabList {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .tabButton {
+    justify-content: center;
   }
 }
 
@@ -998,28 +1146,64 @@
     padding: 68px 12px 72px;
   }
 
+  .listContainer {
+    gap: 12px;
+  }
+
   .listHeader {
     flex-direction: column;
     align-items: stretch;
+    gap: 12px;
+    padding: 14px;
+    border-radius: 18px;
   }
 
   .headerTabsSection {
     width: 100%;
+    order: 3;
+  }
+
+  .headerInfo {
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .headerIcon {
+    width: 40px;
+    height: 40px;
+    flex-basis: 40px;
+    border-radius: 14px;
+  }
+
+  .headerIconSvg {
+    font-size: 21px !important;
+  }
+
+  .headerTitle {
+    font-size: 18px;
+  }
+
+  .headerTitleRow {
+    gap: 8px;
   }
 
   .legendGroup {
     gap: 10px;
   }
 
-  .headerActions,
-  .searchForm,
-  .searchInput {
+  .headerActions {
     width: 100%;
+    order: 2;
   }
 
   .searchForm {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    padding: 6px;
+    border-radius: 16px;
+    justify-content: stretch;
   }
 
   .tabList {
@@ -1032,8 +1216,38 @@
     justify-content: center;
   }
 
+  .headerActionControls {
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .searchInput {
+    width: 100%;
+    height: 40px;
+    min-width: 0;
+    max-width: none;
+  }
+
+  .buttonContainer {
+    gap: 6px;
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .buttonItem {
+    width: 40px;
+    min-width: 40px;
+    height: 40px;
+    border-radius: 12px;
+  }
+
   .actionPillButton {
     width: 100%;
+    min-width: 0;
+    flex: 1 1 auto;
+    height: 40px;
+    padding: 0 16px;
+    font-size: 13px;
   }
 
   .calendarSurface {
@@ -1046,6 +1260,18 @@
 
   .listItem {
     max-height: calc(100vh - 190px);
+    padding: 10px;
+    border-radius: 18px;
+  }
+
+  .tableSurface {
+    border-radius: 16px !important;
+    overflow-x: hidden;
+  }
+
+  .tableHeaderCell,
+  .tableBodyCell {
+    padding: 12px 14px !important;
   }
 
   .calendarToolbar {
@@ -1060,6 +1286,11 @@
 
   .calendarMonthControls {
     justify-content: center;
+    width: 100%;
+  }
+
+  .calendarMonthLabel {
+    min-width: 0;
   }
 
   .calendarGrid {
@@ -1073,5 +1304,228 @@
 
   .calendarWeekday {
     display: none;
+  }
+
+  .mobileActions .tableActionButton {
+    width: 34px;
+    min-width: 34px;
+    height: 34px;
+    border-radius: 10px;
+  }
+
+  .mobileActions .iconEdit,
+  .mobileActions .iconDelete {
+    font-size: 16px !important;
+  }
+
+  .mobileStatus {
+    font-size: 10px !important;
+  }
+
+  .emptyState {
+    padding: 28px 18px;
+    border-radius: 18px;
+  }
+
+  .emptyStateTitle {
+    font-size: 18px !important;
+  }
+}
+
+@media (max-width: 420px) {
+  .wrapper {
+    padding: 68px 10px 72px;
+  }
+
+  .listHeader {
+    padding: 14px;
+  }
+
+  .headerInfo {
+    display: grid;
+    grid-template-columns: 40px minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .headerTitle {
+    font-size: 16px;
+  }
+
+  .headerBadge {
+    min-height: 24px;
+    padding: 0 10px;
+    font-size: 10px;
+  }
+
+  .tabButton {
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+
+  .tabButtonIcon {
+    width: 22px;
+    height: 22px;
+  }
+
+  .searchForm {
+    gap: 6px;
+  }
+
+  .headerActionControls {
+    gap: 6px;
+  }
+
+  .searchInput {
+    height: 38px;
+    padding: 0 12px;
+    font-size: 13px;
+  }
+
+  .buttonContainer {
+    gap: 5px;
+  }
+
+  .buttonItem {
+    width: 38px;
+    min-width: 38px;
+    height: 38px;
+  }
+
+  .actionPillButton {
+    width: 100%;
+    flex-basis: auto;
+    font-size: 13px;
+  }
+
+  .listItem {
+    padding: 8px;
+  }
+
+  .paginationArea {
+    padding-top: 8px;
+  }
+
+  .tableHeaderCell {
+    padding: 12px !important;
+  }
+
+  .tableBodyCell {
+    padding: 10px 12px !important;
+  }
+
+  .mobileName {
+    font-size: 14px !important;
+  }
+
+  .mobileStatus {
+    min-height: 22px;
+    padding: 0 8px;
+  }
+
+  .emptyState {
+    gap: 8px;
+    padding: 24px 16px;
+    border-radius: 16px;
+  }
+
+  .emptyStateIcon {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+  }
+
+  .emptyStateTitle {
+    font-size: 16px !important;
+  }
+
+  .emptyStateText {
+    font-size: 13px !important;
+    line-height: 1.5 !important;
+  }
+
+  .calendarArea {
+    padding-bottom: 12px;
+  }
+
+  .calendarToolbar {
+    padding: 14px 12px;
+    gap: 12px;
+  }
+
+  .calendarToolbarInfo {
+    display: grid;
+    grid-template-columns: 40px minmax(0, 1fr);
+    align-items: start;
+    gap: 12px;
+  }
+
+  .calendarToolbarIcon {
+    width: 40px;
+    height: 40px;
+    flex-basis: 40px;
+    border-radius: 14px;
+
+    svg {
+      font-size: 21px !important;
+    }
+  }
+
+  .calendarToolbarTitle {
+    font-size: 16px !important;
+  }
+
+  .calendarLegend {
+    gap: 10px;
+  }
+
+  .calendarMonthControls {
+    gap: 8px;
+  }
+
+  .calendarNavButton {
+    width: 38px;
+    height: 38px;
+  }
+
+  .calendarMonthLabel {
+    min-width: 0;
+    font-size: 16px !important;
+  }
+
+  .calendarGrid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .calendarDayCell {
+    min-height: 112px;
+    padding: 10px;
+  }
+
+  .calendarDayNumber {
+    font-size: 13px;
+  }
+
+  .calendarDayStatusChip {
+    min-height: 22px;
+    padding: 0 7px;
+    font-size: 9px;
+  }
+
+  .calendarCountCard {
+    min-height: 56px;
+  }
+
+  .calendarCountValue {
+    font-size: 18px;
+  }
+
+  .calendarSidebarItemTitle {
+    font-size: 12px !important;
+  }
+
+  .calendarModalItem {
+    padding: 12px;
+    border-radius: 14px;
   }
 }

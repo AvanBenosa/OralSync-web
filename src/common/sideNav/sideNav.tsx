@@ -20,6 +20,7 @@ import {
 import DashboardCustomizeRoundedIcon from '@mui/icons-material/DashboardCustomizeRounded';
 import GroupAddRoundedIcon from '@mui/icons-material/GroupAddRounded';
 import EventRoundedIcon from '@mui/icons-material/EventRounded';
+import RequestQuoteRoundedIcon from '@mui/icons-material/RequestQuoteRounded';
 import SettingsRoundedIcon from '@mui/icons-material/SettingsRounded';
 import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded';
 import WarningAmberRoundedIcon from '@mui/icons-material/WarningAmberRounded';
@@ -35,6 +36,7 @@ const menuItems = [
   { label: 'Dashboard', icon: <DashboardCustomizeRoundedIcon />, path: '/dashboard' },
   { label: 'Patient', icon: <GroupAddRoundedIcon />, path: '/patient' },
   { label: 'Appointment', icon: <EventRoundedIcon />, path: '/appointment' },
+  { label: 'Finance Overview', icon: <RequestQuoteRoundedIcon />, path: '/finance-overview' },
 ];
 
 const footerMenuItems = [

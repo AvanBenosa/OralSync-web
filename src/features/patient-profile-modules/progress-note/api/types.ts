@@ -33,6 +33,8 @@ export type PatientProgressNoteProps = {
 
 export type PatientProgressNoteModel = {
   patientInfoId?: string;
+  patientName?: string;
+  patientNumber?: string;
   id?: string;
   assignedDoctor?: string;
   date?: string | Date;

@@ -88,36 +88,38 @@ const AppointmentHeader: FunctionComponent<AppointmentHeaderProps> = (
               }
             />
           ) : null}
-          <button
-            type="button"
-            className={`${styles.reloadButton} ${styles.inlineReloadButton}`}
-            onClick={(): void => {
-              onReload?.();
-            }}
-            disabled={state.load}
-            title="Reload appointments"
-            aria-label="Reload appointments"
-          >
-            <RefreshRoundedIcon className={styles.reloadIcon} />
-          </button>
-          <div className={styles.buttonContainer}>
+          <div className={styles.headerActionControls}>
             <button
-              title="Add appointment"
               type="button"
-              className={`${styles.actionPillButton} ${styles.addAppointmentButton}`}
-              aria-label="Add appointment"
+              className={`${styles.reloadButton} ${styles.inlineReloadButton}`}
               onClick={(): void => {
-                setState({
-                  ...state,
-                  openModal: true,
-                  isDelete: false,
-                  isUpdate: false,
-                });
+                onReload?.();
               }}
+              disabled={state.load}
+              title="Reload appointments"
+              aria-label="Reload appointments"
             >
-              <AddIcon className={styles.pillActionIcon} />
-              <span>Add Appointment</span>
+              <RefreshRoundedIcon className={styles.reloadIcon} />
             </button>
+            <div className={styles.buttonContainer}>
+              <button
+                title="Add appointment"
+                type="button"
+                className={`${styles.actionPillButton} ${styles.addAppointmentButton}`}
+                aria-label="Add appointment"
+                onClick={(): void => {
+                  setState({
+                    ...state,
+                    openModal: true,
+                    isDelete: false,
+                    isUpdate: false,
+                  });
+                }}
+              >
+                <AddIcon className={styles.pillActionIcon} />
+                <span>Add Appointment</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
