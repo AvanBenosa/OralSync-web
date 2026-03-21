@@ -2,11 +2,11 @@ import { FunctionComponent, JSX, useMemo, useState } from 'react';
 import { Typography } from '@mui/material';
 import { isAxiosError } from 'axios';
 
-import DeleteConfirmModalContent from '../../../common/modal/modal';
+import DeleteConfirmModalContent from '../../../../common/modal/modal';
 import { HandleDeleteFinanceIncomeItem } from '../api/handlers';
-import type { FinanceIncomeModel, FinanceOverviewStateProps } from '../api/types';
+import type { FinanceIncomeModel, FinanceIncomeStateProps } from '../api/types';
 
-type FinanceOverviewDeleteModalProps = FinanceOverviewStateProps & {
+type FinanceOverviewDeleteModalProps = FinanceIncomeStateProps & {
   onDeleted?: () => Promise<void> | void;
 };
 

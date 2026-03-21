@@ -16,9 +16,9 @@ import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import MonetizationOnOutlinedIcon from '@mui/icons-material/MonetizationOnOutlined';
 
-import TableLoadingSkeleton from '../../../common/components/TableLoadingSkeleton';
-import type { FinanceIncomeModel, FinanceOverviewStateProps } from '../api/types';
-import styles from '../style.scss.module.scss';
+import TableLoadingSkeleton from '../../../../common/components/TableLoadingSkeleton';
+import type { FinanceIncomeModel, FinanceIncomeStateProps } from '../api/types';
+import styles from '../../style.scss.module.scss';
 
 type PaymentStatus = 'pending' | 'paid';
 
@@ -114,8 +114,8 @@ const getPaymentStatusLabel = (status?: PaymentStatus): string | undefined => {
   return undefined;
 };
 
-const FinanceOverviewIncomeTable: FunctionComponent<FinanceOverviewStateProps> = (
-  props: FinanceOverviewStateProps
+const FinanceOverviewIncomeTable: FunctionComponent<FinanceIncomeStateProps> = (
+  props: FinanceIncomeStateProps
 ): JSX.Element => {
   const { state, setState } = props;
   const theme = useTheme();

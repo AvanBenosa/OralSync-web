@@ -1,19 +1,19 @@
-import type { PatientProgressNoteModel } from '../../patient-profile-modules/progress-note/api/types';
+import type { PatientProgressNoteModel } from '../../../patient-profile-modules/progress-note/api/types';
 import {
   CreateFinanceIncomeItem,
   DeleteFinanceIncomeItem,
   GetFinanceIncomeItems,
   UpdateFinanceIncomeItem,
 } from './api';
-import type { FinanceIncomeModel, FinanceOverviewStateModel } from './types';
+import type { FinanceIncomeModel, FinanceIncomeStateModel } from './types';
 
 export const HandleGetFinanceIncomeItems = async (
-  state: FinanceOverviewStateModel,
+  state: FinanceIncomeStateModel,
   setState: Function,
   forceRefresh: boolean = false
 ): Promise<void> => {
   const response = await GetFinanceIncomeItems(state, forceRefresh);
-  setState((prev: FinanceOverviewStateModel) => ({
+  setState((prev: FinanceIncomeStateModel) => ({
     ...prev,
     ...state,
     load: false,

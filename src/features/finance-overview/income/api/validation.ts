@@ -5,7 +5,7 @@ import {
   PROGRESS_NOTE_CATEGORY_OPTIONS,
   ProgressNoteAccount,
   ProgressNoteCategory,
-} from '../../patient-profile-modules/progress-note/api/types';
+} from '../../../patient-profile-modules/progress-note/api/types';
 
 const hasFourDigitYear = (value: string): boolean => {
   const [year] = value.split('-');

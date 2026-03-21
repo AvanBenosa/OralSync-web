@@ -15,24 +15,24 @@ import {
 import { Formik } from 'formik';
 import { isAxiosError } from 'axios';
 
-import PatientList from '../../PatientList';
-import type { PatientModel } from '../../patient/api/types';
-import { GetClinicUsers } from '../../settings/create-user/api/api';
-import type { SettingsUserModel } from '../../settings/create-user/api/types';
-import {
-  HandleCreateFinanceIncomeItem,
-  HandleUpdateFinanceIncomeItem,
-} from '../api/handlers';
-import { financeIncomeValidationSchema } from '../api/validation';
-import type { FinanceIncomeModel, FinanceOverviewStateProps } from '../api/types';
+import PatientList from '../../../PatientList';
+import type { PatientModel } from '../../../patient/api/types';
+import { GetClinicUsers } from '../../../settings/create-user/api/api';
+import type { SettingsUserModel } from '../../../settings/create-user/api/types';
 import {
   PROGRESS_NOTE_ACCOUNT_OPTIONS,
   PROGRESS_NOTE_CATEGORY_OPTIONS,
   ProgressNoteAccount,
   ProgressNoteCategory,
-} from '../../patient-profile-modules/progress-note/api/types';
+} from '../../../patient-profile-modules/progress-note/api/types';
+import {
+  HandleCreateFinanceIncomeItem,
+  HandleUpdateFinanceIncomeItem,
+} from '../api/handlers';
+import type { FinanceIncomeModel, FinanceIncomeStateProps } from '../api/types';
+import { financeIncomeValidationSchema } from '../api/validation';
 
-type FinanceOverviewFormProps = FinanceOverviewStateProps & {
+type FinanceOverviewFormProps = FinanceIncomeStateProps & {
   onSaved?: () => Promise<void> | void;
 };
 

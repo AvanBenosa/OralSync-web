@@ -1,25 +1,11 @@
-import type { PatientProgressNoteModel } from '../../patient-profile-modules/progress-note/api/types';
-
 export type FinanceOverviewProps = {
   clinicId?: string;
 };
 
 export type FinanceViewTab = 'income' | 'expenses';
 
-export type FinanceIncomeModel = PatientProgressNoteModel & {
-  patientName?: string;
-  patientNumber?: string;
-};
-
-export type FinanceIncomeResponseModel = {
-  items: FinanceIncomeModel[];
-  pageStart: number;
-  pageEnd: number;
-  totalCount: number;
-};
-
-export type FinanceOverviewStateModel = {
-  items: FinanceIncomeModel[];
+export type FinanceModuleStateModel<T> = {
+  items: T[];
   load: boolean;
   initial: number;
   totalItem: number;
@@ -29,12 +15,12 @@ export type FinanceOverviewStateModel = {
   openModal: boolean;
   isUpdate: boolean;
   isDelete: boolean;
-  selectedItem?: FinanceIncomeModel;
+  selectedItem?: T;
   clinicId?: string | null;
 };
 
-export type FinanceOverviewStateProps = {
-  state: FinanceOverviewStateModel;
+export type FinanceModuleStateProps<T> = {
+  state: FinanceModuleStateModel<T>;
   setState: Function;
   clinicId?: string | null;
   onReload?: () => void;

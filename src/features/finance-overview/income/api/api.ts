@@ -3,13 +3,13 @@ import {
   DeletePatientProgressNoteItem,
   GetPatientProgressNoteItems,
   UpdatePatientProgressNoteItem,
-} from '../../patient-profile-modules/progress-note/api/api';
-import type { PatientProgressNoteModel } from '../../patient-profile-modules/progress-note/api/types';
-import { resolveClinicId } from '../../../common/components/ClinicId';
+} from '../../../patient-profile-modules/progress-note/api/api';
+import type { PatientProgressNoteModel } from '../../../patient-profile-modules/progress-note/api/types';
+import { resolveClinicId } from '../../../../common/components/ClinicId';
 import type {
   FinanceIncomeModel,
   FinanceIncomeResponseModel,
-  FinanceOverviewStateModel,
+  FinanceIncomeStateModel,
 } from './types';
 
 const FINANCE_INCOME_CACHE_TTL_MS = 5000;
@@ -120,7 +120,7 @@ const matchesFinanceIncomeSearch = (item: FinanceIncomeModel, keyword: string): 
 };
 
 export const GetFinanceIncomeItems = async (
-  state: FinanceOverviewStateModel,
+  state: FinanceIncomeStateModel,
   forceRefresh: boolean = false
 ): Promise<FinanceIncomeResponseModel> => {
   const resolvedClinicId = resolveClinicId(state.clinicId);
