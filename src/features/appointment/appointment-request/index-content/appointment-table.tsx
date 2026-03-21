@@ -17,34 +17,13 @@ import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined
 import EventBusyOutlinedIcon from '@mui/icons-material/EventBusyOutlined';
 
 import TableLoadingSkeleton from '../../../../common/components/TableLoadingSkeleton';
+import { toValidDateDisplay } from '../../../../common/helpers/toValidateDateDisplay';
 import styles from '../style.scss.module.scss';
 import { AppointmentModel, AppointmentStateProps } from '../api/types';
+import HighlightText from '../../../../common/components/Highlight';
 
-const formatAppointmentDate = (
-  value?: string | Date,
-  options?: Intl.DateTimeFormatOptions
-): string => {
-  if (!value) {
-    return '--';
-  }
-
-  const date = value instanceof Date ? value : new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return '--';
-  }
-
-  return new Intl.DateTimeFormat(
-    'en-US',
-    options || {
-      month: 'short',
-      day: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    }
-  ).format(date);
-};
+const formatAppointmentDate = (value?: string | Date, format: string = 'MMM DD, YYYY, hh:mm A') =>
+  toValidDateDisplay(value, format);
 
 const formatAppointmentRange = (item: AppointmentModel): string => {
   if (!item.appointmentDateFrom) {
@@ -57,10 +36,7 @@ const formatAppointmentRange = (item: AppointmentModel): string => {
     return fromValue;
   }
 
-  const toValue = formatAppointmentDate(item.appointmentDateTo, {
-    hour: '2-digit',
-    minute: '2-digit',
-  });
+  const toValue = formatAppointmentDate(item.appointmentDateTo, 'hh:mm A');
 
   return `${fromValue} - ${toValue}`;
 };
@@ -233,7 +209,7 @@ const AppointmentTable: FunctionComponent<AppointmentStateProps> = (
                     <div className={styles.mobileRowInline}>
                       <div className={styles.mobileMain}>
                         <Typography component="span" className={styles.mobileName}>
-                          {item.patientName || '--'}
+                          <HighlightText query={state.search} text={item.patientName} />
                         </Typography>
                         <Typography component="span" className={styles.mobileContact}>
                           {formatAppointmentRange(item)}
@@ -247,7 +223,7 @@ const AppointmentTable: FunctionComponent<AppointmentStateProps> = (
                   ) : (
                     <div>
                       <Typography sx={{ fontWeight: 700, color: '#1f4467' }}>
-                        {item.patientName || '--'}
+                        <HighlightText query={state.search} text={item.patientName} />
                       </Typography>
                       <Typography sx={{ fontSize: 12, color: '#6f8297' }}>
                         {item.patientNumber || '--'}

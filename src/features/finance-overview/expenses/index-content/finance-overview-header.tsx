@@ -80,9 +80,9 @@ const FinanceOverviewExpenseHeader: FunctionComponent<FinanceOverviewExpenseHead
               {recordCount} {recordCount === 1 ? 'record' : 'records'}
             </span>
           </div>
-          <p className={styles.headerSubtitle}>
+          {/* <p className={styles.headerSubtitle}>
             Monitor clinic operating costs and manage outgoing expense records.
-          </p>
+          </p> */}
         </div>
       </div>
 

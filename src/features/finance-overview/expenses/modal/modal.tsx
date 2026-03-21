@@ -3,6 +3,7 @@ import { Typography } from '@mui/material';
 import { isAxiosError } from 'axios';
 
 import DeleteConfirmModalContent from '../../../../common/modal/modal';
+import { toValidDateDisplay } from '../../../../common/helpers/toValidateDateDisplay';
 import { HandleDeleteFinanceExpenseItem } from '../api/handlers';
 import {
   FinanceExpenseModel,
@@ -12,25 +13,6 @@ import {
 
 type FinanceOverviewExpenseDeleteModalProps = FinanceExpenseStateProps & {
   onDeleted?: () => Promise<void> | void;
-};
-
-const parseDateValue = (value?: string | Date): Date | undefined => {
-  if (!value) {
-    return undefined;
-  }
-
-  if (value instanceof Date) {
-    return Number.isNaN(value.getTime()) ? undefined : value;
-  }
-
-  const dateOnlyMatch = value.match(/^(\d{4})-(\d{2})-(\d{2})/);
-  if (dateOnlyMatch) {
-    const [, year, month, day] = dateOnlyMatch;
-    return new Date(Number(year), Number(month) - 1, Number(day));
-  }
-
-  const parsedDate = new Date(value);
-  return Number.isNaN(parsedDate.getTime()) ? undefined : parsedDate;
 };
 
 const formatExpenseLabel = (item?: FinanceExpenseModel): string => {
@@ -46,14 +28,7 @@ const formatExpenseLabel = (item?: FinanceExpenseModel): string => {
   }
 
   if (item.date) {
-    const date = parseDateValue(item.date);
-    if (date) {
-      return `${category} - ${new Intl.DateTimeFormat('en-US', {
-        month: 'short',
-        day: '2-digit',
-        year: 'numeric',
-      }).format(date)}`;
-    }
+    return `${category} - ${toValidDateDisplay(item.date, 'MMM DD, YYYY', category)}`;
   }
 
   return category;

@@ -17,25 +17,11 @@ import PersonSearchOutlinedIcon from '@mui/icons-material/PersonSearchOutlined';
 import styles from '../../styles.module.scss';
 import { PatientOverViewModel, PatientOverViewStateProps } from '../api/types';
 import TableLoadingSkeleton from '../../../../common/components/TableLoadingSkeleton';
+import { toValidDateDisplay } from '../../../../common/helpers/toValidateDateDisplay';
 
 type PaymentStatus = 'pending' | 'paid';
 
-const formatDate = (value?: string | Date): string => {
-  if (!value) {
-    return '--';
-  }
-
-  const date = value instanceof Date ? value : new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return '--';
-  }
-
-  return new Intl.DateTimeFormat('en-US', {
-    month: 'short',
-    day: '2-digit',
-    year: 'numeric',
-  }).format(date);
-};
+const formatDate = (value?: string | Date): string => toValidDateDisplay(value, 'MMM DD, YYYY');
 
 const formatCurrency = (value?: number): string => {
   if (value === undefined || value === null || Number.isNaN(value)) {

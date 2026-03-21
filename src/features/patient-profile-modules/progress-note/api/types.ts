@@ -38,8 +38,12 @@ export type PatientProgressNoteModel = {
   id?: string;
   assignedDoctor?: string;
   date?: string | Date;
+  nextVisit?: string | Date;
   procedure?: string;
   category?: ProgressNoteCategory;
+  clinicalFinding?: string;
+  assessment?: string;
+  toothNumber?: number;
   remarks?: string;
 
   // Payment Details

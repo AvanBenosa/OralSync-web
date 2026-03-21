@@ -3,6 +3,7 @@ import { Typography } from '@mui/material';
 import { isAxiosError } from 'axios';
 
 import DeleteConfirmModalContent from '../../../../common/modal/modal';
+import { toValidDateDisplay } from '../../../../common/helpers/toValidateDateDisplay';
 import { PatientMedicalHistoryModel, PatientMedicalHistoryStateProps } from '../api/types';
 import { HandleDeletePatientMedicalHistoryItem } from '../api/handlers';
 
@@ -12,14 +13,7 @@ const formatMedicalHistoryLabel = (item?: PatientMedicalHistoryModel): string =>
   }
 
   if (item.date) {
-    const date = new Date(item.date);
-    if (!Number.isNaN(date.getTime())) {
-      return new Intl.DateTimeFormat('en-US', {
-        month: 'short',
-        day: '2-digit',
-        year: 'numeric',
-      }).format(date);
-    }
+    return toValidDateDisplay(item.date, 'MMM DD, YYYY', 'this medical history record');
   }
 
   return 'this medical history record';

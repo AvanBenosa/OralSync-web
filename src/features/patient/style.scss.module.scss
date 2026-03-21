@@ -114,7 +114,8 @@
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  flex: 0 0 auto;
+  flex: 1 1 0;
+  min-width: 0;
 }
 
 .searchForm {
@@ -125,10 +126,14 @@
   border-radius: 16px;
   background: transparent;
   box-shadow: none;
+  width: 100%;
+  min-width: 0;
+  justify-content: flex-end;
+  flex-wrap: wrap;
 }
 
 .searchInput {
-  width: 280px;
+  width: min(280px, 100%);
   height: 36px;
   padding: 0 14px;
   border: 1px solid rgba(214, 224, 232, 0.9);
@@ -183,13 +188,23 @@
   font-size: 18px !important;
 }
 
+.headerActionControls {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
 .buttonContainer {
   display: flex;
   align-items: center;
   justify-content: flex-start;
   width: auto;
   gap: 8px;
-  flex-shrink: 0;
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .actionPillButton {
@@ -517,6 +532,55 @@
   text-align: center;
 }
 
+@media (max-width: 1280px) {
+  .listHeader {
+    flex-wrap: wrap;
+    align-items: stretch;
+  }
+
+  .headerInfo {
+    flex: 1 1 100%;
+  }
+
+  .headerActions {
+    width: 100%;
+    flex: 1 1 100%;
+  }
+
+  .searchForm {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: stretch;
+    padding: 6px;
+  }
+
+  .searchInput {
+    width: 100%;
+    min-width: 0;
+    max-width: none;
+  }
+
+  .headerActionControls {
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .buttonContainer {
+    width: auto;
+    flex: 1 1 auto;
+    min-width: 0;
+    justify-content: flex-start;
+  }
+
+  .actionPillButton {
+    width: 100%;
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+}
+
 @media (max-width: 768px) {
   .wrapper {
     height: calc(100vh - 56px);
@@ -566,15 +630,23 @@
 
   .searchForm {
     width: 100%;
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: stretch;
     padding: 6px;
     border-radius: 16px;
   }
 
+  .headerActionControls {
+    width: 100%;
+    justify-content: stretch;
+  }
+
   .buttonContainer {
     gap: 6px;
-    flex-wrap: wrap;
+    width: auto;
+    flex: 1 1 auto;
   }
 
   .searchInput {
@@ -592,7 +664,8 @@
 
   .actionPillButton {
     min-width: 0;
-    flex: 1 1 180px;
+    width: 100%;
+    flex: 1 1 auto;
     height: 40px;
     padding: 0 16px;
     font-size: 13px;
@@ -669,6 +742,10 @@
     gap: 6px;
   }
 
+  .headerActionControls {
+    gap: 6px;
+  }
+
   .searchInput {
     height: 38px;
     padding: 0 12px;
@@ -687,7 +764,7 @@
 
   .actionPillButton {
     width: 100%;
-    flex-basis: 100%;
+    flex-basis: auto;
     font-size: 13px;
   }
 

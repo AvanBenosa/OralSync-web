@@ -21,6 +21,7 @@ import { PatientModel, PatientStateProps } from '../api/types';
 import styles from '../style.scss.module.scss';
 import HighlightText from '../../../common/components/Highlight';
 import TableLoadingSkeleton from '../../../common/components/TableLoadingSkeleton';
+import { toValidDateDisplay } from '../../../common/helpers/toValidateDateDisplay';
 
 const formatPatientName = (patient: PatientModel): string => {
   const lastName = patient.lastName?.trim();
@@ -44,23 +45,8 @@ const formatPatientName = (patient: PatientModel): string => {
   return `${lastName}, ${givenNames}`;
 };
 
-const formatBirthDate = (birthDate?: Date): string => {
-  if (!birthDate) {
-    return '--';
-  }
-
-  const date = birthDate instanceof Date ? birthDate : new Date(birthDate);
-
-  if (Number.isNaN(date.getTime())) {
-    return '--';
-  }
-
-  return new Intl.DateTimeFormat('en-US', {
-    month: 'short',
-    day: '2-digit',
-    year: 'numeric',
-  }).format(date);
-};
+const formatBirthDate = (birthDate?: string | Date): string =>
+  toValidDateDisplay(birthDate, 'MMM DD, YYYY');
 
 const PatientTable: FunctionComponent<PatientStateProps> = (
   props: PatientStateProps
@@ -68,7 +54,7 @@ const PatientTable: FunctionComponent<PatientStateProps> = (
   const { state, setState } = props;
   const theme = useTheme();
   const navigate = useNavigate();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   const columnCount = isMobile ? 1 : 5;
 

@@ -9,6 +9,7 @@ import SavingsRoundedIcon from '@mui/icons-material/SavingsRounded';
 
 import styles from '../style.scss.module.scss';
 import { DashboardStateprops } from '../api/types';
+import FormatCurrency from '../../../common/helpers/formatCurrency';
 
 const DashBoardWidgets: FunctionComponent<DashboardStateprops> = (
   props: DashboardStateprops
@@ -42,19 +43,19 @@ const DashBoardWidgets: FunctionComponent<DashboardStateprops> = (
     },
     {
       label: 'Income Today',
-      value: `P${Number(state?.incomeToday ?? 0).toLocaleString('en-US')}`,
+      value: <FormatCurrency value={state?.incomeToday} />,
       icon: <AttachMoneyRoundedIcon />,
       accentClassName: styles.metricAccentGreen,
     },
     {
       label: 'Monthly Expenses',
-      value: `P${Number(state?.totalExpenseMonthly ?? 0).toLocaleString('en-US')}`,
+      value: <FormatCurrency value={state?.totalExpenseMonthly ?? 0} />,
       icon: <ReceiptLongRoundedIcon />,
       accentClassName: styles.metricAccentCoral,
     },
     {
       label: 'Monthly Income',
-      value: `P${Number(state?.totalIncomeMonthly ?? 0).toLocaleString('en-US')}`,
+      value: <FormatCurrency value={state?.totalIncomeMonthly ?? 0} />,
       icon: <SavingsRoundedIcon />,
       accentClassName: styles.metricAccentGold,
     },

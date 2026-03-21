@@ -18,6 +18,7 @@ import PersonSearchOutlinedIcon from '@mui/icons-material/PersonSearchOutlined';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 
 import TableLoadingSkeleton from '../../../../common/components/TableLoadingSkeleton';
+import { toValidDateDisplay } from '../../../../common/helpers/toValidateDateDisplay';
 import styles from '../../styles.module.scss';
 import { PatientFormModel, PatientFormStateProps } from '../api/types';
 
@@ -40,18 +41,7 @@ const parseDateValue = (value?: string | Date): Date | undefined => {
   return Number.isNaN(parsedDate.getTime()) ? undefined : parsedDate;
 };
 
-const formatDate = (value?: string | Date): string => {
-  const date = parseDateValue(value);
-  if (!date) {
-    return '--';
-  }
-
-  return new Intl.DateTimeFormat('en-US', {
-    month: 'short',
-    day: '2-digit',
-    year: 'numeric',
-  }).format(date);
-};
+const formatDate = (value?: string | Date): string => toValidDateDisplay(value, 'MMM DD, YYYY');
 
 const renderFormLabel = (item: PatientFormModel): string =>
   item.formType?.trim() || 'Untitled form';

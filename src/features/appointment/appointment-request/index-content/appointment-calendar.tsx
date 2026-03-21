@@ -8,15 +8,12 @@ import ScheduleRoundedIcon from '@mui/icons-material/ScheduleRounded';
 import styles from '../style.scss.module.scss';
 import { AppointmentModel, AppointmentStateProps } from '../api/types';
 import { GetCurrentClinicProfile } from '../../../settings/clinic-profile/api/api';
+import { toValidDateDisplay } from '../../../../common/helpers/toValidateDateDisplay';
 
 const weekDayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const weekDayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
-const getMonthLabel = (date: Date): string =>
-  new Intl.DateTimeFormat('en-US', {
-    month: 'long',
-    year: 'numeric',
-  }).format(date);
+const getMonthLabel = (date: Date): string => toValidDateDisplay(date, 'MMMM YYYY');
 
 const buildAppointmentDateTime = (date: Date, timeValue: string): string => {
   const [hours, minutes] = String(timeValue || '09:00')
@@ -37,12 +34,7 @@ const addHourToTime = (timeValue: string, fallback: string): string => {
   return `${String(nextHour).padStart(2, '0')}:${String(sourceMinutes).padStart(2, '0')}`;
 };
 
-const formatFullDate = (value: Date): string =>
-  new Intl.DateTimeFormat('en-US', {
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric',
-  }).format(value);
+const formatFullDate = (value: Date): string => toValidDateDisplay(value, 'MMMM D, YYYY');
 
 const formatTimeRange = (item: AppointmentModel): string => {
   if (!item.appointmentDateFrom) {
@@ -63,11 +55,7 @@ const formatTimeRange = (item: AppointmentModel): string => {
     return '--';
   }
 
-  const formatTime = (value: Date): string =>
-    new Intl.DateTimeFormat('en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
-    }).format(value);
+  const formatTime = (value: Date): string => toValidDateDisplay(value, 'hh:mm A');
 
   return toDate && !Number.isNaN(toDate.getTime())
     ? `${formatTime(fromDate)} - ${formatTime(toDate)}`

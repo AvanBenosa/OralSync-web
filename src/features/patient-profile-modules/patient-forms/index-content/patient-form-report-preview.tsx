@@ -22,7 +22,7 @@ type PatientFormReportPreviewProps = {
   reportRef?: RefObject<HTMLDivElement | null>;
 };
 
-const calculateAge = (age?: number, birthDate?: Date): string => {
+const calculateAge = (age?: number, birthDate?: string | Date): string => {
   if (typeof age === 'number' && !Number.isNaN(age)) {
     return String(age);
   }

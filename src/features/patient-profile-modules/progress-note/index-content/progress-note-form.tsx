@@ -39,8 +39,12 @@ type PatientProgressNoteFormValues = {
   id: string;
   assignedDoctor: string;
   date: string;
+  nextVisit: string;
   procedure: string;
   category: ProgressNoteCategory | '';
+  clinicalFinding: string;
+  assessment: string;
+  toothNumber: number | '';
   remarks: string;
   account: ProgressNoteAccount | '';
   amount: number | '';
@@ -89,8 +93,12 @@ const createInitialValues = (
   id: selectedItem?.id || '',
   assignedDoctor: selectedItem?.assignedDoctor || '',
   date: toDateInputValue(selectedItem?.date) || getTodayDateInputValue(),
+  nextVisit: toDateInputValue(selectedItem?.nextVisit),
   procedure: selectedItem?.procedure || '',
   category: selectedItem?.category || '',
+  clinicalFinding: selectedItem?.clinicalFinding || '',
+  assessment: selectedItem?.assessment || '',
+  toothNumber: selectedItem?.toothNumber ?? '',
   remarks: selectedItem?.remarks || '',
   account: selectedItem?.account || '',
   amount: selectedItem?.amount ?? '',
@@ -191,8 +199,12 @@ const PatientProgressNoteForm: FunctionComponent<PatientProgressNoteFormProps> =
       patientInfoId: state.patientId,
       assignedDoctor: values.assignedDoctor || undefined,
       date: toDatePayloadValue(values.date),
+      nextVisit: toDatePayloadValue(values.nextVisit),
       procedure: values.procedure.trim(),
       category: values.category || undefined,
+      clinicalFinding: values.clinicalFinding.trim(),
+      assessment: values.assessment.trim(),
+      toothNumber: getNumericValue(values.toothNumber),
       remarks: values.remarks.trim(),
       account: values.account || undefined,
       amount: getNumericValue(values.amount),
@@ -307,7 +319,27 @@ const PatientProgressNoteForm: FunctionComponent<PatientProgressNoteFormProps> =
                     </Grid>
                     <Grid size={{ xs: 12, sm: 5 }}>
                       <TextField
-                        label="Assigned Dentist"
+                        label="Tooth Number"
+                        name="toothNumber"
+                        type="number"
+                        value={values.toothNumber}
+                        onChange={(event: ChangeEvent<HTMLInputElement>) =>
+                          setFieldValue('toothNumber', parseNumberInput(event.target.value))
+                        }
+                        onBlur={handleBlur}
+                        fullWidth
+                        size="small"
+                        required
+                        inputProps={{ min: 1, max: 32, step: 1 }}
+                        error={shouldShowError('toothNumber')}
+                        helperText={
+                          shouldShowError('toothNumber') ? errors.toothNumber : undefined
+                        }
+                      />
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 7 }}>
+                      <TextField
+                        label="Attending Dentist"
                         name="assignedDoctor"
                         value={values.assignedDoctor}
                         onChange={handleChange}
@@ -316,7 +348,7 @@ const PatientProgressNoteForm: FunctionComponent<PatientProgressNoteFormProps> =
                         fullWidth
                         size="small"
                       >
-                        <MenuItem value="">Select assigned doctor</MenuItem>
+                        <MenuItem value="">Select attending Doctor</MenuItem>
                         {doctorOptions.map((option) => {
                           const doctorName = [option.firstName, option.lastName]
                             .map((value) => value?.trim())
@@ -357,6 +389,58 @@ const PatientProgressNoteForm: FunctionComponent<PatientProgressNoteFormProps> =
                           </MenuItem>
                         ))}
                       </TextField>
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 7 }}>
+                      <TextField
+                        label="Next Visit"
+                        name="nextVisit"
+                        type="date"
+                        value={values.nextVisit}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                        fullWidth
+                        size="small"
+                        InputLabelProps={{ shrink: true }}
+                        inputProps={{ min: '1000-01-01', max: '9999-12-31' }}
+                        error={shouldShowError('nextVisit')}
+                        helperText={shouldShowError('nextVisit') ? errors.nextVisit : undefined}
+                      />
+                    </Grid>
+                    <Grid size={{ xs: 12 }}>
+                      <TextField
+                        label="Clinical Finding"
+                        name="clinicalFinding"
+                        value={values.clinicalFinding}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                        fullWidth
+                        size="small"
+                        multiline
+                        minRows={3}
+                        placeholder="Document the tooth condition, symptoms, and relevant clinical observations."
+                        error={shouldShowError('clinicalFinding')}
+                        helperText={
+                          shouldShowError('clinicalFinding')
+                            ? errors.clinicalFinding
+                            : undefined
+                        }
+                      />
+                    </Grid>
+                    <Grid size={{ xs: 12 }}>
+                      <TextField
+                        label="Assessment"
+                        name="assessment"
+                        value={values.assessment}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                        fullWidth
+                        size="small"
+                        multiline
+                        minRows={3}
+                        placeholder="Summarize the diagnosis, impression, or working assessment."
+                        error={shouldShowError('assessment')}
+                        helperText={shouldShowError('assessment') ? errors.assessment : undefined}
+                      />
                     </Grid>
                     <Grid size={{ xs: 12 }}>
                       <TextField

@@ -3,27 +3,9 @@ import { Typography } from '@mui/material';
 import { isAxiosError } from 'axios';
 
 import DeleteConfirmModalContent from '../../../../common/modal/modal';
+import { toValidDateDisplay } from '../../../../common/helpers/toValidateDateDisplay';
 import { PatientProgressNoteModel, PatientProgressNoteStateProps } from '../api/types';
 import { HandleDeletePatientProgressNoteItem } from '../api/handlers';
-
-const parseDateValue = (value?: string | Date): Date | undefined => {
-  if (!value) {
-    return undefined;
-  }
-
-  if (value instanceof Date) {
-    return Number.isNaN(value.getTime()) ? undefined : value;
-  }
-
-  const dateOnlyMatch = value.match(/^(\d{4})-(\d{2})-(\d{2})/);
-  if (dateOnlyMatch) {
-    const [, year, month, day] = dateOnlyMatch;
-    return new Date(Number(year), Number(month) - 1, Number(day));
-  }
-
-  const parsedDate = new Date(value);
-  return Number.isNaN(parsedDate.getTime()) ? undefined : parsedDate;
-};
 
 const formatProgressNoteLabel = (item?: PatientProgressNoteModel): string => {
   if (!item) {
@@ -35,14 +17,7 @@ const formatProgressNoteLabel = (item?: PatientProgressNoteModel): string => {
   }
 
   if (item.date) {
-    const date = parseDateValue(item.date);
-    if (date) {
-      return new Intl.DateTimeFormat('en-US', {
-        month: 'short',
-        day: '2-digit',
-        year: 'numeric',
-      }).format(date);
-    }
+    return toValidDateDisplay(item.date, 'MMM DD, YYYY', 'this progress note');
   }
 
   return 'this progress note';

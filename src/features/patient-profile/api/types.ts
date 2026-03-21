@@ -11,13 +11,14 @@ export type PatientProfileModel = {
   lastName?: string;
   middleName?: string;
   emailAddress?: string;
-  birthDate?: Date;
+  birthDate?: string | Date;
   contactNumber?: string;
   address?: string;
   occupation?: string;
   religion?: string;
   age?: number;
   remarks?: string;
+  createdAt?: string | Date;
 };
 
 export type PatientEmailRequestModel = {

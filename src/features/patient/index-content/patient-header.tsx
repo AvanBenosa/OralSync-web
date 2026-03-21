@@ -42,55 +42,57 @@ const PatientHeader: FunctionComponent<PatientStateProps> = (
               })
             }
           />
-          <button
-            type="button"
-            className={`${styles.reloadButton} ${styles.inlineReloadButton}`}
-            onClick={(): void => {
-              onReload?.();
-            }}
-            disabled={state.load}
-            title="Reload patients"
-            aria-label="Reload patients"
-          >
-            <RefreshRoundedIcon className={styles.reloadIcon} />
-          </button>
-          <div className={styles.buttonContainer}>
+          <div className={styles.headerActionControls}>
             <button
-              title="Import or export patient xlsx"
               type="button"
-              className={`${styles.actionPillButton} ${styles.importButton}`}
-              aria-label="Upload"
+              className={`${styles.reloadButton} ${styles.inlineReloadButton}`}
               onClick={(): void => {
-                setState({
-                  ...state,
-                  openModal: true,
-                  upload: true,
-                  isDelete: false,
-                  isUpdate: false,
-                });
+                onReload?.();
               }}
+              disabled={state.load}
+              title="Reload patients"
+              aria-label="Reload patients"
             >
-              <FileUploadOutlinedIcon className={styles.pillActionIcon} />
-              <span>Upload</span>
+              <RefreshRoundedIcon className={styles.reloadIcon} />
             </button>
-            <button
-              title="Add patients"
-              type="button"
-              className={`${styles.actionPillButton} ${styles.addPatientButton}`}
-              aria-label="Add"
-              onClick={(): void => {
-                setState({
-                  ...state,
-                  openModal: true,
-                  upload: false,
-                  isDelete: false,
-                  isUpdate: false,
-                });
-              }}
-            >
-              <AddIcon className={styles.pillActionIcon} />
-              <span>Add Patients</span>
-            </button>
+            <div className={styles.buttonContainer}>
+              <button
+                title="Import or export patient xlsx"
+                type="button"
+                className={`${styles.actionPillButton} ${styles.importButton}`}
+                aria-label="Upload"
+                onClick={(): void => {
+                  setState({
+                    ...state,
+                    openModal: true,
+                    upload: true,
+                    isDelete: false,
+                    isUpdate: false,
+                  });
+                }}
+              >
+                <FileUploadOutlinedIcon className={styles.pillActionIcon} />
+                <span>Upload</span>
+              </button>
+              <button
+                title="Add patients"
+                type="button"
+                className={`${styles.actionPillButton} ${styles.addPatientButton}`}
+                aria-label="Add"
+                onClick={(): void => {
+                  setState({
+                    ...state,
+                    openModal: true,
+                    upload: false,
+                    isDelete: false,
+                    isUpdate: false,
+                  });
+                }}
+              >
+                <AddIcon className={styles.pillActionIcon} />
+                <span>Add Patients</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>

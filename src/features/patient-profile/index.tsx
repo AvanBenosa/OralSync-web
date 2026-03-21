@@ -22,6 +22,7 @@ import {
   loadProtectedAssetObjectUrl,
   resolveApiAssetUrl,
 } from '../../common/services/api-client';
+import { toValidDateDisplay } from '../../common/helpers/toValidateDateDisplay';
 import PatientProfileHeader from './index-content/patient-profile-header';
 import PatientOverView from '../patient-profile-modules/overview';
 import PatientProgressNotes from '../patient-profile-modules/progress-note';
@@ -38,14 +39,35 @@ const resolveProfilePictureSrc = (profilePicture?: string): string => {
   return resolveApiAssetUrl(profilePicture);
 };
 
-const calculateAge = (birthDate?: Date): string => {
+const parseDateValue = (value?: string | Date): Date | undefined => {
+  if (!value) {
+    return undefined;
+  }
+
+  if (value instanceof Date) {
+    return Number.isNaN(value.getTime()) ? undefined : value;
+  }
+
+  const dateOnlyMatch = value.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (dateOnlyMatch) {
+    const [, year, month, day] = dateOnlyMatch;
+    return new Date(Number(year), Number(month) - 1, Number(day));
+  }
+
+  const parsedDate = new Date(value);
+  return Number.isNaN(parsedDate.getTime()) ? undefined : parsedDate;
+};
+
+const formatDateValue = (value?: string | Date): string => toValidDateDisplay(value, 'MMM DD, YYYY');
+
+const calculateAge = (birthDate?: string | Date): string => {
   if (!birthDate) {
     return '--';
   }
 
-  const date = birthDate instanceof Date ? birthDate : new Date(birthDate);
+  const date = parseDateValue(birthDate);
 
-  if (Number.isNaN(date.getTime())) {
+  if (!date) {
     return '--';
   }
 
@@ -387,7 +409,7 @@ export const PatientProfileModule: FunctionComponent<PatientProfileProps> = (
                   </div>
                   <div>
                     <label>Birthday</label>
-                    {/* <p>{state.profile.birthday}</p> */}
+                    <p>{formatDateValue(state.profile?.birthDate)}</p>
                   </div>
                   <div>
                     <label>Gender</label>
@@ -422,12 +444,8 @@ export const PatientProfileModule: FunctionComponent<PatientProfileProps> = (
                     {/* <p>{state.profile.guardian}</p> */}
                   </div>
                   <div>
-                    <label>Source/Referral</label>
-                    {/* <p>{state.profile.sourceReferral}</p> */}
-                  </div>
-                  <div>
                     <label>Record Created</label>
-                    {/* <p>{state.profile.recordCreatedDate}</p> */}
+                    <p>{formatDateValue(state.profile?.createdAt)}</p>
                   </div>
                 </div>
               </section>

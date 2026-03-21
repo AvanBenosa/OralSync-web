@@ -3,30 +3,12 @@ import { Typography } from '@mui/material';
 import { isAxiosError } from 'axios';
 
 import DeleteConfirmModalContent from '../../../../common/modal/modal';
+import { toValidDateDisplay } from '../../../../common/helpers/toValidateDateDisplay';
 import { HandleDeleteFinanceIncomeItem } from '../api/handlers';
 import type { FinanceIncomeModel, FinanceIncomeStateProps } from '../api/types';
 
 type FinanceOverviewDeleteModalProps = FinanceIncomeStateProps & {
   onDeleted?: () => Promise<void> | void;
-};
-
-const parseDateValue = (value?: string | Date): Date | undefined => {
-  if (!value) {
-    return undefined;
-  }
-
-  if (value instanceof Date) {
-    return Number.isNaN(value.getTime()) ? undefined : value;
-  }
-
-  const dateOnlyMatch = value.match(/^(\d{4})-(\d{2})-(\d{2})/);
-  if (dateOnlyMatch) {
-    const [, year, month, day] = dateOnlyMatch;
-    return new Date(Number(year), Number(month) - 1, Number(day));
-  }
-
-  const parsedDate = new Date(value);
-  return Number.isNaN(parsedDate.getTime()) ? undefined : parsedDate;
 };
 
 const formatIncomeLabel = (item?: FinanceIncomeModel): string => {
@@ -50,14 +32,7 @@ const formatIncomeLabel = (item?: FinanceIncomeModel): string => {
   }
 
   if (item.date) {
-    const date = parseDateValue(item.date);
-    if (date) {
-      return new Intl.DateTimeFormat('en-US', {
-        month: 'short',
-        day: '2-digit',
-        year: 'numeric',
-      }).format(date);
-    }
+    return toValidDateDisplay(item.date, 'MMM DD, YYYY', 'this income record');
   }
 
   return 'this income record';

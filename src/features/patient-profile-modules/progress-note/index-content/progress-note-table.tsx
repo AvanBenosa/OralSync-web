@@ -19,40 +19,11 @@ import PersonSearchOutlinedIcon from '@mui/icons-material/PersonSearchOutlined';
 import styles from '../../styles.module.scss';
 import { PatientProgressNoteModel, PatientProgressNoteStateProps } from '../api/types';
 import TableLoadingSkeleton from '../../../../common/components/TableLoadingSkeleton';
+import { toValidDateDisplay } from '../../../../common/helpers/toValidateDateDisplay';
 
 type PaymentStatus = 'pending' | 'paid';
 
-const parseDateValue = (value?: string | Date): Date | undefined => {
-  if (!value) {
-    return undefined;
-  }
-
-  if (value instanceof Date) {
-    return Number.isNaN(value.getTime()) ? undefined : value;
-  }
-
-  const dateOnlyMatch = value.match(/^(\d{4})-(\d{2})-(\d{2})/);
-  if (dateOnlyMatch) {
-    const [, year, month, day] = dateOnlyMatch;
-    return new Date(Number(year), Number(month) - 1, Number(day));
-  }
-
-  const parsedDate = new Date(value);
-  return Number.isNaN(parsedDate.getTime()) ? undefined : parsedDate;
-};
-
-const formatDate = (value?: string | Date): string => {
-  const date = parseDateValue(value);
-  if (!date) {
-    return '--';
-  }
-
-  return new Intl.DateTimeFormat('en-US', {
-    month: 'short',
-    day: '2-digit',
-    year: 'numeric',
-  }).format(date);
-};
+const formatDate = (value?: string | Date): string => toValidDateDisplay(value, 'MMM DD, YYYY');
 
 const formatCurrency = (value?: number): string => {
   if (value === undefined || value === null || Number.isNaN(value)) {
@@ -120,7 +91,7 @@ const PatientProgressNoteTable: FunctionComponent<PatientProgressNoteStateProps>
   const { state, setState } = props;
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const columnCount = isMobile ? 1 : 11;
+  const columnCount = isMobile ? 1 : 7;
 
   const renderActionButtons = (item: PatientProgressNoteModel): JSX.Element => (
     <div className={`${styles.buttonContainer} ${styles.tableButtonContainer}`}>
@@ -178,12 +149,8 @@ const PatientProgressNoteTable: FunctionComponent<PatientProgressNoteStateProps>
             {!isMobile ? (
               <>
                 <TableCell className={styles.tableHeaderCell}>Procedure</TableCell>
-                <TableCell className={styles.tableHeaderCell}>Assigned Doctor</TableCell>
-                <TableCell className={styles.tableHeaderCell}>Category</TableCell>
-                <TableCell className={styles.tableHeaderCell}>Account</TableCell>
-                <TableCell className={styles.tableHeaderCell}>Cost</TableCell>
+                <TableCell className={styles.tableHeaderCell}>Assigned Dentist</TableCell>
                 <TableCell className={styles.tableHeaderCell}>Total Due</TableCell>
-                <TableCell className={styles.tableHeaderCell}>Paid</TableCell>
                 <TableCell className={styles.tableHeaderCell}>Balance</TableCell>
                 <TableCell className={styles.tableHeaderCell}>Status</TableCell>
                 <TableCell className={styles.tableHeaderCell} align="right" />
@@ -199,15 +166,11 @@ const PatientProgressNoteTable: FunctionComponent<PatientProgressNoteStateProps>
               cellClassName={styles.tableBodyCell}
               rowClassName={styles.noHoverRow}
               desktopCells={[
-                { width: '62%' },
-                { width: '72%' },
-                { width: '64%' },
-                { width: '64%' },
+                { width: '44%' },
+                { width: '60%' },
                 { width: '58%' },
-                { width: '52%' },
-                { width: '56%' },
-                { width: '48%' },
-                { width: '52%' },
+                { width: '46%' },
+                { width: '46%' },
                 { kind: 'rounded', width: 116, height: 24 },
                 { kind: 'actions', align: 'right' },
               ]}
@@ -251,11 +214,7 @@ const PatientProgressNoteTable: FunctionComponent<PatientProgressNoteStateProps>
                   hover
                   key={item.id ?? `progress-note-row-${index}`}
                   className={
-                    status
-                      ? status === 'pending'
-                        ? styles.pendingRow
-                        : styles.paidRow
-                      : undefined
+                    status ? (status === 'pending' ? styles.pendingRow : styles.paidRow) : undefined
                   }
                 >
                   <TableCell className={styles.tableBodyCell}>
@@ -299,18 +258,9 @@ const PatientProgressNoteTable: FunctionComponent<PatientProgressNoteStateProps>
                       <TableCell className={styles.tableBodyCell}>
                         {item.assignedDoctor || '--'}
                       </TableCell>
-                      <TableCell className={styles.tableBodyCell}>
-                        {item.category || '--'}
-                      </TableCell>
-                      <TableCell className={styles.tableBodyCell}>{item.account || '--'}</TableCell>
-                      <TableCell className={styles.tableBodyCell}>
-                        {formatCurrency(item.amount)}
-                      </TableCell>
+
                       <TableCell className={styles.tableBodyCell}>
                         {formatCurrency(totalAmountDue)}
-                      </TableCell>
-                      <TableCell className={styles.tableBodyCell}>
-                        {formatCurrency(item.amountPaid)}
                       </TableCell>
                       <TableCell className={styles.tableBodyCell}>
                         {formatCurrency(balance)}
@@ -325,7 +275,7 @@ const PatientProgressNoteTable: FunctionComponent<PatientProgressNoteStateProps>
                             {statusLabel}
                           </span>
                         ) : (
-                          formatCurrency(balance)
+                          '--'
                         )}
                       </TableCell>
                       <TableCell className={styles.tableBodyCell} align="right">

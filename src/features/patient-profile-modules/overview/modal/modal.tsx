@@ -3,6 +3,7 @@ import { Typography } from '@mui/material';
 import { isAxiosError } from 'axios';
 
 import DeleteConfirmModalContent from '../../../../common/modal/modal';
+import { toValidDateDisplay } from '../../../../common/helpers/toValidateDateDisplay';
 import { PatientOverViewModel, PatientOverViewStateProps } from '../api/types';
 import { HandleDeletePatientOverViewItem } from '../api/handlers';
 
@@ -16,14 +17,7 @@ const formatOverviewLabel = (item?: PatientOverViewModel): string => {
   }
 
   if (item.date) {
-    const date = new Date(item.date);
-    if (!Number.isNaN(date.getTime())) {
-      return new Intl.DateTimeFormat('en-US', {
-        month: 'short',
-        day: '2-digit',
-        year: 'numeric',
-      }).format(date);
-    }
+    return toValidDateDisplay(item.date, 'MMM DD, YYYY', 'this overview record');
   }
 
   return 'this overview record';

@@ -17,42 +17,14 @@ import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import MonetizationOnOutlinedIcon from '@mui/icons-material/MonetizationOnOutlined';
 
 import TableLoadingSkeleton from '../../../../common/components/TableLoadingSkeleton';
+import { toValidDateDisplay } from '../../../../common/helpers/toValidateDateDisplay';
 import type { FinanceIncomeModel, FinanceIncomeStateProps } from '../api/types';
 import styles from '../../style.scss.module.scss';
+import HighlightText from '../../../../common/components/Highlight';
 
 type PaymentStatus = 'pending' | 'paid';
 
-const parseDateValue = (value?: string | Date): Date | undefined => {
-  if (!value) {
-    return undefined;
-  }
-
-  if (value instanceof Date) {
-    return Number.isNaN(value.getTime()) ? undefined : value;
-  }
-
-  const dateOnlyMatch = value.match(/^(\d{4})-(\d{2})-(\d{2})/);
-  if (dateOnlyMatch) {
-    const [, year, month, day] = dateOnlyMatch;
-    return new Date(Number(year), Number(month) - 1, Number(day));
-  }
-
-  const parsedDate = new Date(value);
-  return Number.isNaN(parsedDate.getTime()) ? undefined : parsedDate;
-};
-
-const formatDate = (value?: string | Date): string => {
-  const date = parseDateValue(value);
-  if (!date) {
-    return '--';
-  }
-
-  return new Intl.DateTimeFormat('en-US', {
-    month: 'short',
-    day: '2-digit',
-    year: 'numeric',
-  }).format(date);
-};
+const formatDate = (value?: string | Date): string => toValidDateDisplay(value, 'MMM DD, YYYY');
 
 const formatCurrency = (value?: number): string => {
   if (value === undefined || value === null || Number.isNaN(value)) {
@@ -248,7 +220,10 @@ const FinanceOverviewIncomeTable: FunctionComponent<FinanceIncomeStateProps> = (
                       <div className={styles.mobileRowInline}>
                         <div className={styles.mobileMain}>
                           <Typography component="span" className={styles.mobileName}>
-                            {item.patientName || item.patientNumber || '--'}
+                            <HighlightText
+                              query={state.search}
+                              text={item.patientName || item.patientNumber || '--'}
+                            />
                           </Typography>
                           <div className={styles.mobileMeta}>
                             <Typography component="span" className={styles.mobileContact}>
@@ -270,7 +245,10 @@ const FinanceOverviewIncomeTable: FunctionComponent<FinanceIncomeStateProps> = (
                     ) : (
                       <div>
                         <Typography sx={{ fontWeight: 700, color: '#1f4467' }}>
-                          {item.patientName || item.patientNumber || '--'}
+                          <HighlightText
+                            query={state.search}
+                            text={item.patientName || item.patientNumber || '--'}
+                          />
                         </Typography>
                       </div>
                     )}

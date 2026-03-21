@@ -4,7 +4,6 @@ import CalendarMonthRoundedIcon from '@mui/icons-material/CalendarMonthRounded';
 import DashboardRoundedIcon from '@mui/icons-material/DashboardRounded';
 import RefreshRoundedIcon from '@mui/icons-material/RefreshRounded';
 import { useNavigate } from 'react-router-dom';
-import { toast } from 'react-toastify';
 
 import styles from '../style.scss.module.scss';
 import { DashboardStateprops } from '../api/types';
@@ -41,7 +40,7 @@ const DashBoardHeader: FunctionComponent<DashboardStateprops> = (
           type="button"
           className={`${styles.actionButton} ${styles.appointmentButton}`}
           onClick={(): void => {
-            toast.info('Appointment module is not available yet.');
+            navigate('/appointment');
           }}
         >
           <CalendarMonthRoundedIcon className={styles.actionButtonIcon} />

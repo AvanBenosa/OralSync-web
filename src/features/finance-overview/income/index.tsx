@@ -15,6 +15,7 @@ import FinanceOverviewIncomeHeader from './index-content/finance-overview-header
 import FinanceOverviewIncomeTable from './index-content/finance-overview-income-table';
 import FinanceOverviewIncomeDeleteModal from './modal/modal';
 import styles from '../style.scss.module.scss';
+import FormatCurrency from '../../../common/helpers/formatCurrency';
 
 type FinanceOverviewIncomeProps = {
   clinicId?: string;
@@ -189,7 +190,15 @@ export const FinanceOverviewIncome: FunctionComponent<FinanceOverviewIncomeProps
     };
     // Fetch when clinic context, search, date range, page offset, or view changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [resolvedClinicId, state.search, state.dateFrom, state.dateTo, state.pageStart, state.pageEnd, activeTab]);
+  }, [
+    resolvedClinicId,
+    state.search,
+    state.dateFrom,
+    state.dateTo,
+    state.pageStart,
+    state.pageEnd,
+    activeTab,
+  ]);
 
   const handleCloseDialog = (): void => {
     setState((prev: FinanceIncomeStateModel) => ({
@@ -208,7 +217,7 @@ export const FinanceOverviewIncome: FunctionComponent<FinanceOverviewIncomeProps
   };
 
   const summaryLabel = state.hasDateFilter ? 'Total Income' : 'Income Today';
-  const formattedSummaryAmount = `P${Number(state.amount ?? 0).toLocaleString('en-US')}`;
+  const formattedSummaryAmount = <FormatCurrency value={state.amount} />;
 
   return (
     <div className={styles.wrapper}>
@@ -226,7 +235,9 @@ export const FinanceOverviewIncome: FunctionComponent<FinanceOverviewIncomeProps
                 type="button"
                 role="tab"
                 aria-selected={activeTab === 'income'}
-                className={`${styles.tabButton} ${activeTab === 'income' ? styles.tabButtonActive : ''}`}
+                className={`${styles.tabButton} ${
+                  activeTab === 'income' ? styles.tabButtonActive : ''
+                }`}
                 onClick={() => onTabChange('income')}
               >
                 <span className={styles.tabButtonIcon} aria-hidden="true">
@@ -293,11 +304,7 @@ export const FinanceOverviewIncome: FunctionComponent<FinanceOverviewIncomeProps
             onDeleted={handleMutationCompleted}
           />
         ) : (
-          <FinanceOverviewIncomeForm
-            state={state}
-            setState={setState}
-            clinicId={state.clinicId}
-          />
+          <FinanceOverviewIncomeForm state={state} setState={setState} clinicId={state.clinicId} />
         )}
       </Dialog>
     </div>

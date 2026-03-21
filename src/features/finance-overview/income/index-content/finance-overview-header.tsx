@@ -98,7 +98,7 @@ const FinanceOverviewIncomeHeader: FunctionComponent<FinanceOverviewIncomeHeader
           <input
             className={styles.searchInput}
             type="text"
-            placeholder="Search patient, procedure or dentist ..."
+            placeholder="Search patient name"
             value={String(state.search ?? '')}
             onChange={(event): void =>
               setState({

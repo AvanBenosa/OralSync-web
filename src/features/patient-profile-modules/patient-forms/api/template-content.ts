@@ -1,6 +1,7 @@
 import { ClinicProfileModel } from '../../../settings/clinic-profile/api/types';
 import { PatientProfileModel } from '../../../patient-profile/api/types';
 import { PatientFormModel } from './types';
+import { toValidDateDisplay } from '../../../../common/helpers/toValidateDateDisplay';
 
 type PatientFormTemplateContext = {
   patientProfile?: PatientProfileModel | null;
@@ -17,31 +18,8 @@ const createSafeFileSegment = (value?: string): string =>
     .replace(/\s+/g, ' ')
     .trim();
 
-const parseDateValue = (value?: string | Date): Date | undefined => {
-  if (!value) {
-    return undefined;
-  }
-
-  if (value instanceof Date) {
-    return Number.isNaN(value.getTime()) ? undefined : value;
-  }
-
-  const parsedDate = new Date(value);
-  return Number.isNaN(parsedDate.getTime()) ? undefined : parsedDate;
-};
-
-export const formatPatientFormDisplayDate = (value?: string | Date): string => {
-  const date = parseDateValue(value);
-  if (!date) {
-    return '--';
-  }
-
-  return new Intl.DateTimeFormat('en-US', {
-    month: 'short',
-    day: '2-digit',
-    year: 'numeric',
-  }).format(date);
-};
+export const formatPatientFormDisplayDate = (value?: string | Date): string =>
+  toValidDateDisplay(value, 'MMM DD, YYYY');
 
 export const buildPatientFormPatientName = (
   patientProfile?: PatientProfileModel | null

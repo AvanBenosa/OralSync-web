@@ -17,56 +17,19 @@ import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import ReceiptLongOutlinedIcon from '@mui/icons-material/ReceiptLongOutlined';
 
 import TableLoadingSkeleton from '../../../../common/components/TableLoadingSkeleton';
+import FormatCurrency, {
+  formatCurrency as formatCurrencyValue,
+} from '../../../../common/helpers/formatCurrency';
+import { toValidDateDisplay } from '../../../../common/helpers/toValidateDateDisplay';
 import {
   FinanceExpenseModel,
   FinanceExpenseStateProps,
   getClinicExpenseCategoryLabel,
 } from '../api/types';
 import styles from '../../style.scss.module.scss';
+import HighlightText from '../../../../common/components/Highlight';
 
-const parseDateValue = (value?: string | Date): Date | undefined => {
-  if (!value) {
-    return undefined;
-  }
-
-  if (value instanceof Date) {
-    return Number.isNaN(value.getTime()) ? undefined : value;
-  }
-
-  const dateOnlyMatch = value.match(/^(\d{4})-(\d{2})-(\d{2})/);
-  if (dateOnlyMatch) {
-    const [, year, month, day] = dateOnlyMatch;
-    return new Date(Number(year), Number(month) - 1, Number(day));
-  }
-
-  const parsedDate = new Date(value);
-  return Number.isNaN(parsedDate.getTime()) ? undefined : parsedDate;
-};
-
-const formatDate = (value?: string | Date): string => {
-  const date = parseDateValue(value);
-  if (!date) {
-    return '--';
-  }
-
-  return new Intl.DateTimeFormat('en-US', {
-    month: 'short',
-    day: '2-digit',
-    year: 'numeric',
-  }).format(date);
-};
-
-const formatCurrency = (value?: number): string => {
-  if (value === undefined || value === null || Number.isNaN(value)) {
-    return '--';
-  }
-
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'Php',
-    minimumFractionDigits: 2,
-  }).format(value);
-};
+const formatDate = (value?: string | Date): string => toValidDateDisplay(value, 'MMM DD, YYYY');
 
 const FinanceOverviewExpenseTable: FunctionComponent<FinanceExpenseStateProps> = (
   props: FinanceExpenseStateProps
@@ -160,7 +123,9 @@ const FinanceOverviewExpenseTable: FunctionComponent<FinanceExpenseStateProps> =
                   <div className={styles.emptyStateIcon}>
                     <ReceiptLongOutlinedIcon className={styles.emptyStateGlyph} />
                   </div>
-                  <Typography className={styles.emptyStateTitle}>No expense records found</Typography>
+                  <Typography className={styles.emptyStateTitle}>
+                    No expense records found
+                  </Typography>
                   <Typography className={styles.emptyStateText}>
                     Add clinic expenses here to start tracking utilities, supplies, salaries, and
                     other operating costs.
@@ -176,14 +141,17 @@ const FinanceOverviewExpenseTable: FunctionComponent<FinanceExpenseStateProps> =
                     <div className={styles.mobileRowInline}>
                       <div className={styles.mobileMain}>
                         <Typography component="span" className={styles.mobileName}>
-                          {getClinicExpenseCategoryLabel(item.category)}
+                          <HighlightText
+                            query={state.search}
+                            text={getClinicExpenseCategoryLabel(item.category)}
+                          />
                         </Typography>
                         <div className={styles.mobileMeta}>
                           <Typography component="span" className={styles.mobileContact}>
                             {formatDate(item.date)}
                           </Typography>
                           <Typography component="span" className={styles.mobileContact}>
-                            {formatCurrency(item.amount)}
+                            <FormatCurrency value={item.amount} />
                           </Typography>
                         </div>
                       </div>
@@ -191,16 +159,24 @@ const FinanceOverviewExpenseTable: FunctionComponent<FinanceExpenseStateProps> =
                     </div>
                   ) : (
                     <Typography sx={{ fontWeight: 700, color: '#1f4467' }}>
-                      {getClinicExpenseCategoryLabel(item.category)}
+                      <HighlightText
+                        query={state.search}
+                        text={getClinicExpenseCategoryLabel(item.category)}
+                      />
                     </Typography>
                   )}
                 </TableCell>
                 {!isMobile ? (
                   <>
                     <TableCell className={styles.tableBodyCell}>{formatDate(item.date)}</TableCell>
-                    <TableCell className={styles.tableBodyCell}>{item.remarks || '--'}</TableCell>
                     <TableCell className={styles.tableBodyCell}>
-                      {formatCurrency(item.amount)}
+                      <HighlightText query={state.search} text={item.remarks || '--'} />
+                    </TableCell>
+                    <TableCell className={styles.tableBodyCell}>
+                      <HighlightText
+                        query={state.search}
+                        text={formatCurrencyValue(item.amount)}
+                      />
                     </TableCell>
                     <TableCell className={styles.tableBodyCell} align="right">
                       {renderActionButtons(item)}

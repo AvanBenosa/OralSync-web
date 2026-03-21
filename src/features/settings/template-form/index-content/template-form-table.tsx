@@ -28,6 +28,7 @@ import {
   TemplateFormStateProps,
   TemplateType,
 } from '../api/types';
+import { toValidDateDisplay } from '../../../../common/helpers/toValidateDateDisplay';
 
 type TemplateFormTableProps = TemplateFormStateProps & {
   templateType: TemplateType;
@@ -46,12 +47,7 @@ const formatDateLabel = (value?: string | null): string => {
     return '--';
   }
 
-  const parsedValue = new Date(value);
-  if (Number.isNaN(parsedValue.getTime())) {
-    return value;
-  }
-
-  return parsedValue.toLocaleString();
+  return toValidDateDisplay(value, 'MMM DD, YYYY, hh:mm A', value);
 };
 
 const TemplateFormTable: FunctionComponent<TemplateFormTableProps> = (

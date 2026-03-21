@@ -36,6 +36,22 @@ export const progressNoteValidationSchema = yup.object({
 
       return hasFourDigitYear(value);
     }),
+  nextVisit: yup
+    .string()
+    .test('valid-date', 'Next visit must be a valid date.', (value?: string) => {
+      if (!value) {
+        return true;
+      }
+
+      return isValidDateString(value);
+    })
+    .test('four-digit-year', 'Next visit year must be exactly 4 digits.', (value?: string) => {
+      if (!value) {
+        return true;
+      }
+
+      return hasFourDigitYear(value);
+    }),
   procedure: yup
     .string()
     .trim()
@@ -44,6 +60,18 @@ export const progressNoteValidationSchema = yup.object({
   category: yup
     .mixed<ProgressNoteCategory | ''>()
     .oneOf(['', ...PROGRESS_NOTE_CATEGORY_OPTIONS], 'Select a valid category.'),
+  clinicalFinding: yup
+    .string()
+    .trim()
+    .max(1000, 'Clinical finding must not exceed 1000 characters.'),
+  assessment: yup.string().trim().max(1000, 'Assessment must not exceed 1000 characters.'),
+  toothNumber: yup
+    .number()
+    .transform((value, originalValue) => (originalValue === '' ? undefined : value))
+    .required('Tooth number is required.')
+    .integer('Tooth number must be a whole number.')
+    .min(1, 'Tooth number must be at least 1.')
+    .max(32, 'Tooth number must not be greater than 32.'),
   remarks: yup.string().trim().max(1000, 'Remarks must not exceed 1000 characters.'),
   account: yup
     .mixed<ProgressNoteAccount | ''>()

@@ -99,7 +99,7 @@ const AppointmentHeader: FunctionComponent<AppointmentHeaderProps> = (
             <input
               className={styles.searchInput}
               type="text"
-              placeholder="Search patient or reason ..."
+              placeholder="Search patient name"
               value={String(state.search ?? '')}
               onChange={(event): void =>
                 setState({
