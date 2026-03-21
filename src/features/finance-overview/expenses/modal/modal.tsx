@@ -85,14 +85,7 @@ const FinanceOverviewExpenseDeleteModal: FunctionComponent<
     setIsSubmitting(true);
 
     try {
-      await HandleDeleteFinanceExpenseItem(state.selectedItem);
-      setState((prevState: typeof state) => ({
-        ...prevState,
-        openModal: false,
-        isUpdate: false,
-        isDelete: false,
-        selectedItem: undefined,
-      }));
+      await HandleDeleteFinanceExpenseItem(state.selectedItem, state, setState);
       await onDeleted?.();
     } catch (error) {
       if (isAxiosError(error)) {

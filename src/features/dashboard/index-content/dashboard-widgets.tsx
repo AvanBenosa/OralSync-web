@@ -4,6 +4,7 @@ import Groups2RoundedIcon from '@mui/icons-material/Groups2Rounded';
 import HourglassEmptyRoundedIcon from '@mui/icons-material/HourglassEmptyRounded';
 import NotificationsActiveRoundedIcon from '@mui/icons-material/NotificationsActiveRounded';
 import PersonAddAlt1RoundedIcon from '@mui/icons-material/PersonAddAlt1Rounded';
+import ReceiptLongRoundedIcon from '@mui/icons-material/ReceiptLongRounded';
 import SavingsRoundedIcon from '@mui/icons-material/SavingsRounded';
 
 import styles from '../style.scss.module.scss';
@@ -44,6 +45,12 @@ const DashBoardWidgets: FunctionComponent<DashboardStateprops> = (
       value: `P${Number(state?.incomeToday ?? 0).toLocaleString('en-US')}`,
       icon: <AttachMoneyRoundedIcon />,
       accentClassName: styles.metricAccentGreen,
+    },
+    {
+      label: 'Monthly Expenses',
+      value: `P${Number(state?.totalExpenseMonthly ?? 0).toLocaleString('en-US')}`,
+      icon: <ReceiptLongRoundedIcon />,
+      accentClassName: styles.metricAccentCoral,
     },
     {
       label: 'Monthly Income',

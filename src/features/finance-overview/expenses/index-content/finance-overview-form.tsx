@@ -25,10 +25,7 @@ import {
   getClinicExpenseCategoryLabel,
 } from '../api/types';
 import { financeExpenseValidationSchema } from '../api/validation';
-
-type FinanceOverviewExpenseFormProps = FinanceExpenseStateProps & {
-  onSaved?: () => Promise<void> | void;
-};
+type FinanceOverviewExpenseFormProps = FinanceExpenseStateProps;
 
 type FinanceOverviewExpenseFormValues = {
   id: string;
@@ -96,7 +93,7 @@ const getNumericValue = (value: number | ''): number | undefined =>
 const FinanceOverviewExpenseForm: FunctionComponent<FinanceOverviewExpenseFormProps> = (
   props: FinanceOverviewExpenseFormProps
 ): JSX.Element => {
-  const { state, setState, onSaved } = props;
+  const { state, setState } = props;
 
   const dialogTitle = useMemo(
     () => (state.isUpdate ? 'Update Expense' : 'Add Expense'),
@@ -123,19 +120,10 @@ const FinanceOverviewExpenseForm: FunctionComponent<FinanceOverviewExpenseFormPr
     };
 
     if (state.isUpdate) {
-      await HandleUpdateFinanceExpenseItem(payload);
+      await HandleUpdateFinanceExpenseItem(payload, state, setState);
     } else {
-      await HandleCreateFinanceExpenseItem(payload);
+      await HandleCreateFinanceExpenseItem(payload, state, setState);
     }
-
-    setState((prevState: typeof state) => ({
-      ...prevState,
-      openModal: false,
-      isUpdate: false,
-      isDelete: false,
-      selectedItem: undefined,
-    }));
-    await onSaved?.();
   };
 
   return (

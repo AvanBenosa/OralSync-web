@@ -31,10 +31,7 @@ import {
 } from '../api/handlers';
 import type { FinanceIncomeModel, FinanceIncomeStateProps } from '../api/types';
 import { financeIncomeValidationSchema } from '../api/validation';
-
-type FinanceOverviewFormProps = FinanceIncomeStateProps & {
-  onSaved?: () => Promise<void> | void;
-};
+type FinanceOverviewFormProps = FinanceIncomeStateProps;
 
 type FinanceOverviewFormValues = {
   id: string;
@@ -152,7 +149,7 @@ const getBalanceValue = (totalAmountDue: number | '', amountPaid: number | ''): 
 const FinanceOverviewForm: FunctionComponent<FinanceOverviewFormProps> = (
   props: FinanceOverviewFormProps
 ): JSX.Element => {
-  const { state, setState, clinicId, onSaved } = props;
+  const { state, setState, clinicId } = props;
   const [doctorOptions, setDoctorOptions] = useState<SettingsUserModel[]>([]);
   const [patientSelectionError, setPatientSelectionError] = useState<string>('');
 
@@ -164,7 +161,7 @@ const FinanceOverviewForm: FunctionComponent<FinanceOverviewFormProps> = (
   useEffect(() => {
     let isMounted = true;
 
-    void GetClinicUsers()
+    void GetClinicUsers(clinicId)
       .then((response) => {
         if (!isMounted) {
           return;
@@ -192,7 +189,7 @@ const FinanceOverviewForm: FunctionComponent<FinanceOverviewFormProps> = (
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [clinicId]);
 
   const handleClose = (): void => {
     setState({
@@ -225,19 +222,10 @@ const FinanceOverviewForm: FunctionComponent<FinanceOverviewFormProps> = (
     };
 
     if (state.isUpdate) {
-      await HandleUpdateFinanceIncomeItem(payload);
+      await HandleUpdateFinanceIncomeItem(payload, state, setState);
     } else {
-      await HandleCreateFinanceIncomeItem(payload);
+      await HandleCreateFinanceIncomeItem(payload, state, setState);
     }
-
-    setState((prevState: typeof state) => ({
-      ...prevState,
-      openModal: false,
-      isUpdate: false,
-      isDelete: false,
-      selectedItem: undefined,
-    }));
-    await onSaved?.();
   };
 
   return (

@@ -36,7 +36,7 @@ const DashBoardCharts: FunctionComponent<DashboardStateprops> = (
   const bestTreatment = [...monthlyRevenue].sort(
     (left, right) => (right.totalAmount ?? 0) - (left.totalAmount ?? 0)
   )[0];
-  const highestMonthlyIncome = Math.max(...monthlyIncomeValues, 0);
+  const highestMonthlyExpense = Math.max(...monthlyExpenseValues, 0);
   const highestExpenseMonth =
     [...monthlyIncome].sort((left, right) => (right.expenses ?? 0) - (left.expenses ?? 0))[0]
       ?.month ?? '--';
@@ -57,10 +57,14 @@ const DashBoardCharts: FunctionComponent<DashboardStateprops> = (
       pageStart: 0,
       pageEnd: 500,
       search: 'all',
+      dateFrom: '',
+      dateTo: '',
       openModal: false,
       isUpdate: false,
       isDelete: false,
       clinicId: state.clinicId,
+      summaryCount: 0,
+      hasDateFilter: false,
     };
 
     void GetAppointments(requestState, true)
@@ -336,7 +340,7 @@ const DashBoardCharts: FunctionComponent<DashboardStateprops> = (
               Highest expense month: {highestExpenseMonth}
             </Typography>
             <Typography className={styles.chartSummaryValue}>
-              P{highestMonthlyIncome.toLocaleString('en-US')}
+              P{highestMonthlyExpense.toLocaleString('en-US')}
             </Typography>
           </Stack>
         </CardContent>

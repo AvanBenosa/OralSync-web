@@ -1,4 +1,6 @@
 import { FunctionComponent, JSX, useEffect, useRef, useState } from 'react';
+import TrendingDownRoundedIcon from '@mui/icons-material/TrendingDownRounded';
+import TrendingUpRoundedIcon from '@mui/icons-material/TrendingUpRounded';
 import { Dialog } from '@mui/material';
 import { toast } from 'react-toastify';
 
@@ -27,6 +29,8 @@ const createInitialModuleState = <T,>(clinicId?: string | null): FinanceModuleSt
   isDelete: false,
   isUpdate: false,
   search: '',
+  dateFrom: '',
+  dateTo: '',
   initial: 0,
   pageStart: 0,
   pageEnd: 25,
@@ -38,18 +42,27 @@ export const FinanceOverviewIncome: FunctionComponent<FinanceOverviewIncomeProps
   props: FinanceOverviewIncomeProps
 ): JSX.Element => {
   const { clinicId, activeTab, onTabChange } = props;
+  const dialogStateReset = {
+    openModal: false,
+    isUpdate: false,
+    isDelete: false,
+    selectedItem: undefined,
+  } as const;
   const reloadTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastLoadedClinicIdRef = useRef<string | null | undefined>(undefined);
   const resolvedClinicId = useClinicId(clinicId);
-  const [state, setState] = useState<FinanceIncomeStateModel>(() =>
-    createInitialModuleState<FinanceIncomeModel>(resolvedClinicId)
-  );
+  const [state, setState] = useState<FinanceIncomeStateModel>(() => ({
+    ...createInitialModuleState<FinanceIncomeModel>(resolvedClinicId),
+    amount: 0,
+    hasDateFilter: false,
+  }));
 
   const loadFinanceIncome = async (
     showToast: boolean = false,
     shouldSetLoadingState: boolean = true,
-    forceRefresh: boolean = false
+    forceRefresh: boolean = false,
+    stateOverrides?: Partial<FinanceIncomeStateModel>
   ): Promise<void> => {
     if (!resolvedClinicId) {
       setState((prev: FinanceIncomeStateModel) => ({
@@ -64,6 +77,7 @@ export const FinanceOverviewIncome: FunctionComponent<FinanceOverviewIncomeProps
 
     const requestState: FinanceIncomeStateModel = {
       ...state,
+      ...stateOverrides,
       load: true,
       clinicId: resolvedClinicId,
     };
@@ -71,6 +85,7 @@ export const FinanceOverviewIncome: FunctionComponent<FinanceOverviewIncomeProps
     if (shouldSetLoadingState) {
       setState((prev: FinanceIncomeStateModel) => ({
         ...prev,
+        ...stateOverrides,
         load: true,
         clinicId: resolvedClinicId,
       }));
@@ -101,7 +116,7 @@ export const FinanceOverviewIncome: FunctionComponent<FinanceOverviewIncomeProps
   };
 
   const handleMutationCompleted = async (): Promise<void> => {
-    await loadFinanceIncome(false, true, true);
+    await loadFinanceIncome(false, true, true, dialogStateReset);
   };
 
   useEffect(() => {
@@ -172,9 +187,9 @@ export const FinanceOverviewIncome: FunctionComponent<FinanceOverviewIncomeProps
         clearTimeout(searchTimeout);
       }
     };
-    // Fetch when clinic context, search, page offset, or view changes.
+    // Fetch when clinic context, search, date range, page offset, or view changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [resolvedClinicId, state.search, state.pageStart, state.pageEnd, activeTab]);
+  }, [resolvedClinicId, state.search, state.dateFrom, state.dateTo, state.pageStart, state.pageEnd, activeTab]);
 
   const handleCloseDialog = (): void => {
     setState((prev: FinanceIncomeStateModel) => ({
@@ -192,6 +207,9 @@ export const FinanceOverviewIncome: FunctionComponent<FinanceOverviewIncomeProps
     }));
   };
 
+  const summaryLabel = state.hasDateFilter ? 'Total Income' : 'Income Today';
+  const formattedSummaryAmount = `P${Number(state.amount ?? 0).toLocaleString('en-US')}`;
+
   return (
     <div className={styles.wrapper}>
       <div className={styles.bodyWrapper}>
@@ -201,9 +219,41 @@ export const FinanceOverviewIncome: FunctionComponent<FinanceOverviewIncomeProps
             setState={setState}
             clinicId={state.clinicId}
             onReload={handleReload}
-            activeTab={activeTab}
-            onTabChange={onTabChange}
           />
+          <div className={styles.standaloneTabsRow}>
+            <div className={styles.tabList} role="tablist" aria-label="Finance views">
+              <button
+                type="button"
+                role="tab"
+                aria-selected={activeTab === 'income'}
+                className={`${styles.tabButton} ${activeTab === 'income' ? styles.tabButtonActive : ''}`}
+                onClick={() => onTabChange('income')}
+              >
+                <span className={styles.tabButtonIcon} aria-hidden="true">
+                  <TrendingUpRoundedIcon />
+                </span>
+                <span>Income</span>
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={activeTab === 'expenses'}
+                className={`${styles.tabButton} ${
+                  activeTab === 'expenses' ? styles.tabButtonActive : ''
+                }`}
+                onClick={() => onTabChange('expenses')}
+              >
+                <span className={styles.tabButtonIcon} aria-hidden="true">
+                  <TrendingDownRoundedIcon />
+                </span>
+                <span>Expenses</span>
+              </button>
+            </div>
+            <div className={styles.financeSummaryCard} aria-live="polite">
+              <span className={styles.financeSummaryLabel}>{summaryLabel}:</span>
+              <strong className={styles.financeSummaryValue}>{formattedSummaryAmount}</strong>
+            </div>
+          </div>
           <div className={`${styles.listItem} ${styles.listItemWithPagination}`}>
             <div className={styles.tableArea}>
               <FinanceOverviewIncomeTable
@@ -247,7 +297,6 @@ export const FinanceOverviewIncome: FunctionComponent<FinanceOverviewIncomeProps
             state={state}
             setState={setState}
             clinicId={state.clinicId}
-            onSaved={handleMutationCompleted}
           />
         )}
       </Dialog>

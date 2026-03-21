@@ -22,6 +22,8 @@ export type AppointmentResponseModel = {
   pageStart: number;
   pageEnd: number;
   totalCount: number;
+  summaryCount: number;
+  hasDateFilter: boolean;
 };
 
 export type AppointmentStateModel = {
@@ -32,11 +34,15 @@ export type AppointmentStateModel = {
   pageStart: number;
   pageEnd: number;
   search?: string;
+  dateFrom?: string;
+  dateTo?: string;
   openModal: boolean;
   isUpdate: boolean;
   isDelete: boolean;
   selectedItem?: AppointmentModel;
   clinicId?: string | null;
+  summaryCount: number;
+  hasDateFilter: boolean;
 };
 
 export type AppointmentStateProps = {

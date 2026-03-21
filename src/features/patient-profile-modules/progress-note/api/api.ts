@@ -22,11 +22,38 @@ const progressNoteResponseCache = new Map<
 >();
 const PROGRESS_NOTE_RESPONSE_CACHE_TTL_MS = 5000;
 
+type PatientProgressNoteQuery = {
+  patientId?: string;
+  clinicId?: string | null;
+  dateFrom?: string;
+  dateTo?: string;
+};
+
+const normalizeQueryValue = (value?: string | null): string => value?.trim() ?? '';
+
+const buildProgressNoteRequestKey = (query?: PatientProgressNoteQuery): string => {
+  const patientId = normalizeQueryValue(query?.patientId);
+  const clinicId = normalizeQueryValue(query?.clinicId);
+  const dateFrom = normalizeQueryValue(query?.dateFrom);
+  const dateTo = normalizeQueryValue(query?.dateTo);
+
+  return [
+    `patient:${patientId || 'all'}`,
+    `clinic:${clinicId || 'current'}`,
+    `from:${dateFrom || 'any'}`,
+    `to:${dateTo || 'any'}`,
+  ].join('|');
+};
+
 export const GetPatientProgressNoteItems = async (
-  patientId?: string,
+  query?: PatientProgressNoteQuery,
   forceRefresh: boolean = false
 ): Promise<PatientProgressNoteModel[]> => {
-  const requestKey = patientId?.trim() ? `patient:${patientId.trim()}` : 'clinic-progress-notes';
+  const requestKey = buildProgressNoteRequestKey(query);
+  const patientId = normalizeQueryValue(query?.patientId);
+  const clinicId = normalizeQueryValue(query?.clinicId);
+  const dateFrom = normalizeQueryValue(query?.dateFrom);
+  const dateTo = normalizeQueryValue(query?.dateTo);
 
   if (forceRefresh) {
     progressNoteResponseCache.delete(requestKey);
@@ -48,11 +75,12 @@ export const GetPatientProgressNoteItems = async (
   const request = (async (): Promise<PatientProgressNoteModel[]> => {
     try {
       const response = await apiClient.get<PatientProgressNoteModel[]>(PROGRESS_NOTE_ENDPOINT, {
-        params: patientId?.trim()
-          ? {
-              PatientInfoId: patientId,
-            }
-          : undefined,
+        params: {
+          PatientInfoId: patientId || undefined,
+          ClinicId: clinicId || undefined,
+          DateFrom: dateFrom || undefined,
+          DateTo: dateTo || undefined,
+        },
       });
 
       const responseData = SuccessResponse(response, ResponseMethod.Fetch, undefined, false) || [];

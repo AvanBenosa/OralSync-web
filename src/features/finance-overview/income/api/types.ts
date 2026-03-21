@@ -1,5 +1,8 @@
 import type { PatientProgressNoteModel } from '../../../patient-profile-modules/progress-note/api/types';
-import type { FinanceModuleStateModel, FinanceModuleStateProps } from '../../api/types';
+import type {
+  FinanceIncomeSummaryModel,
+  FinanceModuleStateModel,
+} from '../../api/types';
 
 export type FinanceIncomeModel = PatientProgressNoteModel & {
   patientName?: string;
@@ -11,8 +14,14 @@ export type FinanceIncomeResponseModel = {
   pageStart: number;
   pageEnd: number;
   totalCount: number;
+} & FinanceIncomeSummaryModel;
+
+export type FinanceIncomeStateModel = FinanceModuleStateModel<FinanceIncomeModel> &
+  FinanceIncomeSummaryModel;
+
+export type FinanceIncomeStateProps = {
+  state: FinanceIncomeStateModel;
+  setState: Function;
+  clinicId?: string | null;
+  onReload?: () => void;
 };
-
-export type FinanceIncomeStateModel = FinanceModuleStateModel<FinanceIncomeModel>;
-
-export type FinanceIncomeStateProps = FinanceModuleStateProps<FinanceIncomeModel>;

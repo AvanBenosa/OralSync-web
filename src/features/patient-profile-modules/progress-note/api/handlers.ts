@@ -12,7 +12,7 @@ export const HandleGetPatientProgressNoteItems = async (
   patientId?: string,
   forceRefresh: boolean = false
 ): Promise<void> => {
-  const response = await GetPatientProgressNoteItems(patientId, forceRefresh);
+  const response = await GetPatientProgressNoteItems({ patientId }, forceRefresh);
   setState({
     ...state,
     load: false,

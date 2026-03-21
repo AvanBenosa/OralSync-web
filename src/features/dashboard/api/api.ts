@@ -59,6 +59,7 @@ export const GetDashboard = async (
           pendingAppointments: 0,
           incomeToday: 0,
           totalIncomeMonthly: 0,
+          totalExpenseMonthly: 0,
           latestPatients: [],
           addPatients: false,
           addAppointment: false,

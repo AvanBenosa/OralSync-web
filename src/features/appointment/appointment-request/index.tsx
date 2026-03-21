@@ -1,5 +1,7 @@
 import { FunctionComponent, JSX, useEffect, useRef, useState } from 'react';
 import { Dialog } from '@mui/material';
+import CalendarMonthRoundedIcon from '@mui/icons-material/CalendarMonthRounded';
+import ListAltRoundedIcon from '@mui/icons-material/ListAltRounded';
 import { toast } from 'react-toastify';
 import { toastConfig } from '../../../common/api/responses';
 
@@ -30,11 +32,15 @@ export const AppointmentModule: FunctionComponent<AppointmentProps> = (
     isDelete: false,
     isUpdate: false,
     search: '',
+    dateFrom: '',
+    dateTo: '',
     initial: 0,
     pageStart: 0,
     pageEnd: 25,
     totalItem: 0,
     clinicId: resolvedClinicId,
+    summaryCount: 0,
+    hasDateFilter: false,
   });
 
   const loadAppointments = async (
@@ -46,7 +52,11 @@ export const AppointmentModule: FunctionComponent<AppointmentProps> = (
       setState((prev: AppointmentStateModel) => ({
         ...prev,
         load: false,
+        items: [],
         clinicId: resolvedClinicId,
+        totalItem: 0,
+        summaryCount: 0,
+        hasDateFilter: false,
       }));
       return;
     }
@@ -103,6 +113,10 @@ export const AppointmentModule: FunctionComponent<AppointmentProps> = (
       setState((prev: AppointmentStateModel) => ({
         ...prev,
         load: false,
+        items: [],
+        totalItem: 0,
+        summaryCount: 0,
+        hasDateFilter: false,
       }));
 
       return () => {
@@ -140,7 +154,10 @@ export const AppointmentModule: FunctionComponent<AppointmentProps> = (
     };
     // Fetch when clinic context, server search, page offset, or active view changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [resolvedClinicId, state.search, state.pageStart, state.pageEnd, activeTab]);
+  }, [resolvedClinicId, state.search, state.dateFrom, state.dateTo, state.pageStart, state.pageEnd, activeTab]);
+
+  const summaryLabel = state.hasDateFilter ? 'Total Appointments' : 'Appointment Today';
+  const formattedSummaryCount = Number(state.summaryCount ?? 0).toLocaleString('en-US');
 
   const handleCloseDialog = (): void => {
     setState((prev: AppointmentStateModel) => ({
@@ -168,8 +185,43 @@ export const AppointmentModule: FunctionComponent<AppointmentProps> = (
             clinicId={state.clinicId}
             onReload={handleReload}
             activeTab={activeTab}
-            onTabChange={setActiveTab}
           />
+          <div className={styles.standaloneTabsRow}>
+            <div className={styles.tabList} role="tablist" aria-label="Appointment views">
+              <button
+                type="button"
+                role="tab"
+                aria-selected={activeTab === 'requests'}
+                className={`${styles.tabButton} ${
+                  activeTab === 'requests' ? styles.tabButtonActive : ''
+                }`}
+                onClick={() => setActiveTab('requests')}
+              >
+                <span className={styles.tabButtonIcon} aria-hidden="true">
+                  <ListAltRoundedIcon />
+                </span>
+                <span>Requests</span>
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={activeTab === 'calendar'}
+                className={`${styles.tabButton} ${
+                  activeTab === 'calendar' ? styles.tabButtonActive : ''
+                }`}
+                onClick={() => setActiveTab('calendar')}
+              >
+                <span className={styles.tabButtonIcon} aria-hidden="true">
+                  <CalendarMonthRoundedIcon />
+                </span>
+                <span>Calendar</span>
+              </button>
+            </div>
+            <div className={styles.summaryCard} aria-live="polite">
+              <span className={styles.summaryLabel}>{summaryLabel}:</span>
+              <strong className={styles.summaryValue}>{formattedSummaryCount}</strong>
+            </div>
+          </div>
           <div
             className={`${styles.listItem} ${
               activeTab === 'requests' ? styles.listItemWithPagination : ''

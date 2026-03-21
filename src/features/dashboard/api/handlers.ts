@@ -17,6 +17,7 @@ export const HandleGetDashboard = async (
     pendingAppointments: response.pendingAppointments ?? 0,
     incomeToday: response.incomeToday ?? 0,
     totalIncomeMonthly: response.totalIncomeMonthly ?? 0,
+    totalExpenseMonthly: response.totalExpenseMonthly ?? 0,
     latestPatients: response.latestPatients ?? [],
     addPatients: response.addPatients ?? false,
     addAppointment: response.addAppointment ?? false,

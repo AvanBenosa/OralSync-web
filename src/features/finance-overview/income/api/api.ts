@@ -23,6 +23,26 @@ const financeIncomeResponseCache = new Map<
   }
 >();
 
+const buildFinanceIncomeCacheKey = (
+  clinicId?: string | null,
+  dateFrom?: string,
+  dateTo?: string
+): string => {
+  const resolvedClinicId = resolveClinicId(clinicId);
+
+  return [
+    resolvedClinicId ?? 'current-clinic',
+    dateFrom?.trim() || 'any-from',
+    dateTo?.trim() || 'any-to',
+  ].join('|');
+};
+
+const getFinanceIncomeCacheKeyPrefix = (clinicId?: string | null): string | undefined => {
+  const resolvedClinicId = resolveClinicId(clinicId);
+
+  return resolvedClinicId ? `${resolvedClinicId}|` : undefined;
+};
+
 const parseDateValue = (value?: string | Date): Date | undefined => {
   if (!value) {
     return undefined;
@@ -42,6 +62,30 @@ const parseDateValue = (value?: string | Date): Date | undefined => {
   return Number.isNaN(parsedDate.getTime()) ? undefined : parsedDate;
 };
 
+const isSameCalendarDate = (left: Date, right: Date): boolean =>
+  left.getFullYear() === right.getFullYear() &&
+  left.getMonth() === right.getMonth() &&
+  left.getDate() === right.getDate();
+
+const isWithinInclusiveDateRange = (
+  itemDate: Date,
+  dateFrom?: string,
+  dateTo?: string
+): boolean => {
+  const fromDate = parseDateValue(dateFrom);
+  const toDate = parseDateValue(dateTo);
+
+  if (fromDate && itemDate < fromDate) {
+    return false;
+  }
+
+  if (toDate && itemDate > toDate) {
+    return false;
+  }
+
+  return true;
+};
+
 const sortFinanceItems = (left: FinanceIncomeModel, right: FinanceIncomeModel): number => {
   const leftDate = parseDateValue(left.date)?.getTime() ?? 0;
   const rightDate = parseDateValue(right.date)?.getTime() ?? 0;
@@ -57,19 +101,22 @@ const sortFinanceItems = (left: FinanceIncomeModel, right: FinanceIncomeModel): 
 
 const getAllFinanceIncomeRecords = async (
   clinicId?: string | null,
+  dateFrom?: string,
+  dateTo?: string,
   forceRefresh: boolean = false
 ): Promise<FinanceIncomeModel[]> => {
   const resolvedClinicId = resolveClinicId(clinicId);
+  const cacheKey = buildFinanceIncomeCacheKey(resolvedClinicId, dateFrom, dateTo);
 
   if (!resolvedClinicId) {
     return [];
   }
 
   if (forceRefresh) {
-    financeIncomeResponseCache.delete(resolvedClinicId);
+    financeIncomeResponseCache.delete(cacheKey);
   }
 
-  const cachedResponse = financeIncomeResponseCache.get(resolvedClinicId);
+  const cachedResponse = financeIncomeResponseCache.get(cacheKey);
   if (
     cachedResponse &&
     Date.now() - cachedResponse.cachedAt < FINANCE_INCOME_CACHE_TTL_MS
@@ -77,27 +124,34 @@ const getAllFinanceIncomeRecords = async (
     return cachedResponse.data;
   }
 
-  const activeRequest = financeIncomeRequestCache.get(resolvedClinicId);
+  const activeRequest = financeIncomeRequestCache.get(cacheKey);
   if (activeRequest) {
     return activeRequest;
   }
 
   const request = (async (): Promise<FinanceIncomeModel[]> => {
     try {
-      const notes = await GetPatientProgressNoteItems(undefined, forceRefresh);
+      const notes = await GetPatientProgressNoteItems(
+        {
+          clinicId: resolvedClinicId,
+          dateFrom,
+          dateTo,
+        },
+        forceRefresh
+      );
       const sortedItems = [...(notes || [])].sort(sortFinanceItems) as FinanceIncomeModel[];
-      financeIncomeResponseCache.set(resolvedClinicId, {
+      financeIncomeResponseCache.set(cacheKey, {
         data: sortedItems,
         cachedAt: Date.now(),
       });
 
       return sortedItems;
     } finally {
-      financeIncomeRequestCache.delete(resolvedClinicId);
+      financeIncomeRequestCache.delete(cacheKey);
     }
   })();
 
-  financeIncomeRequestCache.set(resolvedClinicId, request);
+  financeIncomeRequestCache.set(cacheKey, request);
   return request;
 };
 
@@ -119,6 +173,66 @@ const matchesFinanceIncomeSearch = (item: FinanceIncomeModel, keyword: string): 
     .some((value) => String(value).toLowerCase().includes(keyword));
 };
 
+const buildFinanceIncomeResponse = (
+  state: FinanceIncomeStateModel,
+  allItems: FinanceIncomeModel[]
+): FinanceIncomeResponseModel => {
+  const pageSize = Math.max(state.pageEnd, 1);
+  const keyword = String(state.search ?? '').trim().toLowerCase();
+  const filteredItems = keyword
+    ? allItems.filter((item) => matchesFinanceIncomeSearch(item, keyword))
+    : allItems;
+  const hasDateFilter = Boolean(
+    String(state.dateFrom ?? '').trim() || String(state.dateTo ?? '').trim()
+  );
+  const today = new Date();
+  const summaryItems = hasDateFilter
+    ? filteredItems
+    : filteredItems.filter((item) => {
+        const itemDate = parseDateValue(item.date);
+        return itemDate ? isSameCalendarDate(itemDate, today) : false;
+      });
+  const summaryAmount = summaryItems.reduce(
+    (total, item) => total + Number(item.amountPaid ?? 0),
+    0
+  );
+  const maxPageStart =
+    filteredItems.length > 0 ? Math.floor((filteredItems.length - 1) / pageSize) * pageSize : 0;
+  const safePageStart = Math.min(state.pageStart, maxPageStart);
+
+  return {
+    items: filteredItems.slice(safePageStart, safePageStart + pageSize),
+    pageStart: safePageStart,
+    pageEnd: pageSize,
+    totalCount: filteredItems.length,
+    amount: summaryAmount,
+    hasDateFilter,
+  };
+};
+
+const invalidateOtherFinanceIncomeCaches = (
+  clinicId?: string | null,
+  currentCacheKey?: string
+): void => {
+  const cacheKeyPrefix = getFinanceIncomeCacheKeyPrefix(clinicId);
+
+  if (!cacheKeyPrefix) {
+    return;
+  }
+
+  Array.from(financeIncomeResponseCache.keys()).forEach((cacheKey) => {
+    if (cacheKey !== currentCacheKey && cacheKey.startsWith(cacheKeyPrefix)) {
+      financeIncomeResponseCache.delete(cacheKey);
+    }
+  });
+
+  Array.from(financeIncomeRequestCache.keys()).forEach((cacheKey) => {
+    if (cacheKey !== currentCacheKey && cacheKey.startsWith(cacheKeyPrefix)) {
+      financeIncomeRequestCache.delete(cacheKey);
+    }
+  });
+};
+
 export const GetFinanceIncomeItems = async (
   state: FinanceIncomeStateModel,
   forceRefresh: boolean = false
@@ -132,24 +246,58 @@ export const GetFinanceIncomeItems = async (
       pageStart: 0,
       pageEnd: pageSize,
       totalCount: 0,
+      amount: 0,
+      hasDateFilter: false,
     };
   }
 
-  const keyword = String(state.search ?? '').trim().toLowerCase();
-  const allItems = await getAllFinanceIncomeRecords(resolvedClinicId, forceRefresh);
-  const filteredItems = keyword
-    ? allItems.filter((item) => matchesFinanceIncomeSearch(item, keyword))
-    : allItems;
-  const maxPageStart =
-    filteredItems.length > 0 ? Math.floor((filteredItems.length - 1) / pageSize) * pageSize : 0;
-  const safePageStart = Math.min(state.pageStart, maxPageStart);
+  const allItems = await getAllFinanceIncomeRecords(
+    resolvedClinicId,
+    state.dateFrom,
+    state.dateTo,
+    forceRefresh
+  );
+  return buildFinanceIncomeResponse(state, allItems);
+};
 
-  return {
-    items: filteredItems.slice(safePageStart, safePageStart + pageSize),
-    pageStart: safePageStart,
-    pageEnd: pageSize,
-    totalCount: filteredItems.length,
-  };
+export const ApplyFinanceIncomeMutationLocally = (
+  state: FinanceIncomeStateModel,
+  item?: FinanceIncomeModel,
+  previousItem?: FinanceIncomeModel
+): FinanceIncomeResponseModel => {
+  const currentCacheKey = buildFinanceIncomeCacheKey(
+    state.clinicId,
+    state.dateFrom,
+    state.dateTo
+  );
+  const cachedItems =
+    financeIncomeResponseCache.get(currentCacheKey)?.data ?? [...state.items];
+  const nextItemIds = new Set(
+    [item?.id, previousItem?.id].filter((value): value is string => Boolean(value))
+  );
+
+  let nextItems = cachedItems.filter((existingItem) => !nextItemIds.has(String(existingItem.id)));
+
+  if (item) {
+    const itemDate = parseDateValue(item.date);
+    const isInCurrentRange = itemDate
+      ? isWithinInclusiveDateRange(itemDate, state.dateFrom, state.dateTo)
+      : !String(state.dateFrom ?? '').trim() && !String(state.dateTo ?? '').trim();
+
+    if (isInCurrentRange) {
+      nextItems = [...nextItems, item];
+    }
+  }
+
+  nextItems = [...nextItems].sort(sortFinanceItems);
+
+  financeIncomeResponseCache.set(currentCacheKey, {
+    data: nextItems,
+    cachedAt: Date.now(),
+  });
+  invalidateOtherFinanceIncomeCaches(state.clinicId, currentCacheKey);
+
+  return buildFinanceIncomeResponse(state, nextItems);
 };
 
 export const CreateFinanceIncomeItem = async (

@@ -37,6 +37,7 @@ export type DashboardStateModel = {
   pendingAppointments: number;
   incomeToday: number;
   totalIncomeMonthly: number;
+  totalExpenseMonthly: number;
   latestPatients: DashboardPatientItemModel[];
   addPatients: boolean;
   addAppointment: boolean;

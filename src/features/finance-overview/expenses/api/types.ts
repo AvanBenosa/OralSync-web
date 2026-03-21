@@ -1,4 +1,7 @@
-import type { FinanceModuleStateModel, FinanceModuleStateProps } from '../../api/types';
+import type {
+  FinanceModuleStateModel,
+  FinanceSummaryModel,
+} from '../../api/types';
 
 export enum ClinicExpenseCategory {
   Utilities = 'Utilities',
@@ -46,11 +49,17 @@ export type FinanceExpenseResponseModel = {
   pageStart: number;
   pageEnd: number;
   totalCount: number;
+} & FinanceSummaryModel;
+
+export type FinanceExpenseStateModel = FinanceModuleStateModel<FinanceExpenseModel> &
+  FinanceSummaryModel;
+
+export type FinanceExpenseStateProps = {
+  state: FinanceExpenseStateModel;
+  setState: Function;
+  clinicId?: string | null;
+  onReload?: () => void;
 };
-
-export type FinanceExpenseStateModel = FinanceModuleStateModel<FinanceExpenseModel>;
-
-export type FinanceExpenseStateProps = FinanceModuleStateProps<FinanceExpenseModel>;
 
 export const getClinicExpenseCategoryLabel = (
   category?: ClinicExpenseCategory | string

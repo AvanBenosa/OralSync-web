@@ -170,10 +170,8 @@ const FinanceOverviewIncomeTable: FunctionComponent<FinanceIncomeStateProps> = (
             {!isMobile ? (
               <>
                 <TableCell className={styles.tableHeaderCell}>Date</TableCell>
-                <TableCell className={styles.tableHeaderCell}>Procedure</TableCell>
                 <TableCell className={styles.tableHeaderCell}>Assigned Dentist</TableCell>
                 <TableCell className={styles.tableHeaderCell}>Category</TableCell>
-                <TableCell className={styles.tableHeaderCell}>Account</TableCell>
                 <TableCell className={styles.tableHeaderCell}>Total Due</TableCell>
                 <TableCell className={styles.tableHeaderCell}>Paid</TableCell>
                 <TableCell className={styles.tableHeaderCell}>Balance</TableCell>
@@ -220,7 +218,9 @@ const FinanceOverviewIncomeTable: FunctionComponent<FinanceIncomeStateProps> = (
                   <div className={styles.emptyStateIcon}>
                     <MonetizationOnOutlinedIcon className={styles.emptyStateGlyph} />
                   </div>
-                  <Typography className={styles.emptyStateTitle}>No income records found</Typography>
+                  <Typography className={styles.emptyStateTitle}>
+                    No income records found
+                  </Typography>
                   <Typography className={styles.emptyStateText}>
                     Income entries from patient progress notes will appear here once records are
                     created or your search matches existing entries.
@@ -240,11 +240,7 @@ const FinanceOverviewIncomeTable: FunctionComponent<FinanceIncomeStateProps> = (
                   hover
                   key={item.id ?? `finance-income-${index}`}
                   className={
-                    status
-                      ? status === 'pending'
-                        ? styles.pendingRow
-                        : styles.paidRow
-                      : undefined
+                    status ? (status === 'pending' ? styles.pendingRow : styles.paidRow) : undefined
                   }
                 >
                   <TableCell className={styles.tableBodyCell}>
@@ -276,17 +272,13 @@ const FinanceOverviewIncomeTable: FunctionComponent<FinanceIncomeStateProps> = (
                         <Typography sx={{ fontWeight: 700, color: '#1f4467' }}>
                           {item.patientName || item.patientNumber || '--'}
                         </Typography>
-                        <Typography sx={{ fontSize: 12, color: '#6f8297' }}>
-                          {item.patientNumber || '--'}
-                        </Typography>
                       </div>
                     )}
                   </TableCell>
                   {!isMobile ? (
                     <>
-                      <TableCell className={styles.tableBodyCell}>{formatDate(item.date)}</TableCell>
                       <TableCell className={styles.tableBodyCell}>
-                        {item.procedure || '--'}
+                        {formatDate(item.date)}
                       </TableCell>
                       <TableCell className={styles.tableBodyCell}>
                         {item.assignedDoctor || '--'}
@@ -294,7 +286,6 @@ const FinanceOverviewIncomeTable: FunctionComponent<FinanceIncomeStateProps> = (
                       <TableCell className={styles.tableBodyCell}>
                         {item.category || '--'}
                       </TableCell>
-                      <TableCell className={styles.tableBodyCell}>{item.account || '--'}</TableCell>
                       <TableCell className={styles.tableBodyCell}>
                         {formatCurrency(totalAmountDue)}
                       </TableCell>

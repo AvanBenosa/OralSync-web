@@ -4,6 +4,13 @@ export type FinanceOverviewProps = {
 
 export type FinanceViewTab = 'income' | 'expenses';
 
+export type FinanceSummaryModel = {
+  amount: number;
+  hasDateFilter: boolean;
+};
+
+export type FinanceIncomeSummaryModel = FinanceSummaryModel;
+
 export type FinanceModuleStateModel<T> = {
   items: T[];
   load: boolean;
@@ -12,6 +19,8 @@ export type FinanceModuleStateModel<T> = {
   pageStart: number;
   pageEnd: number;
   search?: string;
+  dateFrom?: string;
+  dateTo?: string;
   openModal: boolean;
   isUpdate: boolean;
   isDelete: boolean;
