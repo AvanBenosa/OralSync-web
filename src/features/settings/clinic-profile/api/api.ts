@@ -59,6 +59,8 @@ const normalizeClinicProfileModel = (item?: ClinicProfileModel | null): ClinicPr
     isFridayOpen: item?.isFridayOpen ?? fallbackWorkingDays.includes('Friday'),
     isSaturdayOpen: item?.isSaturdayOpen ?? fallbackWorkingDays.includes('Saturday'),
     isSundayOpen: item?.isSundayOpen ?? fallbackWorkingDays.includes('Sunday'),
+    subscriptionType: item?.subscriptionType || '',
+    validityDate: item?.validityDate || '',
   };
 
   normalizedItem.workingDays = toWorkingDays(normalizedItem);
@@ -127,6 +129,8 @@ export const GetCurrentClinicProfile = async (
           isSaturdayOpen: false,
           isSundayOpen: false,
           workingDays: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+          subscriptionType: '',
+          validityDate: '',
         }
       );
 

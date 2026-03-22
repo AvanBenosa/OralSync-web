@@ -19,6 +19,8 @@ export type ClinicProfileModel = {
   isSaturdayOpen?: boolean;
   isSundayOpen?: boolean;
   workingDays?: string[];
+  subscriptionType?: string;
+  validityDate?: string;
 };
 
 export type ClinicProfileStateModel = {

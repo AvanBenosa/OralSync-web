@@ -3,6 +3,7 @@ import BusinessRoundedIcon from '@mui/icons-material/BusinessRounded';
 import ConstructionRoundedIcon from '@mui/icons-material/ConstructionRounded';
 import MapRoundedIcon from '@mui/icons-material/MapRounded';
 import PersonAddAlt1RoundedIcon from '@mui/icons-material/PersonAddAlt1Rounded';
+import WorkspacePremiumRoundedIcon from '@mui/icons-material/WorkspacePremiumRounded';
 import { useSearchParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { toastConfig } from '../../common/api/responses';
@@ -18,10 +19,16 @@ import ClinicProfileForm from './index-content/clinic-profile-form';
 import CreateUserManagement from './index-content/create-user-management';
 import DataConverter from './index-content/data-converter';
 import SettingsHeader from './index-content/settings-header';
+import Subscriptions from './index-content/subscriptions';
 import styles from './style.scss.module.scss';
 import { SettingsProps } from './types';
 
-type SettingsTabId = 'clinic-profile' | 'create-user' | 'build-up' | 'data-mapping';
+type SettingsTabId =
+  | 'clinic-profile'
+  | 'create-user'
+  | 'build-up'
+  | 'data-mapping'
+  | 'subscriptions';
 
 const SettingsModule: FunctionComponent<SettingsProps> = (props: SettingsProps): JSX.Element => {
   const { clinicId } = props;
@@ -91,6 +98,14 @@ const SettingsModule: FunctionComponent<SettingsProps> = (props: SettingsProps):
         title: 'Data Mapping',
         description:
           'Use this tab for clinic build up details, setup options, and operational configuration items.',
+      },
+      {
+        id: 'subscriptions' as const,
+        label: 'Subscriptions',
+        icon: <WorkspacePremiumRoundedIcon />,
+        title: 'Subscriptions',
+        description:
+          'Review the clinic subscription type, assigned validity date, and current access status.',
       },
     ],
     []
@@ -219,7 +234,7 @@ const SettingsModule: FunctionComponent<SettingsProps> = (props: SettingsProps):
       clinicProfileId: resolvedClinicId,
     }));
 
-    if (activeTab === 'clinic-profile') {
+    if (activeTab === 'clinic-profile' || activeTab === 'subscriptions') {
       if (!resolvedClinicId) {
         setState((prev: ClinicProfileStateModel) => ({
           ...prev,
@@ -285,6 +300,7 @@ const SettingsModule: FunctionComponent<SettingsProps> = (props: SettingsProps):
               <BuildUp state={templateFormState} setState={setTemplateFormState} />
             ) : null}
             {activeTab === 'data-mapping' ? <DataConverter /> : null}
+            {activeTab === 'subscriptions' ? <Subscriptions state={state} /> : null}
           </section>
         </div>
       </div>

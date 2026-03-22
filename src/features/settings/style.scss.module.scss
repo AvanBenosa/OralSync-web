@@ -1003,6 +1003,75 @@
   }
 }
 
+.subscriptionLoadingState {
+  min-height: 260px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.subscriptionMetricCard {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px;
+  border: 1px solid rgba(206, 218, 229, 0.95);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.subscriptionMetricLabel {
+  color: #5c7992 !important;
+  font-size: 12px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.04em !important;
+  text-transform: uppercase;
+}
+
+.subscriptionMetricValue {
+  color: #17344f !important;
+  font-size: 24px !important;
+  font-weight: 800 !important;
+  line-height: 1.2 !important;
+  word-break: break-word;
+}
+
+.subscriptionMetricMeta {
+  color: #6a8094 !important;
+  font-size: 13px !important;
+  line-height: 1.6 !important;
+}
+
+.subscriptionInfoList {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.subscriptionStatusRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid rgba(206, 218, 229, 0.95);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.subscriptionStatusMeta {
+  min-width: 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+
+  svg {
+    margin-top: 2px;
+    font-size: 22px !important;
+    color: #2f6db3;
+  }
+}
+
 @media (max-width: 768px) {
   .wrapper {
     min-height: calc(100vh - 56px);
@@ -1144,6 +1213,11 @@
 
   .templatePreviewScroll {
     max-height: none;
+  }
+
+  .subscriptionStatusRow {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }
 
