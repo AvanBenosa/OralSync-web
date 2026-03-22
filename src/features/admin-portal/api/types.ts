@@ -60,6 +60,27 @@ export type AdminClinicLockRequest = {
   validityDate?: string;
 };
 
+export type AdminClinicSubscriptionHistoryModel = {
+  id?: string;
+  clinicId?: string;
+  paymentDate?: string | Date;
+  subscriptionType?: string;
+  totalAmount?: number;
+};
+
+export type AdminClinicSubscriptionHistoryRequest = {
+  id?: string;
+  clinicId: string;
+  paymentDate?: string;
+  subscriptionType: string;
+  totalAmount: number;
+};
+
+export type AdminClinicSubscriptionHistoryDeleteRequest = {
+  id: string;
+  clinicId: string;
+};
+
 export type AdminUserModel = {
   id?: string;
   userName?: string;

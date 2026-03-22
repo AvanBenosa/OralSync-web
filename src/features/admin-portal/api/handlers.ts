@@ -1,7 +1,18 @@
-import { getAdminClinics, getAdminUsers, updateClinicLockStatus } from './api';
+import {
+  createAdminClinicSubscriptionHistory,
+  deleteAdminClinicSubscriptionHistory,
+  getAdminClinicSubscriptionHistories,
+  getAdminClinics,
+  getAdminUsers,
+  updateAdminClinicSubscriptionHistory,
+  updateClinicLockStatus,
+} from './api';
 import {
   AdminClinicLockRequest,
   AdminClinicModel,
+  AdminClinicSubscriptionHistoryDeleteRequest,
+  AdminClinicSubscriptionHistoryModel,
+  AdminClinicSubscriptionHistoryRequest,
   AdminDashboardModel,
   AdminDashboardStateModel,
   AdminClinicsStateModel,
@@ -55,3 +66,21 @@ export const handleGetAdminUsers = async (
 export const handleUpdateClinicLockStatus = async (
   request: AdminClinicLockRequest
 ): Promise<AdminClinicModel> => updateClinicLockStatus(request);
+
+export const handleGetAdminClinicSubscriptionHistories = async (
+  clinicId: string,
+  forceRefresh: boolean = false
+): Promise<AdminClinicSubscriptionHistoryModel[]> =>
+  getAdminClinicSubscriptionHistories(clinicId, forceRefresh);
+
+export const handleCreateAdminClinicSubscriptionHistory = async (
+  request: AdminClinicSubscriptionHistoryRequest
+): Promise<AdminClinicSubscriptionHistoryModel> => createAdminClinicSubscriptionHistory(request);
+
+export const handleUpdateAdminClinicSubscriptionHistory = async (
+  request: AdminClinicSubscriptionHistoryRequest
+): Promise<AdminClinicSubscriptionHistoryModel> => updateAdminClinicSubscriptionHistory(request);
+
+export const handleDeleteAdminClinicSubscriptionHistory = async (
+  request: AdminClinicSubscriptionHistoryDeleteRequest
+): Promise<boolean> => deleteAdminClinicSubscriptionHistory(request);

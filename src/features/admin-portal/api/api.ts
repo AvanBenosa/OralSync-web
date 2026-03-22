@@ -4,6 +4,9 @@ import { ExceptionResponse } from '../../../common/api/responses';
 import {
   AdminClinicLockRequest,
   AdminClinicModel,
+  AdminClinicSubscriptionHistoryDeleteRequest,
+  AdminClinicSubscriptionHistoryModel,
+  AdminClinicSubscriptionHistoryRequest,
   AdminDashboardModel,
   AdminUserModel,
 } from './types';
@@ -14,6 +17,18 @@ const ADMIN_USERS_ENDPOINT =
   process.env.REACT_APP_ADMIN_USERS_ENDPOINT || '/api/dmd/admin/get-users';
 const ADMIN_CLINIC_LOCK_ENDPOINT =
   process.env.REACT_APP_ADMIN_CLINIC_LOCK_ENDPOINT || '/api/dmd/admin/set-clinic-lock';
+const ADMIN_CLINIC_SUBSCRIPTION_HISTORIES_ENDPOINT =
+  process.env.REACT_APP_ADMIN_CLINIC_SUBSCRIPTION_HISTORIES_ENDPOINT ||
+  '/api/dmd/admin/get-clinic-subscription-histories';
+const ADMIN_CREATE_CLINIC_SUBSCRIPTION_HISTORY_ENDPOINT =
+  process.env.REACT_APP_ADMIN_CREATE_CLINIC_SUBSCRIPTION_HISTORY_ENDPOINT ||
+  '/api/dmd/admin/create-clinic-subscription-history';
+const ADMIN_UPDATE_CLINIC_SUBSCRIPTION_HISTORY_ENDPOINT =
+  process.env.REACT_APP_ADMIN_UPDATE_CLINIC_SUBSCRIPTION_HISTORY_ENDPOINT ||
+  '/api/dmd/admin/put-clinic-subscription-history';
+const ADMIN_DELETE_CLINIC_SUBSCRIPTION_HISTORY_ENDPOINT =
+  process.env.REACT_APP_ADMIN_DELETE_CLINIC_SUBSCRIPTION_HISTORY_ENDPOINT ||
+  '/api/dmd/admin/delete-clinic-subscription-history';
 const ADMIN_DASHBOARD_ENDPOINT =
   process.env.REACT_APP_ADMIN_DASHBOARD_ENDPOINT || '/api/dmd/admin/dashboard-summary';
 const ADMIN_RESPONSE_CACHE_TTL_MS = 5000;
@@ -41,6 +56,14 @@ const setCachedValue = <T,>(key: string, data: T): void => {
     data,
     cachedAt: Date.now(),
   });
+};
+
+const clearAdminClinicSubscriptionHistoryCache = (): void => {
+  Array.from(adminResponseCache.keys())
+    .filter((key) => key.startsWith('admin-clinic-subscription-histories:'))
+    .forEach((key) => {
+      adminResponseCache.delete(key);
+    });
 };
 
 export const getAdminClinics = async (forceRefresh: boolean = false): Promise<AdminClinicModel[]> => {
@@ -169,6 +192,109 @@ export const updateClinicLockStatus = async (
   try {
     const response = await apiClient.post<AdminClinicModel>(ADMIN_CLINIC_LOCK_ENDPOINT, request);
     adminResponseCache.delete('admin-clinics');
+    return response.data;
+  } catch (error) {
+    if (isAxiosError(error)) {
+      await ExceptionResponse(error);
+    }
+    throw error;
+  }
+};
+
+export const getAdminClinicSubscriptionHistories = async (
+  clinicId: string,
+  forceRefresh: boolean = false
+): Promise<AdminClinicSubscriptionHistoryModel[]> => {
+  const requestKey = `admin-clinic-subscription-histories:${clinicId.trim()}`;
+
+  if (forceRefresh) {
+    adminResponseCache.delete(requestKey);
+  }
+
+  const cachedValue = getCachedValue<AdminClinicSubscriptionHistoryModel[]>(requestKey);
+  if (cachedValue) {
+    return cachedValue;
+  }
+
+  const activeRequest = adminRequestCache.get(requestKey);
+  if (activeRequest) {
+    return activeRequest as Promise<AdminClinicSubscriptionHistoryModel[]>;
+  }
+
+  const request = (async (): Promise<AdminClinicSubscriptionHistoryModel[]> => {
+    try {
+      const response = await apiClient.get<AdminClinicSubscriptionHistoryModel[]>(
+        ADMIN_CLINIC_SUBSCRIPTION_HISTORIES_ENDPOINT,
+        {
+          params: {
+            ClinicId: clinicId.trim(),
+          },
+        }
+      );
+      const items = response.data || [];
+      setCachedValue(requestKey, items);
+      return items;
+    } catch (error) {
+      if (isAxiosError(error)) {
+        await ExceptionResponse(error);
+      }
+      throw error;
+    } finally {
+      adminRequestCache.delete(requestKey);
+    }
+  })();
+
+  adminRequestCache.set(requestKey, request);
+  return request;
+};
+
+export const createAdminClinicSubscriptionHistory = async (
+  request: AdminClinicSubscriptionHistoryRequest
+): Promise<AdminClinicSubscriptionHistoryModel> => {
+  try {
+    const response = await apiClient.post<AdminClinicSubscriptionHistoryModel>(
+      ADMIN_CREATE_CLINIC_SUBSCRIPTION_HISTORY_ENDPOINT,
+      request
+    );
+    clearAdminClinicSubscriptionHistoryCache();
+    return response.data;
+  } catch (error) {
+    if (isAxiosError(error)) {
+      await ExceptionResponse(error);
+    }
+    throw error;
+  }
+};
+
+export const updateAdminClinicSubscriptionHistory = async (
+  request: AdminClinicSubscriptionHistoryRequest
+): Promise<AdminClinicSubscriptionHistoryModel> => {
+  try {
+    const response = await apiClient.put<AdminClinicSubscriptionHistoryModel>(
+      ADMIN_UPDATE_CLINIC_SUBSCRIPTION_HISTORY_ENDPOINT,
+      request
+    );
+    clearAdminClinicSubscriptionHistoryCache();
+    return response.data;
+  } catch (error) {
+    if (isAxiosError(error)) {
+      await ExceptionResponse(error);
+    }
+    throw error;
+  }
+};
+
+export const deleteAdminClinicSubscriptionHistory = async (
+  request: AdminClinicSubscriptionHistoryDeleteRequest
+): Promise<boolean> => {
+  try {
+    const response = await apiClient.delete<boolean>(
+      ADMIN_DELETE_CLINIC_SUBSCRIPTION_HISTORY_ENDPOINT,
+      {
+        data: request,
+      }
+    );
+    clearAdminClinicSubscriptionHistoryCache();
     return response.data;
   } catch (error) {
     if (isAxiosError(error)) {
