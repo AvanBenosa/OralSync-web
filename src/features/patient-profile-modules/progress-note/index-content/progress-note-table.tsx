@@ -151,6 +151,7 @@ const PatientProgressNoteTable: FunctionComponent<PatientProgressNoteStateProps>
                 <TableCell className={styles.tableHeaderCell}>Procedure</TableCell>
                 <TableCell className={styles.tableHeaderCell}>Assigned Dentist</TableCell>
                 <TableCell className={styles.tableHeaderCell}>Total Due</TableCell>
+                <TableCell className={styles.tableHeaderCell}>Amount Paid</TableCell>
                 <TableCell className={styles.tableHeaderCell}>Balance</TableCell>
                 <TableCell className={styles.tableHeaderCell}>Status</TableCell>
                 <TableCell className={styles.tableHeaderCell} align="right" />
@@ -261,6 +262,9 @@ const PatientProgressNoteTable: FunctionComponent<PatientProgressNoteStateProps>
 
                       <TableCell className={styles.tableBodyCell}>
                         {formatCurrency(totalAmountDue)}
+                      </TableCell>
+                      <TableCell className={styles.tableBodyCell}>
+                        {formatCurrency(item.amountPaid)}
                       </TableCell>
                       <TableCell className={styles.tableBodyCell}>
                         {formatCurrency(balance)}

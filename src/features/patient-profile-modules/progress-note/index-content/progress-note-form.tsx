@@ -120,22 +120,6 @@ const parseNumberInput = (value: string): number | '' => {
 const getNumericValue = (value: number | ''): number | undefined =>
   value === '' ? undefined : value;
 
-const getTotalAmountDueValue = (amount: number | '', discount: number | ''): number | '' => {
-  if (amount === '') {
-    return '';
-  }
-
-  return amount - (discount === '' ? 0 : discount);
-};
-
-const getBalanceValue = (totalAmountDue: number | '', amountPaid: number | ''): number | '' => {
-  if (totalAmountDue === '') {
-    return '';
-  }
-
-  return totalAmountDue - (amountPaid === '' ? 0 : amountPaid);
-};
-
 const PatientProgressNoteForm: FunctionComponent<PatientProgressNoteFormProps> = (
   props: PatientProgressNoteFormProps
 ): JSX.Element => {
@@ -191,9 +175,6 @@ const PatientProgressNoteForm: FunctionComponent<PatientProgressNoteFormProps> =
   };
 
   const handleSubmit = async (values: PatientProgressNoteFormValues): Promise<void> => {
-    const totalAmountDue = getTotalAmountDueValue(values.amount, values.discount);
-    const balance = getBalanceValue(totalAmountDue, values.amountPaid);
-
     const payload: PatientProgressNoteModel = {
       id: values.id.trim() || undefined,
       patientInfoId: state.patientId,
@@ -209,9 +190,9 @@ const PatientProgressNoteForm: FunctionComponent<PatientProgressNoteFormProps> =
       account: values.account || undefined,
       amount: getNumericValue(values.amount),
       discount: getNumericValue(values.discount),
-      totalAmountDue: getNumericValue(totalAmountDue),
+      totalAmountDue: getNumericValue(values.totalAmountDue),
       amountPaid: getNumericValue(values.amountPaid),
-      balance: getNumericValue(balance),
+      balance: getNumericValue(values.balance),
     };
 
     if (state.isUpdate) {
@@ -259,8 +240,6 @@ const PatientProgressNoteForm: FunctionComponent<PatientProgressNoteFormProps> =
           submitCount,
           setFieldValue,
         }): JSX.Element => {
-          const totalAmountDueValue = getTotalAmountDueValue(values.amount, values.discount);
-          const balanceValue = getBalanceValue(totalAmountDueValue, values.amountPaid);
           const resolvedPatientLabel = patientLabel || 'Selected patient';
           const shouldShowError = (fieldName: keyof PatientProgressNoteFormValues): boolean =>
             Boolean(touched[fieldName] || submitCount > 0) && Boolean(errors[fieldName]);
@@ -332,9 +311,7 @@ const PatientProgressNoteForm: FunctionComponent<PatientProgressNoteFormProps> =
                         required
                         inputProps={{ min: 1, max: 32, step: 1 }}
                         error={shouldShowError('toothNumber')}
-                        helperText={
-                          shouldShowError('toothNumber') ? errors.toothNumber : undefined
-                        }
+                        helperText={shouldShowError('toothNumber') ? errors.toothNumber : undefined}
                       />
                     </Grid>
                     <Grid size={{ xs: 12, sm: 7 }}>
@@ -420,9 +397,7 @@ const PatientProgressNoteForm: FunctionComponent<PatientProgressNoteFormProps> =
                         placeholder="Document the tooth condition, symptoms, and relevant clinical observations."
                         error={shouldShowError('clinicalFinding')}
                         helperText={
-                          shouldShowError('clinicalFinding')
-                            ? errors.clinicalFinding
-                            : undefined
+                          shouldShowError('clinicalFinding') ? errors.clinicalFinding : undefined
                         }
                       />
                     </Grid>
@@ -529,10 +504,17 @@ const PatientProgressNoteForm: FunctionComponent<PatientProgressNoteFormProps> =
                         label="Total Amount Due"
                         name="totalAmountDue"
                         type="number"
-                        value={totalAmountDueValue}
+                        value={values.totalAmountDue}
+                        onChange={(event: ChangeEvent<HTMLInputElement>) =>
+                          setFieldValue('totalAmountDue', parseNumberInput(event.target.value))
+                        }
+                        onBlur={handleBlur}
                         fullWidth
                         size="small"
-                        disabled
+                        error={shouldShowError('totalAmountDue')}
+                        helperText={
+                          shouldShowError('totalAmountDue') ? errors.totalAmountDue : undefined
+                        }
                       />
                     </Grid>
                     <Grid size={{ xs: 12, sm: 6 }}>
@@ -556,10 +538,15 @@ const PatientProgressNoteForm: FunctionComponent<PatientProgressNoteFormProps> =
                         label="Balance"
                         name="balance"
                         type="number"
-                        value={balanceValue}
+                        value={values.balance}
+                        onChange={(event: ChangeEvent<HTMLInputElement>) =>
+                          setFieldValue('balance', parseNumberInput(event.target.value))
+                        }
+                        onBlur={handleBlur}
                         fullWidth
                         size="small"
-                        disabled
+                        error={shouldShowError('balance')}
+                        helperText={shouldShowError('balance') ? errors.balance : undefined}
                       />
                     </Grid>
                   </Grid>

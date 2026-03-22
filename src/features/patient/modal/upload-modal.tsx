@@ -7,23 +7,24 @@ import {
   Box,
   Button,
   CircularProgress,
-  List,
-  ListItem,
-  ListItemText,
   DialogActions,
   DialogContent,
   DialogTitle,
+  Grid,
+  List,
+  ListItem,
+  ListItemText,
   Typography,
 } from '@mui/material';
 import * as XLSX from 'xlsx';
-
 import { isAxiosError } from 'axios';
 
-import { HandleUploadPatientXlsx } from '../api/handlers';
+import { GetPatients, UploadPatientXlsx } from '../api/api';
 import { PatientStateProps, PatientUploadResultModel } from '../api/types';
+import { UploadPatientProgressNoteXlsx } from '../../patient-profile-modules/progress-note/api/api';
 
 const ACCEPTED_EXTENSIONS = ['.xlsx', '.csv'];
-const TEMPLATE_HEADERS = [
+const PATIENT_TEMPLATE_HEADERS = [
   'FirstName',
   'LastName',
   'MiddleName',
@@ -37,8 +38,7 @@ const TEMPLATE_HEADERS = [
   'BloodType',
   'CivilStatus',
 ];
-const TEMPLATE_SAMPLE_ROW = TEMPLATE_HEADERS.map(() => '');
-const REFERENCE_ROWS = [
+const PATIENT_REFERENCE_ROWS = [
   ['Field', 'Allowed Values / Notes'],
   ['FirstName', 'Required text'],
   ['LastName', 'Required text'],
@@ -59,25 +59,75 @@ const REFERENCE_ROWS = [
   ['Tag', 'Not included in this template.'],
 ];
 
+type ImportSlotId = 'patient' | 'progress';
+
 type PatientUploadModalProps = PatientStateProps & {
   clinicId?: string | null;
+};
+
+const isSupportedFile = (file: File): boolean => {
+  const normalizedName = file.name.toLowerCase();
+  return ACCEPTED_EXTENSIONS.some((extension) => normalizedName.endsWith(extension));
+};
+
+const downloadTemplate = (
+  fileName: string,
+  sheetName: string,
+  headers: string[],
+  referenceRows: string[][]
+): void => {
+  const worksheet = XLSX.utils.aoa_to_sheet([headers, headers.map(() => '')]);
+  const referenceSheet = XLSX.utils.aoa_to_sheet(referenceRows);
+  const workbook = XLSX.utils.book_new();
+
+  XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
+  XLSX.utils.book_append_sheet(workbook, referenceSheet, 'Reference');
+  XLSX.writeFile(workbook, fileName);
+};
+
+const toErrorMessage = (error: unknown, fallbackMessage: string): string => {
+  if (isAxiosError(error)) {
+    const responseMessage =
+      typeof error.response?.data === 'string' ? error.response.data : undefined;
+    return responseMessage || error.message || fallbackMessage;
+  }
+
+  return error instanceof Error ? error.message : fallbackMessage;
 };
 
 const PatientUploadModal: FunctionComponent<PatientUploadModalProps> = (
   props: PatientUploadModalProps
 ): JSX.Element => {
   const { state, setState, clinicId } = props;
-  const [selectedFile, setSelectedFile] = useState<File | undefined>();
+  const [selectedPatientFile, setSelectedPatientFile] = useState<File | undefined>();
+  const [selectedProgressFile, setSelectedProgressFile] = useState<File | undefined>();
   const [errorMessage, setErrorMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [uploadResult, setUploadResult] = useState<PatientUploadResultModel | undefined>();
+  const [statusMessage, setStatusMessage] = useState('');
+  const [patientUploadResult, setPatientUploadResult] = useState<
+    PatientUploadResultModel | undefined
+  >();
+  const [progressUploadResult, setProgressUploadResult] = useState<
+    PatientUploadResultModel | undefined
+  >();
 
-  const fileLabel = useMemo(() => selectedFile?.name || 'No file selected.', [selectedFile]);
+  const patientFileLabel = useMemo(
+    () => selectedPatientFile?.name || 'No file selected.',
+    [selectedPatientFile]
+  );
+  const progressFileLabel = useMemo(
+    () => selectedProgressFile?.name || 'No file selected.',
+    [selectedProgressFile]
+  );
+  const hasSelectedFiles = Boolean(selectedPatientFile || selectedProgressFile);
 
   const handleClose = (): void => {
-    setSelectedFile(undefined);
+    setSelectedPatientFile(undefined);
+    setSelectedProgressFile(undefined);
     setErrorMessage('');
-    setUploadResult(undefined);
+    setStatusMessage('');
+    setPatientUploadResult(undefined);
+    setProgressUploadResult(undefined);
     setState({
       ...state,
       openModal: false,
@@ -85,86 +135,159 @@ const PatientUploadModal: FunctionComponent<PatientUploadModalProps> = (
     });
   };
 
-  const handleFileChange = (event: ChangeEvent<HTMLInputElement>): void => {
-    const file = event.target.files?.[0];
+  const handleFileChange =
+    (slot: ImportSlotId) =>
+    (event: ChangeEvent<HTMLInputElement>): void => {
+      const file = event.target.files?.[0];
+      event.target.value = '';
 
-    if (!file) {
-      setSelectedFile(undefined);
+      if (!file) {
+        if (slot === 'patient') {
+          setSelectedPatientFile(undefined);
+        } else {
+          setSelectedProgressFile(undefined);
+        }
+        setErrorMessage('');
+        return;
+      }
+
+      if (!isSupportedFile(file)) {
+        setErrorMessage('Only .xlsx and .csv files are allowed.');
+        return;
+      }
+
+      if (slot === 'patient') {
+        setSelectedPatientFile(file);
+      } else {
+        setSelectedProgressFile(file);
+      }
+
       setErrorMessage('');
-      return;
-    }
+      setStatusMessage('');
+      setPatientUploadResult(undefined);
+      setProgressUploadResult(undefined);
+    };
 
-    const normalizedName = file.name.toLowerCase();
-    const isValidFile = ACCEPTED_EXTENSIONS.some((extension) => normalizedName.endsWith(extension));
-
-    if (!isValidFile) {
-      setSelectedFile(undefined);
-      setErrorMessage('Only .xlsx and .csv files are allowed.');
-      return;
-    }
-
-    setSelectedFile(file);
-    setErrorMessage('');
-    setUploadResult(undefined);
+  const handleDownloadPatientTemplate = (): void => {
+    downloadTemplate(
+      'patient-import-template.xlsx',
+      'Patients',
+      PATIENT_TEMPLATE_HEADERS,
+      PATIENT_REFERENCE_ROWS
+    );
   };
 
-  const handleDownloadTemplate = (): void => {
-    const worksheet = XLSX.utils.aoa_to_sheet([TEMPLATE_HEADERS, TEMPLATE_SAMPLE_ROW]);
-    const referenceSheet = XLSX.utils.aoa_to_sheet(REFERENCE_ROWS);
-    const workbook = XLSX.utils.book_new();
+  const refreshPatientTable = async (): Promise<void> => {
+    const response = await GetPatients(
+      {
+        ...state,
+        load: true,
+        openModal: true,
+        upload: true,
+        isUpdate: false,
+        isDelete: false,
+        selectedItem: undefined,
+        clinicProfileId: clinicId,
+      },
+      clinicId,
+      true
+    );
 
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Patients');
-    XLSX.utils.book_append_sheet(workbook, referenceSheet, 'Reference');
-    XLSX.writeFile(workbook, 'patient-import-template.xlsx');
+    setState({
+      ...state,
+      load: false,
+      items: response.items || [],
+      pageStart:
+        response.pageStart && response.totalCount && response.pageStart === response.totalCount
+          ? response.pageStart - response.pageEnd
+          : response.pageStart,
+      pageEnd: response.pageEnd,
+      totalItem: response.totalCount,
+      openModal: true,
+      upload: true,
+      isUpdate: false,
+      isDelete: false,
+      selectedItem: undefined,
+      clinicProfileId: clinicId,
+    });
   };
 
   const handleUpload = async (): Promise<void> => {
-    if (!selectedFile) {
+    if (!hasSelectedFiles) {
       return;
     }
 
     setErrorMessage('');
+    setStatusMessage('');
     setIsSubmitting(true);
+    setPatientUploadResult(undefined);
+    setProgressUploadResult(undefined);
 
     try {
-      const response = await HandleUploadPatientXlsx(selectedFile, state, setState, clinicId);
-      setUploadResult(response);
-      setSelectedFile(undefined);
-    } catch (error) {
-      if (isAxiosError(error)) {
-        setErrorMessage(
-          typeof error.response?.data === 'string' ? error.response.data : error.message
-        );
-      } else {
-        setErrorMessage('Unable to upload patient file.');
+      if (selectedPatientFile) {
+        setStatusMessage('Uploading PatientInfo file...');
+        const patientResult = await UploadPatientXlsx(selectedPatientFile);
+        setPatientUploadResult(patientResult);
       }
+
+      if (selectedProgressFile) {
+        setStatusMessage('Uploading Patient Progress Note file...');
+        const progressResult = await UploadPatientProgressNoteXlsx(selectedProgressFile);
+        setProgressUploadResult(progressResult);
+      }
+
+      if (selectedPatientFile) {
+        setStatusMessage('Refreshing patient list...');
+        await refreshPatientTable();
+      }
+
+      setSelectedPatientFile(undefined);
+      setSelectedProgressFile(undefined);
+    } catch (error) {
+      setErrorMessage(toErrorMessage(error, 'Unable to upload import files.'));
     } finally {
+      setStatusMessage('');
       setIsSubmitting(false);
     }
   };
 
   return (
     <>
-      <DialogTitle sx={{ pb: 1, fontWeight: 700 }}>Upload Patient File</DialogTitle>
+      <DialogTitle sx={{ pb: 1, fontWeight: 700 }}>Upload Import Files</DialogTitle>
       <DialogContent dividers sx={{ px: { xs: 2, sm: 3 }, py: 2 }}>
         {errorMessage ? (
           <Alert severity="error" sx={{ mb: 2 }}>
             {errorMessage}
           </Alert>
         ) : null}
-        {uploadResult ? (
-          <Alert severity={uploadResult.skippedCount > 0 ? 'warning' : 'success'} sx={{ mb: 2 }}>
-            Imported: {uploadResult.importedCount} | Skipped: {uploadResult.skippedCount} | Rows:{' '}
-            {uploadResult.totalRows}
+
+        {patientUploadResult ? (
+          <Alert
+            severity={patientUploadResult.skippedCount > 0 ? 'warning' : 'success'}
+            sx={{ mb: 2 }}
+          >
+            PatientInfo Imported: {patientUploadResult.importedCount} | Skipped:{' '}
+            {patientUploadResult.skippedCount} | Rows: {patientUploadResult.totalRows}
           </Alert>
         ) : null}
+
+        {progressUploadResult ? (
+          <Alert
+            severity={progressUploadResult.skippedCount > 0 ? 'warning' : 'success'}
+            sx={{ mb: 2 }}
+          >
+            Patient Progress Note Imported: {progressUploadResult.importedCount} | Skipped:{' '}
+            {progressUploadResult.skippedCount} | Rows: {progressUploadResult.totalRows}
+          </Alert>
+        ) : null}
+
         {isSubmitting ? (
           <Alert
             severity="info"
             icon={<CircularProgress size={18} color="inherit" />}
             sx={{ mb: 2 }}
           >
-            Uploading patient file. Please wait...
+            {statusMessage || 'Uploading import files. Please wait...'}
           </Alert>
         ) : null}
 
@@ -177,69 +300,156 @@ const PatientUploadModal: FunctionComponent<PatientUploadModalProps> = (
             display: 'flex',
             flexDirection: 'column',
             gap: 2,
-            alignItems: 'center',
-            textAlign: 'center',
           }}
         >
           <Box
             sx={{
-              width: 64,
-              height: 64,
-              borderRadius: '18px',
-              backgroundColor: '#e9f4fb',
               display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: '#1e6f9f',
-            }}
-          >
-            <DescriptionOutlinedIcon sx={{ fontSize: 34 }} />
-          </Box>
-
-          <Box>
-            <Typography sx={{ fontWeight: 700, color: '#284764', mb: 0.5 }}>
-              Select an import file
-            </Typography>
-            <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-              Upload patient records from an `.xlsx` or `.csv` file. The import uses the same
-              `PatientInfo` backend field names in both formats.
-            </Typography>
-          </Box>
-
-          <Box
-            sx={{
-              display: 'flex',
-              flexDirection: { xs: 'column', sm: 'row' },
+              flexDirection: 'column',
               gap: 1.5,
-              width: '100%',
-              justifyContent: 'center',
+              alignItems: 'center',
+              textAlign: 'center',
             }}
           >
-            <Button
-              variant="outlined"
-              startIcon={<DownloadOutlinedIcon />}
-              onClick={handleDownloadTemplate}
-              disabled={isSubmitting}
+            <Box
+              sx={{
+                width: 64,
+                height: 64,
+                borderRadius: '18px',
+                backgroundColor: '#e9f4fb',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#1e6f9f',
+              }}
             >
-              Download Template
-            </Button>
-            <Button
-              component="label"
-              variant="outlined"
-              startIcon={<CloudUploadOutlinedIcon />}
-              disabled={isSubmitting}
-            >
-              Choose XLSX/CSV File
-              <input hidden type="file" accept=".xlsx,.csv,text/csv" onChange={handleFileChange} />
-            </Button>
+              <DescriptionOutlinedIcon sx={{ fontSize: 34 }} />
+            </Box>
+
+            <Box>
+              <Typography sx={{ fontWeight: 700, color: '#284764', mb: 0.5 }}>
+                Select one or two import files
+              </Typography>
+              <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                `PatientInfo` uploads first. `Patient Progress Note` upload now validates on the
+                backend that `LastName` and `FirstName` already exist in `PatientInfo`. Unmatched
+                rows are skipped, and matched rows are saved with the correct `PatientInfoId`.
+              </Typography>
+            </Box>
           </Box>
 
-          <Typography variant="body2" sx={{ color: '#415c74' }}>
-            {fileLabel}
-          </Typography>
+          <Grid container spacing={2}>
+            <Grid size={{ xs: 12, md: 6 }}>
+              <Box
+                sx={{
+                  border: '1px solid rgba(22, 119, 168, 0.2)',
+                  borderRadius: 2,
+                  backgroundColor: '#ffffff',
+                  p: 2,
+                  minHeight: 220,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 1.5,
+                }}
+              >
+                <Box>
+                  <Typography sx={{ fontWeight: 700, color: '#284764' }}>PatientInfo</Typography>
+                  <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                    Import patient records into the clinic patient list.
+                  </Typography>
+                </Box>
+
+                <Box
+                  sx={{
+                    display: 'flex',
+                    flexDirection: { xs: 'column', sm: 'row' },
+                    gap: 1.25,
+                  }}
+                >
+                  <Button
+                    variant="outlined"
+                    startIcon={<DownloadOutlinedIcon />}
+                    onClick={handleDownloadPatientTemplate}
+                    disabled={isSubmitting}
+                  >
+                    Download Template
+                  </Button>
+                  <Button
+                    component="label"
+                    variant="outlined"
+                    startIcon={<CloudUploadOutlinedIcon />}
+                    disabled={isSubmitting}
+                  >
+                    Choose XLSX/CSV File
+                    <input
+                      hidden
+                      type="file"
+                      accept=".xlsx,.csv,text/csv"
+                      onChange={handleFileChange('patient')}
+                    />
+                  </Button>
+                </Box>
+
+                <Typography variant="body2" sx={{ color: '#415c74', wordBreak: 'break-word' }}>
+                  {patientFileLabel}
+                </Typography>
+              </Box>
+            </Grid>
+
+            <Grid size={{ xs: 12, md: 6 }}>
+              <Box
+                sx={{
+                  border: '1px solid rgba(22, 119, 168, 0.2)',
+                  borderRadius: 2,
+                  backgroundColor: '#ffffff',
+                  p: 2,
+                  minHeight: 220,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 1.5,
+                }}
+              >
+                <Box>
+                  <Typography sx={{ fontWeight: 700, color: '#284764' }}>
+                    Patient Progress Note
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                    Upload progress notes and let the backend match them to PatientInfo records.
+                  </Typography>
+                </Box>
+
+                <Box
+                  sx={{
+                    display: 'flex',
+                    flexDirection: { xs: 'column', sm: 'row' },
+                    gap: 1.25,
+                  }}
+                >
+                  <Button
+                    component="label"
+                    variant="outlined"
+                    startIcon={<CloudUploadOutlinedIcon />}
+                    disabled={isSubmitting}
+                  >
+                    Choose XLSX/CSV File
+                    <input
+                      hidden
+                      type="file"
+                      accept=".xlsx,.csv,text/csv"
+                      onChange={handleFileChange('progress')}
+                    />
+                  </Button>
+                </Box>
+
+                <Typography variant="body2" sx={{ color: '#415c74', wordBreak: 'break-word' }}>
+                  {progressFileLabel}
+                </Typography>
+              </Box>
+            </Grid>
+          </Grid>
         </Box>
 
-        {uploadResult?.errors?.length ? (
+        {patientUploadResult?.errors?.length ? (
           <Box
             sx={{
               mt: 2,
@@ -258,11 +468,48 @@ const PatientUploadModal: FunctionComponent<PatientUploadModalProps> = (
                 color: '#9a5b00',
               }}
             >
-              Upload Errors
+              PatientInfo Upload Errors
             </Typography>
             <List dense sx={{ pt: 0.5, pb: 1 }}>
-              {uploadResult.errors.map((error, index) => (
-                <ListItem key={`${error}-${index}`} sx={{ py: 0.25 }}>
+              {patientUploadResult.errors.map((error, index) => (
+                <ListItem key={`patient-error-${index}`} sx={{ py: 0.25 }}>
+                  <ListItemText
+                    primary={error}
+                    primaryTypographyProps={{
+                      fontSize: 13,
+                      color: '#7c4a03',
+                    }}
+                  />
+                </ListItem>
+              ))}
+            </List>
+          </Box>
+        ) : null}
+
+        {progressUploadResult?.errors?.length ? (
+          <Box
+            sx={{
+              mt: 2,
+              border: '1px solid rgba(217, 119, 6, 0.28)',
+              borderRadius: 2,
+              backgroundColor: '#fffaf2',
+              maxHeight: 180,
+              overflowY: 'auto',
+            }}
+          >
+            <Typography
+              sx={{
+                px: 2,
+                pt: 1.5,
+                fontWeight: 700,
+                color: '#9a5b00',
+              }}
+            >
+              Patient Progress Note Upload Errors
+            </Typography>
+            <List dense sx={{ pt: 0.5, pb: 1 }}>
+              {progressUploadResult.errors.map((error, index) => (
+                <ListItem key={`progress-error-${index}`} sx={{ py: 0.25 }}>
                   <ListItemText
                     primary={error}
                     primaryTypographyProps={{
@@ -276,11 +523,16 @@ const PatientUploadModal: FunctionComponent<PatientUploadModalProps> = (
           </Box>
         ) : null}
       </DialogContent>
+
       <DialogActions sx={{ px: 3, py: 2 }}>
-        <Button onClick={handleClose} color="inherit">
+        <Button onClick={handleClose} color="inherit" disabled={isSubmitting}>
           Cancel
         </Button>
-        <Button variant="contained" disabled={!selectedFile || isSubmitting} onClick={handleUpload}>
+        <Button
+          variant="contained"
+          disabled={!hasSelectedFiles || isSubmitting}
+          onClick={handleUpload}
+        >
           {isSubmitting ? 'Uploading...' : 'Upload'}
         </Button>
       </DialogActions>

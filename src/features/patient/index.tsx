@@ -183,7 +183,7 @@ export const PatientModule: FunctionComponent<PatientProps> = (
         onClose={handleCloseDialog}
         TransitionProps={{ onExited: handleDialogExited }}
         fullWidth
-        maxWidth={state.isDelete ? 'sm' : state.upload ? 'sm' : 'md'}
+        maxWidth={state.isDelete ? 'sm' : state.upload ? 'md' : 'md'}
       >
         {state.isDelete ? (
           <PatientDeleteModal state={state} setState={setState} />

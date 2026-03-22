@@ -1,5 +1,4 @@
 import { ChangeEvent, FunctionComponent, JSX, useMemo, useState } from 'react';
-import * as XLSX from 'xlsx';
 import DatasetLinkedRoundedIcon from '@mui/icons-material/DatasetLinkedRounded';
 import CloudUploadOutlinedIcon from '@mui/icons-material/CloudUploadOutlined';
 import DeleteOutlineRoundedIcon from '@mui/icons-material/DeleteOutlineRounded';
@@ -27,19 +26,18 @@ import {
 } from '@mui/material';
 import {
   DataConverterColumnMapping,
+  DataConverterFieldOption,
   DataConverterPreviewRow,
-  DataConverterTargetField,
+  PatientInfoDataConverterTargetField,
 } from '../data-converter/api/types';
+import {
+  downloadConvertedCsv,
+  isSupportedConverterFile,
+  parseWorkbookPreview,
+} from '../data-converter/api/utils';
 import styles from '../style.scss.module.scss';
 
-const ACCEPTED_EXTENSIONS = ['.xlsx', '.csv'];
-const PREVIEW_ROW_LIMIT = 5;
-
-const targetFieldOptions: Array<{
-  field: DataConverterTargetField;
-  label: string;
-  helper: string;
-}> = [
+const targetFieldOptions: DataConverterFieldOption<PatientInfoDataConverterTargetField>[] = [
   {
     field: 'SplitPatientName',
     label: 'Patient Name Split',
@@ -59,17 +57,8 @@ const targetFieldOptions: Array<{
   { field: 'CivilStatus', label: 'Civil Status', helper: 'Enum value' },
 ];
 
-const requiredTargetFields: DataConverterTargetField[] = ['FirstName', 'LastName'];
-const csvEscape = (value: string): string => `"${value.replace(/"/g, '""')}"`;
+const requiredTargetFields: PatientInfoDataConverterTargetField[] = ['FirstName', 'LastName'];
 const suffixTokens = new Set(['JR', 'JR.', 'SR', 'SR.', 'II', 'III', 'IV', 'V']);
-
-const normalizeCellValue = (value: unknown): string => {
-  if (value === null || value === undefined) {
-    return '';
-  }
-
-  return String(value).trim();
-};
 
 const normalizeCombinedPatientName = (value: string): string =>
   value.replace(/^\([^)]*\)\s*/, '').trim();
@@ -129,114 +118,11 @@ const splitCombinedPatientName = (
   };
 };
 
-const parseWorkbookPreview = async (
-  file: File
-): Promise<{
-  headers: string[];
-  rows: DataConverterPreviewRow[];
-  previewRows: DataConverterPreviewRow[];
-}> => {
-  const arrayBuffer = await file.arrayBuffer();
-  const workbook = XLSX.read(arrayBuffer, { type: 'array' });
-  const worksheetName = workbook.SheetNames[0];
-
-  if (!worksheetName) {
-    throw new Error('The uploaded file does not contain any worksheet data.');
-  }
-
-  const worksheet = workbook.Sheets[worksheetName];
-  const sheetRows = XLSX.utils.sheet_to_json<Array<string | number | boolean | null>>(worksheet, {
-    header: 1,
-    raw: false,
-    defval: '',
-  });
-
-  if (!sheetRows.length) {
-    throw new Error('The uploaded file is empty.');
-  }
-
-  const headers = (sheetRows[0] || [])
-    .map((value) => normalizeCellValue(value))
-    .filter((value) => value !== '');
-
-  if (!headers.length) {
-    throw new Error('The uploaded file does not contain any header row.');
-  }
-
-  const rows = sheetRows.slice(1).map((row) => {
-    const item: DataConverterPreviewRow = {};
-
-    headers.forEach((header, index) => {
-      item[header] = normalizeCellValue(row[index]);
-    });
-
-    return item;
-  });
-
-  const previewRows = rows.slice(0, PREVIEW_ROW_LIMIT);
-
-  return { headers, rows, previewRows };
-};
-
-const downloadConvertedCsv = (
-  fileName: string,
-  rows: DataConverterPreviewRow[],
-  mappings: DataConverterColumnMapping[]
-): void => {
-  const activeMappings = mappings.filter((item) => item.targetField);
-  const hasSplitPatientName = activeMappings.some(
-    (item) => item.targetField === 'SplitPatientName'
-  );
-  const orderedHeaders = [
-    ...(hasSplitPatientName ? ['FirstName', 'LastName', 'MiddleName'] : []),
-    ...activeMappings
-      .filter((item) => item.targetField !== 'SplitPatientName')
-      .map((item) => item.targetField as string),
-  ].filter((header, index, array) => array.indexOf(header) === index);
-
-  const remappedRows = rows.map((row) => {
-    const nextRow: Record<string, string> = {};
-
-    activeMappings.forEach((mapping) => {
-      if (mapping.targetField === 'SplitPatientName') {
-        const splitName = splitCombinedPatientName(row[mapping.sourceHeader] || '');
-        nextRow.FirstName = splitName.firstName;
-        nextRow.LastName = splitName.lastName;
-        nextRow.MiddleName = splitName.middleName;
-        return;
-      }
-
-      nextRow[mapping.targetField as string] = row[mapping.sourceHeader] || '';
-    });
-
-    return nextRow;
-  });
-
-  const csvLines = [
-    orderedHeaders.map(csvEscape).join(','),
-    ...remappedRows.map((row) =>
-      orderedHeaders.map((header) => csvEscape(row[header] || '')).join(',')
-    ),
-  ];
-
-  const blob = new Blob([csvLines.join('\r\n')], {
-    type: 'text/csv;charset=utf-8;',
-  });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  const normalizedName = fileName.replace(/\.[^/.]+$/, '');
-
-  link.href = url;
-  link.download = `${normalizedName}-converted.csv`;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  URL.revokeObjectURL(url);
-};
-
 const PatientInfoDataConverter: FunctionComponent = (): JSX.Element => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [mappings, setMappings] = useState<DataConverterColumnMapping[]>([]);
+  const [mappings, setMappings] = useState<
+    DataConverterColumnMapping<PatientInfoDataConverterTargetField>[]
+  >([]);
   const [allRows, setAllRows] = useState<DataConverterPreviewRow[]>([]);
   const [previewRows, setPreviewRows] = useState<DataConverterPreviewRow[]>([]);
   const [errorMessage, setErrorMessage] = useState('');
@@ -244,7 +130,12 @@ const PatientInfoDataConverter: FunctionComponent = (): JSX.Element => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const selectedTargetFields = useMemo(
-    () => mappings.map((item) => item.targetField).filter(Boolean),
+    () =>
+      mappings
+        .map((item) => item.targetField)
+        .filter(
+          (targetField): targetField is PatientInfoDataConverterTargetField => Boolean(targetField)
+        ),
     [mappings]
   );
 
@@ -266,10 +157,7 @@ const PatientInfoDataConverter: FunctionComponent = (): JSX.Element => {
       return;
     }
 
-    const normalizedName = file.name.toLowerCase();
-    const isValidFile = ACCEPTED_EXTENSIONS.some((extension) => normalizedName.endsWith(extension));
-
-    if (!isValidFile) {
+    if (!isSupportedConverterFile(file)) {
       setErrorMessage('Only .xlsx and .csv files are allowed.');
       return;
     }
@@ -294,7 +182,7 @@ const PatientInfoDataConverter: FunctionComponent = (): JSX.Element => {
   };
 
   const handleMappingChange = (sourceHeader: string, event: SelectChangeEvent<string>): void => {
-    const nextTargetField = event.target.value as DataConverterTargetField | '';
+    const nextTargetField = event.target.value as PatientInfoDataConverterTargetField | '';
 
     setMappings((prev) =>
       prev.map((item) =>
@@ -351,7 +239,40 @@ const PatientInfoDataConverter: FunctionComponent = (): JSX.Element => {
     }
 
     setErrorMessage('');
-    downloadConvertedCsv(selectedFile.name, allRows, mappings);
+    downloadConvertedCsv({
+      fileName: selectedFile.name,
+      rows: allRows,
+      mappings,
+      buildHeaders: (activeMappings) => {
+        const hasSplitPatientName = activeMappings.some(
+          (item) => item.targetField === 'SplitPatientName'
+        );
+
+        return [
+          ...(hasSplitPatientName ? ['FirstName', 'LastName', 'MiddleName'] : []),
+          ...activeMappings
+            .filter((item) => item.targetField !== 'SplitPatientName')
+            .map((item) => item.targetField),
+        ].filter((header, index, array) => array.indexOf(header) === index);
+      },
+      buildRow: (row, activeMappings) => {
+        const nextRow: Record<string, string> = {};
+
+        activeMappings.forEach((mapping) => {
+          if (mapping.targetField === 'SplitPatientName') {
+            const splitName = splitCombinedPatientName(row[mapping.sourceHeader] || '');
+            nextRow.FirstName = splitName.firstName;
+            nextRow.LastName = splitName.lastName;
+            nextRow.MiddleName = splitName.middleName;
+            return;
+          }
+
+          nextRow[mapping.targetField] = row[mapping.sourceHeader] || '';
+        });
+
+        return nextRow;
+      },
+    });
     setStatusMessage('Converted CSV downloaded successfully.');
     setIsDialogOpen(false);
   };

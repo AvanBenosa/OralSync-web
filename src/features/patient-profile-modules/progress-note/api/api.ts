@@ -7,11 +7,14 @@ import {
 } from '../../../../common/api/responses';
 import { apiClient } from '../../../../common/services/api-client';
 import { PatientProgressNoteModel } from './types';
+import { PatientUploadResultModel } from '../../../patient/api/types';
 
 const PROGRESS_NOTE_ENDPOINT = '/api/dmd/patient-progress-note/get-patient-progress-note';
 const CREATE_PROGRESS_NOTE_ENDPOINT = '/api/dmd/patient-progress-note/create-patient-progress-note';
 const UPDATE_PROGRESS_NOTE_ENDPOINT = '/api/dmd/patient-progress-note/put-patient-progress-note';
 const DELETE_PROGRESS_NOTE_ENDPOINT = '/api/dmd/patient-progress-note/delete-patient-progress-note';
+const UPLOAD_PROGRESS_NOTE_XLSX_ENDPOINT =
+  '/api/dmd/patient-progress-note/upload-patient-progress-note-xlsx';
 const progressNoteRequestCache = new Map<string, Promise<PatientProgressNoteModel[]>>();
 const progressNoteResponseCache = new Map<
   string,
@@ -153,6 +156,32 @@ export const DeletePatientProgressNoteItem = async (
       },
     });
     toastSuccess('Successfully Deleted!');
+  } catch (error) {
+    if (isAxiosError(error)) {
+      await ExceptionResponse(error);
+    }
+    throw error;
+  }
+};
+
+export const UploadPatientProgressNoteXlsx = async (
+  file: File
+): Promise<PatientUploadResultModel> => {
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await apiClient.post<PatientUploadResultModel>(
+      UPLOAD_PROGRESS_NOTE_XLSX_ENDPOINT,
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }
+    );
+
+    return SuccessResponse(response, ResponseMethod.Uploaded) as PatientUploadResultModel;
   } catch (error) {
     if (isAxiosError(error)) {
       await ExceptionResponse(error);

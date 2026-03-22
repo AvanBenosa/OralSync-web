@@ -1,6 +1,6 @@
 import { PatientUploadResultModel } from '../../../patient/api/types';
 
-export type DataConverterTargetField =
+export type PatientInfoDataConverterTargetField =
   | 'FirstName'
   | 'LastName'
   | 'MiddleName'
@@ -15,9 +15,37 @@ export type DataConverterTargetField =
   | 'BloodType'
   | 'CivilStatus';
 
-export type DataConverterColumnMapping = {
+export type PatientProgressNoteDataConverterTargetField =
+  | 'SplitPatientName'
+  | 'AssignedDoctor'
+  | 'Date'
+  | 'Procedure'
+  | 'Category'
+  | 'Remarks'
+  | 'ClinicalFinding'
+  | 'Assessment'
+  | 'ToothNumber'
+  | 'NextVisit'
+  | 'Balance'
+  | 'Account'
+  | 'Amount'
+  | 'Discount'
+  | 'TotalAmountDue'
+  | 'AmountPaid';
+
+export type DataConverterTargetField =
+  | PatientInfoDataConverterTargetField
+  | PatientProgressNoteDataConverterTargetField;
+
+export type DataConverterFieldOption<TField extends string = DataConverterTargetField> = {
+  field: TField;
+  label: string;
+  helper: string;
+};
+
+export type DataConverterColumnMapping<TField extends string = DataConverterTargetField> = {
   sourceHeader: string;
-  targetField: DataConverterTargetField | '';
+  targetField: TField | '';
 };
 
 export type DataConverterPreviewRow = Record<string, string>;

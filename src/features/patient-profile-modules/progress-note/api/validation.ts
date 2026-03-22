@@ -68,7 +68,8 @@ export const progressNoteValidationSchema = yup.object({
   toothNumber: yup
     .number()
     .transform((value, originalValue) => (originalValue === '' ? undefined : value))
-    .required('Tooth number is required.')
+    .notRequired()
+    .nullable()
     .integer('Tooth number must be a whole number.')
     .min(1, 'Tooth number must be at least 1.')
     .max(32, 'Tooth number must not be greater than 32.'),
@@ -85,24 +86,7 @@ export const progressNoteValidationSchema = yup.object({
     .number()
     .transform((value, originalValue) => (originalValue === '' ? undefined : value))
     .nullable()
-    .min(0, 'Discount cannot be negative.')
-    .test(
-      'discount-not-greater-than-amount',
-      'Discount cannot be greater than cost.',
-      function (value?: number | null) {
-        if (value === undefined || value === null) {
-          return true;
-        }
-
-        const { amount } = this.parent as { amount?: number };
-
-        if (amount === undefined || amount === null) {
-          return true;
-        }
-
-        return value <= amount;
-      }
-    ),
+    .min(0, 'Discount cannot be negative.'),
   totalAmountDue: yup
     .number()
     .transform((value, originalValue) => (originalValue === '' ? undefined : value))
@@ -111,29 +95,7 @@ export const progressNoteValidationSchema = yup.object({
     .number()
     .transform((value, originalValue) => (originalValue === '' ? undefined : value))
     .nullable()
-    .min(0, 'Amount paid cannot be negative.')
-    .test(
-      'amount-paid-not-greater-than-total',
-      'Amount paid cannot be greater than total amount due.',
-      function (value?: number | null) {
-        if (value === undefined || value === null) {
-          return true;
-        }
-
-        const { amount, discount } = this.parent as {
-          amount?: number;
-          discount?: number;
-        };
-
-        if (amount === undefined || amount === null) {
-          return true;
-        }
-
-        const totalAmountDue = amount - (discount ?? 0);
-
-        return value <= totalAmountDue;
-      }
-    ),
+    .min(0, 'Amount paid cannot be negative.'),
   balance: yup
     .number()
     .transform((value, originalValue) => (originalValue === '' ? undefined : value))
