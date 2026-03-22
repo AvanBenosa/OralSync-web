@@ -120,6 +120,28 @@ const parseNumberInput = (value: string): number | '' => {
 const getNumericValue = (value: number | ''): number | undefined =>
   value === '' ? undefined : value;
 
+const getComputedTotalAmountDue = (amount: number | '', discount: number | ''): number | '' => {
+  if (amount === '' && discount === '') {
+    return '';
+  }
+
+  return (amount === '' ? 0 : amount) - (discount === '' ? 0 : discount);
+};
+
+const getComputedBalance = (
+  amount: number | '',
+  discount: number | '',
+  amountPaid: number | ''
+): number | '' => {
+  const totalAmountDue = getComputedTotalAmountDue(amount, discount);
+
+  if (totalAmountDue === '' && amountPaid === '') {
+    return '';
+  }
+
+  return (totalAmountDue === '' ? 0 : totalAmountDue) - (amountPaid === '' ? 0 : amountPaid);
+};
+
 const PatientProgressNoteForm: FunctionComponent<PatientProgressNoteFormProps> = (
   props: PatientProgressNoteFormProps
 ): JSX.Element => {
@@ -175,6 +197,9 @@ const PatientProgressNoteForm: FunctionComponent<PatientProgressNoteFormProps> =
   };
 
   const handleSubmit = async (values: PatientProgressNoteFormValues): Promise<void> => {
+    const computedTotalAmountDue = getComputedTotalAmountDue(values.amount, values.discount);
+    const computedBalance = getComputedBalance(values.amount, values.discount, values.amountPaid);
+
     const payload: PatientProgressNoteModel = {
       id: values.id.trim() || undefined,
       patientInfoId: state.patientId,
@@ -190,9 +215,9 @@ const PatientProgressNoteForm: FunctionComponent<PatientProgressNoteFormProps> =
       account: values.account || undefined,
       amount: getNumericValue(values.amount),
       discount: getNumericValue(values.discount),
-      totalAmountDue: getNumericValue(values.totalAmountDue),
+      totalAmountDue: getNumericValue(computedTotalAmountDue),
       amountPaid: getNumericValue(values.amountPaid),
-      balance: getNumericValue(values.balance),
+      balance: getNumericValue(computedBalance),
     };
 
     if (state.isUpdate) {
@@ -241,6 +266,12 @@ const PatientProgressNoteForm: FunctionComponent<PatientProgressNoteFormProps> =
           setFieldValue,
         }): JSX.Element => {
           const resolvedPatientLabel = patientLabel || 'Selected patient';
+          const computedTotalAmountDue = getComputedTotalAmountDue(values.amount, values.discount);
+          const computedBalance = getComputedBalance(
+            values.amount,
+            values.discount,
+            values.amountPaid
+          );
           const shouldShowError = (fieldName: keyof PatientProgressNoteFormValues): boolean =>
             Boolean(touched[fieldName] || submitCount > 0) && Boolean(errors[fieldName]);
 
@@ -504,17 +535,11 @@ const PatientProgressNoteForm: FunctionComponent<PatientProgressNoteFormProps> =
                         label="Total Amount Due"
                         name="totalAmountDue"
                         type="number"
-                        value={values.totalAmountDue}
-                        onChange={(event: ChangeEvent<HTMLInputElement>) =>
-                          setFieldValue('totalAmountDue', parseNumberInput(event.target.value))
-                        }
-                        onBlur={handleBlur}
+                        value={computedTotalAmountDue}
                         fullWidth
                         size="small"
-                        error={shouldShowError('totalAmountDue')}
-                        helperText={
-                          shouldShowError('totalAmountDue') ? errors.totalAmountDue : undefined
-                        }
+                        disabled
+                        helperText="Auto-calculated from Cost - Discount"
                       />
                     </Grid>
                     <Grid size={{ xs: 12, sm: 6 }}>
@@ -538,15 +563,11 @@ const PatientProgressNoteForm: FunctionComponent<PatientProgressNoteFormProps> =
                         label="Balance"
                         name="balance"
                         type="number"
-                        value={values.balance}
-                        onChange={(event: ChangeEvent<HTMLInputElement>) =>
-                          setFieldValue('balance', parseNumberInput(event.target.value))
-                        }
-                        onBlur={handleBlur}
+                        value={computedBalance}
                         fullWidth
                         size="small"
-                        error={shouldShowError('balance')}
-                        helperText={shouldShowError('balance') ? errors.balance : undefined}
+                        disabled
+                        helperText="Auto-calculated from Total Amount Due - Amount Paid"
                       />
                     </Grid>
                   </Grid>

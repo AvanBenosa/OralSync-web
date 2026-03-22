@@ -147,7 +147,7 @@ const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
     tagline: 'Starter clinic plan',
     summary: 'Best for solo or startup clinics handling a lighter daily patient load.',
     patientLimit: '1,000 patients',
-    storageLimit: '300 photos/files',
+    storageLimit: '1000 photos/files',
     userLimit: '2 users',
     accentClassName: styles.subscriptionPlanCardBasic,
     features: [
@@ -157,7 +157,7 @@ const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
       },
       {
         icon: <PhotoLibraryRoundedIcon />,
-        label: 'Store up to 300 patient photos/files',
+        label: 'Store up to 1000 patient photos/files',
       },
       {
         icon: <SmsRoundedIcon />,
@@ -179,7 +179,7 @@ const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
     tagline: 'Balanced everyday plan',
     summary: 'Built for growing clinics that want reminders, inventory, and larger storage.',
     patientLimit: '5,000 patients',
-    storageLimit: '2,000 photos/files',
+    storageLimit: '3,000 photos/files',
     userLimit: '10 users',
     accentClassName: styles.subscriptionPlanCardStandard,
     features: [
@@ -189,7 +189,7 @@ const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
       },
       {
         icon: <PhotoLibraryRoundedIcon />,
-        label: 'Store up to 2,000 patient photos/files',
+        label: 'Store up to 3,000 patient photos/files',
       },
       {
         icon: <SmsRoundedIcon />,

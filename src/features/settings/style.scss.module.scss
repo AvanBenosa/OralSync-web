@@ -607,6 +607,14 @@
   svg {
     font-size: 18px !important;
   }
+
+  &:disabled {
+    cursor: not-allowed;
+    border-color: rgba(146, 166, 188, 0.92);
+    background: linear-gradient(180deg, #c2cfdd 0%, #a8b7c8 100%);
+    box-shadow: none;
+    opacity: 0.88;
+  }
 }
 
 .moduleActionButton {

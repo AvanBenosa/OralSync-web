@@ -18,7 +18,7 @@ const isValidDateString = (value: string): boolean => {
 };
 
 export const progressNoteValidationSchema = yup.object({
-  id: yup.number().default(0),
+  id: yup.string().default(''),
   date: yup
     .string()
     .required('Date is required.')

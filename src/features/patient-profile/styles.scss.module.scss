@@ -346,12 +346,18 @@
   margin-top: 14px;
   padding: 0 14px;
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
+  align-items: stretch;
+}
+
+.profileActions > :last-child:nth-child(odd) {
+  grid-column: 1 / -1;
 }
 
 .actionButton {
-  min-height: 36px;
+  min-height: 40px;
+  padding: 8px 10px;
   border: 1px solid transparent;
   border-radius: 10px;
   display: inline-flex;
@@ -363,9 +369,14 @@
   cursor: pointer;
   background: #e5eef6;
   color: #305574;
+  text-align: center;
+  white-space: normal;
+  line-height: 1.15;
+  box-sizing: border-box;
 
   svg {
     font-size: 16px !important;
+    flex: 0 0 auto;
   }
 }
 
@@ -549,7 +560,22 @@
     justify-content: flex-start;
     box-sizing: border-box;
   }
+}
 
+@media (max-width: 1280px) {
+  .profileActions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 360px) {
+  .profileActions {
+    grid-template-columns: 1fr;
+  }
+
+  .profileActions > :last-child:nth-child(odd) {
+    grid-column: auto;
+  }
 }
 
 @media (max-width: 420px) {

@@ -14,3 +14,17 @@ export const normalizeSubscriptionType = (value?: string | null): string => {
 
 export const isBasicSubscription = (value?: string | null): boolean =>
   normalizeSubscriptionType(value) === 'basic';
+
+export const getSubscriptionUserLimit = (value?: string | null): number | null => {
+  const normalizedValue = normalizeSubscriptionType(value);
+
+  if (normalizedValue === 'basic') {
+    return 2;
+  }
+
+  if (normalizedValue === 'standard') {
+    return 10;
+  }
+
+  return null;
+};

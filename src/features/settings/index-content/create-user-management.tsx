@@ -19,6 +19,11 @@ import PersonAddAlt1RoundedIcon from '@mui/icons-material/PersonAddAlt1Rounded';
 import SaveRoundedIcon from '@mui/icons-material/SaveRounded';
 import { isAxiosError } from 'axios';
 import { FunctionComponent, JSX, useMemo, useState } from 'react';
+import { useAuthStore } from '../../../common/store/authStore';
+import {
+  getSubscriptionUserLimit,
+  normalizeSubscriptionType,
+} from '../../../common/utils/subscription';
 import {
   REGISTER_EMPLOYMENT_OPTIONS,
   REGISTER_PREFIX_OPTIONS,
@@ -97,13 +102,41 @@ const isSuperAdminUser = (item: SettingsUserModel): boolean =>
   item.role === RegisterUserRole.SuperAdmin ||
   (item.roleLabel || '').toLowerCase() === 'superadmin';
 
+const formatSubscriptionLabel = (value?: string | null): string => {
+  const normalizedValue = normalizeSubscriptionType(value);
+
+  if (normalizedValue === 'basic') {
+    return 'Basic';
+  }
+
+  if (normalizedValue === 'standard') {
+    return 'Standard';
+  }
+
+  if (normalizedValue === 'pro') {
+    return 'Pro';
+  }
+
+  return 'Current';
+};
+
 const CreateUserManagement: FunctionComponent<CreateUserStateProps> = (
   props: CreateUserStateProps
 ): JSX.Element => {
   const { state, setState } = props;
+  const subscriptionType = useAuthStore((store) => store.user?.subscriptionType ?? '');
   const [formValues, setFormValues] = useState<CreateUserFormValues>(createInitialValues);
   const [statusMessage, setStatusMessage] = useState('');
   const [submitError, setSubmitError] = useState('');
+  const userLimit = getSubscriptionUserLimit(subscriptionType);
+  const currentUserCount = Math.max(state.totalItem || 0, 0);
+  const isCreateLimitReached =
+    !state.isUpdate && userLimit !== null && currentUserCount >= userLimit;
+  const subscriptionLabel = formatSubscriptionLabel(subscriptionType);
+  const createLimitMessage =
+    userLimit !== null
+      ? `${subscriptionLabel} subscription allows up to ${userLimit} users only. Upgrade the plan to add more clinic accounts.`
+      : '';
 
   const filteredUsers = useMemo(() => {
     const query = state.search.trim().toLowerCase();
@@ -129,7 +162,10 @@ const CreateUserManagement: FunctionComponent<CreateUserStateProps> = (
     }));
   };
 
-  const handleTextChange = (field: keyof CreateUserFormValues, value: string | number | boolean) => {
+  const handleTextChange = (
+    field: keyof CreateUserFormValues,
+    value: string | number | boolean
+  ) => {
     setFormValues((current) => ({
       ...current,
       [field]: value,
@@ -194,7 +230,16 @@ const CreateUserManagement: FunctionComponent<CreateUserStateProps> = (
     setStatusMessage('');
     setSubmitError('');
 
-    if (!formValues.userName.trim() || !formValues.firstName.trim() || !formValues.lastName.trim()) {
+    if (isCreateLimitReached) {
+      setSubmitError(createLimitMessage);
+      return;
+    }
+
+    if (
+      !formValues.userName.trim() ||
+      !formValues.firstName.trim() ||
+      !formValues.lastName.trim()
+    ) {
       setSubmitError('Username, first name, and last name are required.');
       return;
     }
@@ -344,9 +389,7 @@ const CreateUserManagement: FunctionComponent<CreateUserStateProps> = (
         </div>
       </section>
 
-      <section
-        className={`${styles.formPanel} ${state.isUpdate ? styles.formPanelUpdating : ''}`}
-      >
+      <section className={`${styles.formPanel} ${state.isUpdate ? styles.formPanelUpdating : ''}`}>
         <div className={styles.formPanelHeader}>
           <div className={styles.formPanelIcon} aria-hidden="true">
             <PersonAddAlt1RoundedIcon />
@@ -360,8 +403,19 @@ const CreateUserManagement: FunctionComponent<CreateUserStateProps> = (
                 ? 'Edit the selected clinic account. Leave the password fields empty if the password should stay the same.'
                 : 'Use the same account fields as registration to create clinic users.'}
             </p>
+            {!state.isUpdate && userLimit !== null ? (
+              <p className={styles.formPanelDescription}>
+                {subscriptionLabel} plan: {currentUserCount} of {userLimit} users used.
+              </p>
+            ) : null}
           </div>
         </div>
+
+        {isCreateLimitReached ? (
+          <Alert severity="warning" sx={{ mb: 2 }}>
+            {createLimitMessage}
+          </Alert>
+        ) : null}
 
         <Grid container spacing={2}>
           <Grid size={{ xs: 12, md: 6 }}>
@@ -592,6 +646,7 @@ const CreateUserManagement: FunctionComponent<CreateUserStateProps> = (
             type="button"
             className={styles.primaryActionButton}
             onClick={() => void handleSubmit()}
+            disabled={isCreateLimitReached}
           >
             <SaveRoundedIcon />
             <span>{state.isUpdate ? 'Update User' : 'Create User'}</span>

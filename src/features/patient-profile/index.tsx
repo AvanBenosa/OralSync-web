@@ -6,6 +6,8 @@ import MailOutlineRoundedIcon from '@mui/icons-material/MailOutlineRounded';
 import DeleteOutlineRoundedIcon from '@mui/icons-material/DeleteOutlineRounded';
 
 import styles from './styles.scss.module.scss';
+import { useAuthStore } from '../../common/store/authStore';
+import { isBasicSubscription } from '../../common/utils/subscription';
 import {
   PatientProfileMobileReloadConfig,
   PatientProfileProps,
@@ -115,6 +117,8 @@ export const PatientProfileModule: FunctionComponent<PatientProfileProps> = (
   };
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const subscriptionType = useAuthStore((store) => store.user?.subscriptionType ?? '');
+  const isBasicPlan = isBasicSubscription(subscriptionType);
   const lastLoadedPatientIdRef = useRef<string | undefined>(undefined);
   const [profilePictureObjectUrl, setProfilePictureObjectUrl] = useState<string>('');
   const [state, setState] = useState<PatientStateModel>({
@@ -261,6 +265,18 @@ export const PatientProfileModule: FunctionComponent<PatientProfileProps> = (
     };
   }, [profilePictureObjectUrl]);
 
+  useEffect(() => {
+    if (!isBasicPlan || !state.isEmail) {
+      return;
+    }
+
+    setState((prev: PatientStateModel) => ({
+      ...prev,
+      isEmail: false,
+      openModal: false,
+    }));
+  }, [isBasicPlan, state.isEmail]);
+
   const handleCloseDialog = (): void => {
     setState((prev: PatientStateModel) => ({
       ...prev,
@@ -383,21 +399,23 @@ export const PatientProfileModule: FunctionComponent<PatientProfileProps> = (
                   >
                     <EditOutlinedIcon /> Edit Profile
                   </button>
-                  <button
-                    type="button"
-                    className={`${styles.actionButton} ${styles.mailAction}`}
-                    onClick={(): void =>
-                      setState({
-                        ...state,
-                        isUpdate: false,
-                        isDelete: false,
-                        isEmail: true,
-                        openModal: true,
-                      })
-                    }
-                  >
-                    <MailOutlineRoundedIcon /> Send Message
-                  </button>
+                  {!isBasicPlan ? (
+                    <button
+                      type="button"
+                      className={`${styles.actionButton} ${styles.mailAction}`}
+                      onClick={(): void =>
+                        setState({
+                          ...state,
+                          isUpdate: false,
+                          isDelete: false,
+                          isEmail: true,
+                          openModal: true,
+                        })
+                      }
+                    >
+                      <MailOutlineRoundedIcon /> Send Message
+                    </button>
+                  ) : null}
                 </div>
               </section>
 
