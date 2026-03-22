@@ -25,10 +25,7 @@ import {
   ProgressNoteAccount,
   ProgressNoteCategory,
 } from '../../../patient-profile-modules/progress-note/api/types';
-import {
-  HandleCreateFinanceIncomeItem,
-  HandleUpdateFinanceIncomeItem,
-} from '../api/handlers';
+import { HandleCreateFinanceIncomeItem, HandleUpdateFinanceIncomeItem } from '../api/handlers';
 import type { FinanceIncomeModel, FinanceIncomeStateProps } from '../api/types';
 import { financeIncomeValidationSchema } from '../api/validation';
 type FinanceOverviewFormProps = FinanceIncomeStateProps;

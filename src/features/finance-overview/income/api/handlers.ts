@@ -33,10 +33,7 @@ export const HandleCreateFinanceIncomeItem = async (
 ): Promise<void> => {
   const response = await CreateFinanceIncomeItem(request);
   setState((prev: FinanceIncomeStateModel) => {
-    const nextState = ApplyFinanceIncomeMutationLocally(
-      prev,
-      response as FinanceIncomeModel
-    );
+    const nextState = ApplyFinanceIncomeMutationLocally(prev, response as FinanceIncomeModel);
 
     return {
       ...prev,

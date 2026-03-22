@@ -7,6 +7,7 @@ import {
 import type { PatientProgressNoteModel } from '../../../patient-profile-modules/progress-note/api/types';
 import { resolveClinicId } from '../../../../common/components/ClinicId';
 import type {
+  FinanceIncomeStatusFilter,
   FinanceIncomeModel,
   FinanceIncomeResponseModel,
   FinanceIncomeStateModel,
@@ -26,7 +27,8 @@ const financeIncomeResponseCache = new Map<
 const buildFinanceIncomeCacheKey = (
   clinicId?: string | null,
   dateFrom?: string,
-  dateTo?: string
+  dateTo?: string,
+  statusFilter?: FinanceIncomeStatusFilter
 ): string => {
   const resolvedClinicId = resolveClinicId(clinicId);
 
@@ -34,6 +36,7 @@ const buildFinanceIncomeCacheKey = (
     resolvedClinicId ?? 'current-clinic',
     dateFrom?.trim() || 'any-from',
     dateTo?.trim() || 'any-to',
+    statusFilter?.trim() || 'all-status',
   ].join('|');
 };
 
@@ -99,14 +102,64 @@ const sortFinanceItems = (left: FinanceIncomeModel, right: FinanceIncomeModel): 
   );
 };
 
+const getResolvedTotalAmountDue = (item: FinanceIncomeModel): number | undefined => {
+  if (typeof item.totalAmountDue === 'number' && !Number.isNaN(item.totalAmountDue)) {
+    return item.totalAmountDue;
+  }
+
+  if (item.amount === undefined && item.discount === undefined) {
+    return undefined;
+  }
+
+  return (item.amount ?? 0) - (item.discount ?? 0);
+};
+
+const getResolvedBalance = (item: FinanceIncomeModel): number | undefined => {
+  if (typeof item.balance === 'number' && !Number.isNaN(item.balance)) {
+    return item.balance;
+  }
+
+  const totalAmountDue = getResolvedTotalAmountDue(item);
+
+  if (totalAmountDue === undefined && item.amountPaid === undefined) {
+    return undefined;
+  }
+
+  return (totalAmountDue ?? 0) - (item.amountPaid ?? 0);
+};
+
+const getFinanceIncomeStatus = (
+  item: FinanceIncomeModel
+): Exclude<FinanceIncomeStatusFilter, 'all'> | undefined => {
+  const balance = getResolvedBalance(item);
+
+  if (balance === undefined) {
+    return undefined;
+  }
+
+  return balance > 0 ? 'pending' : 'paid';
+};
+
+const matchesFinanceIncomeStatus = (
+  item: FinanceIncomeModel,
+  statusFilter?: FinanceIncomeStatusFilter
+): boolean => {
+  if (!statusFilter || statusFilter === 'all') {
+    return true;
+  }
+
+  return getFinanceIncomeStatus(item) === statusFilter;
+};
+
 const getAllFinanceIncomeRecords = async (
   clinicId?: string | null,
   dateFrom?: string,
   dateTo?: string,
+  statusFilter: FinanceIncomeStatusFilter = 'all',
   forceRefresh: boolean = false
 ): Promise<FinanceIncomeModel[]> => {
   const resolvedClinicId = resolveClinicId(clinicId);
-  const cacheKey = buildFinanceIncomeCacheKey(resolvedClinicId, dateFrom, dateTo);
+  const cacheKey = buildFinanceIncomeCacheKey(resolvedClinicId, dateFrom, dateTo, statusFilter);
 
   if (!resolvedClinicId) {
     return [];
@@ -117,10 +170,7 @@ const getAllFinanceIncomeRecords = async (
   }
 
   const cachedResponse = financeIncomeResponseCache.get(cacheKey);
-  if (
-    cachedResponse &&
-    Date.now() - cachedResponse.cachedAt < FINANCE_INCOME_CACHE_TTL_MS
-  ) {
+  if (cachedResponse && Date.now() - cachedResponse.cachedAt < FINANCE_INCOME_CACHE_TTL_MS) {
     return cachedResponse.data;
   }
 
@@ -136,6 +186,7 @@ const getAllFinanceIncomeRecords = async (
           clinicId: resolvedClinicId,
           dateFrom,
           dateTo,
+          paymentStatus: statusFilter !== 'all' ? statusFilter : undefined,
         },
         forceRefresh
       );
@@ -178,7 +229,9 @@ const buildFinanceIncomeResponse = (
   allItems: FinanceIncomeModel[]
 ): FinanceIncomeResponseModel => {
   const pageSize = Math.max(state.pageEnd, 1);
-  const keyword = String(state.search ?? '').trim().toLowerCase();
+  const keyword = String(state.search ?? '')
+    .trim()
+    .toLowerCase();
   const filteredItems = keyword
     ? allItems.filter((item) => matchesFinanceIncomeSearch(item, keyword))
     : allItems;
@@ -255,6 +308,7 @@ export const GetFinanceIncomeItems = async (
     resolvedClinicId,
     state.dateFrom,
     state.dateTo,
+    state.statusFilter ?? 'all',
     forceRefresh
   );
   return buildFinanceIncomeResponse(state, allItems);
@@ -268,10 +322,10 @@ export const ApplyFinanceIncomeMutationLocally = (
   const currentCacheKey = buildFinanceIncomeCacheKey(
     state.clinicId,
     state.dateFrom,
-    state.dateTo
+    state.dateTo,
+    state.statusFilter
   );
-  const cachedItems =
-    financeIncomeResponseCache.get(currentCacheKey)?.data ?? [...state.items];
+  const cachedItems = financeIncomeResponseCache.get(currentCacheKey)?.data ?? [...state.items];
   const nextItemIds = new Set(
     [item?.id, previousItem?.id].filter((value): value is string => Boolean(value))
   );
@@ -284,7 +338,7 @@ export const ApplyFinanceIncomeMutationLocally = (
       ? isWithinInclusiveDateRange(itemDate, state.dateFrom, state.dateTo)
       : !String(state.dateFrom ?? '').trim() && !String(state.dateTo ?? '').trim();
 
-    if (isInCurrentRange) {
+    if (isInCurrentRange && matchesFinanceIncomeStatus(item, state.statusFilter)) {
       nextItems = [...nextItems, item];
     }
   }
@@ -308,7 +362,5 @@ export const UpdateFinanceIncomeItem = async (
   request: PatientProgressNoteModel
 ): Promise<PatientProgressNoteModel> => UpdatePatientProgressNoteItem(request);
 
-export const DeleteFinanceIncomeItem = async (
-  patientInfoId?: string,
-  id?: string
-): Promise<void> => DeletePatientProgressNoteItem(patientInfoId, id);
+export const DeleteFinanceIncomeItem = async (patientInfoId?: string, id?: string): Promise<void> =>
+  DeletePatientProgressNoteItem(patientInfoId, id);

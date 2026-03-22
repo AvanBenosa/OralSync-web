@@ -57,6 +57,7 @@ export const FinanceOverviewIncome: FunctionComponent<FinanceOverviewIncomeProps
     ...createInitialModuleState<FinanceIncomeModel>(resolvedClinicId),
     amount: 0,
     hasDateFilter: false,
+    statusFilter: 'all',
   }));
 
   const loadFinanceIncome = async (
@@ -195,6 +196,7 @@ export const FinanceOverviewIncome: FunctionComponent<FinanceOverviewIncomeProps
     state.search,
     state.dateFrom,
     state.dateTo,
+    state.statusFilter,
     state.pageStart,
     state.pageEnd,
     activeTab,

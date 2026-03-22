@@ -30,6 +30,7 @@ type PatientProgressNoteQuery = {
   clinicId?: string | null;
   dateFrom?: string;
   dateTo?: string;
+  paymentStatus?: string;
 };
 
 const normalizeQueryValue = (value?: string | null): string => value?.trim() ?? '';
@@ -39,12 +40,14 @@ const buildProgressNoteRequestKey = (query?: PatientProgressNoteQuery): string =
   const clinicId = normalizeQueryValue(query?.clinicId);
   const dateFrom = normalizeQueryValue(query?.dateFrom);
   const dateTo = normalizeQueryValue(query?.dateTo);
+  const paymentStatus = normalizeQueryValue(query?.paymentStatus);
 
   return [
     `patient:${patientId || 'all'}`,
     `clinic:${clinicId || 'current'}`,
     `from:${dateFrom || 'any'}`,
     `to:${dateTo || 'any'}`,
+    `status:${paymentStatus || 'all'}`,
   ].join('|');
 };
 
@@ -57,6 +60,7 @@ export const GetPatientProgressNoteItems = async (
   const clinicId = normalizeQueryValue(query?.clinicId);
   const dateFrom = normalizeQueryValue(query?.dateFrom);
   const dateTo = normalizeQueryValue(query?.dateTo);
+  const paymentStatus = normalizeQueryValue(query?.paymentStatus);
 
   if (forceRefresh) {
     progressNoteResponseCache.delete(requestKey);
@@ -83,6 +87,7 @@ export const GetPatientProgressNoteItems = async (
           ClinicId: clinicId || undefined,
           DateFrom: dateFrom || undefined,
           DateTo: dateTo || undefined,
+          PaymentStatus: paymentStatus || undefined,
         },
       });
 

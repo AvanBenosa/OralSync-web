@@ -21,6 +21,7 @@ import DashboardCustomizeRoundedIcon from '@mui/icons-material/DashboardCustomiz
 import GroupAddRoundedIcon from '@mui/icons-material/GroupAddRounded';
 import EventRoundedIcon from '@mui/icons-material/EventRounded';
 import RequestQuoteRoundedIcon from '@mui/icons-material/RequestQuoteRounded';
+import Inventory2RoundedIcon from '@mui/icons-material/Inventory2Rounded';
 import SettingsRoundedIcon from '@mui/icons-material/SettingsRounded';
 import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded';
 import WarningAmberRoundedIcon from '@mui/icons-material/WarningAmberRounded';
@@ -36,12 +37,11 @@ const menuItems = [
   { label: 'Dashboard', icon: <DashboardCustomizeRoundedIcon />, path: '/dashboard' },
   { label: 'Patient', icon: <GroupAddRoundedIcon />, path: '/patient' },
   { label: 'Appointment', icon: <EventRoundedIcon />, path: '/appointment' },
+  { label: 'Inventory', icon: <Inventory2RoundedIcon />, path: '/inventory' },
   { label: 'Finance Overview', icon: <RequestQuoteRoundedIcon />, path: '/finance-overview' },
 ];
 
-const footerMenuItems = [
-  { label: 'Settings', icon: <SettingsRoundedIcon />, path: '/settings' },
-];
+const footerMenuItems = [{ label: 'Settings', icon: <SettingsRoundedIcon />, path: '/settings' }];
 
 const getInitials = (value: string): string =>
   value
@@ -411,10 +411,9 @@ const SideNav = () => {
                       px: 2.5,
                       borderRadius: drawerOpen ? '14px' : '16px',
                       border: '1px solid rgba(255,255,255,0.14)',
-                      background:
-                        active
-                          ? 'linear-gradient(180deg, rgba(255,255,255,0.2), rgba(255,255,255,0.12))'
-                          : 'linear-gradient(180deg, rgba(255,255,255,0.12), rgba(255,255,255,0.06))',
+                      background: active
+                        ? 'linear-gradient(180deg, rgba(255,255,255,0.2), rgba(255,255,255,0.12))'
+                        : 'linear-gradient(180deg, rgba(255,255,255,0.12), rgba(255,255,255,0.06))',
                       boxShadow: '0 10px 18px rgba(8, 29, 48, 0.14)',
                     }}
                   >

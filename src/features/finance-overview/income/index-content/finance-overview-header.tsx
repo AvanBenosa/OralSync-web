@@ -1,11 +1,16 @@
 import { FunctionComponent, JSX, MouseEvent, useEffect, useState } from 'react';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import DateRangeRoundedIcon from '@mui/icons-material/DateRangeRounded';
+import FilterAltRoundedIcon from '@mui/icons-material/FilterAltRounded';
 import RefreshRoundedIcon from '@mui/icons-material/RefreshRounded';
 import RequestQuoteRoundedIcon from '@mui/icons-material/RequestQuoteRounded';
 import { Popover } from '@mui/material';
 
-import type { FinanceIncomeStateProps } from '../api/types';
+import {
+  FINANCE_INCOME_STATUS_LABELS,
+  type FinanceIncomeStateProps,
+  type FinanceIncomeStatusFilter,
+} from '../api/types';
 import styles from '../../style.scss.module.scss';
 
 type FinanceOverviewIncomeHeaderProps = FinanceIncomeStateProps;
@@ -16,10 +21,16 @@ const FinanceOverviewIncomeHeader: FunctionComponent<FinanceOverviewIncomeHeader
   const { state, setState, onReload } = props;
   const recordCount = state.totalItem;
   const [filterAnchorEl, setFilterAnchorEl] = useState<HTMLButtonElement | null>(null);
+  const [statusFilterAnchorEl, setStatusFilterAnchorEl] = useState<HTMLButtonElement | null>(null);
   const [draftDateFrom, setDraftDateFrom] = useState(state.dateFrom ?? '');
   const [draftDateTo, setDraftDateTo] = useState(state.dateTo ?? '');
+  const [draftStatusFilter, setDraftStatusFilter] = useState<FinanceIncomeStatusFilter>(
+    state.statusFilter ?? 'all'
+  );
   const isDateFilterOpen = Boolean(filterAnchorEl);
+  const isStatusFilterOpen = Boolean(statusFilterAnchorEl);
   const hasActiveDateFilter = Boolean(state.dateFrom || state.dateTo);
+  const hasActiveStatusFilter = Boolean(state.statusFilter && state.statusFilter !== 'all');
   const isInvalidDateRange = Boolean(draftDateFrom && draftDateTo && draftDateFrom > draftDateTo);
 
   useEffect(() => {
@@ -31,6 +42,14 @@ const FinanceOverviewIncomeHeader: FunctionComponent<FinanceOverviewIncomeHeader
     setDraftDateTo(state.dateTo ?? '');
   }, [state.dateFrom, state.dateTo, isDateFilterOpen]);
 
+  useEffect(() => {
+    if (isStatusFilterOpen) {
+      return;
+    }
+
+    setDraftStatusFilter(state.statusFilter ?? 'all');
+  }, [state.statusFilter, isStatusFilterOpen]);
+
   const handleOpenDateFilter = (event: MouseEvent<HTMLButtonElement>): void => {
     setDraftDateFrom(state.dateFrom ?? '');
     setDraftDateTo(state.dateTo ?? '');
@@ -39,6 +58,15 @@ const FinanceOverviewIncomeHeader: FunctionComponent<FinanceOverviewIncomeHeader
 
   const handleCloseDateFilter = (): void => {
     setFilterAnchorEl(null);
+  };
+
+  const handleOpenStatusFilter = (event: MouseEvent<HTMLButtonElement>): void => {
+    setDraftStatusFilter(state.statusFilter ?? 'all');
+    setStatusFilterAnchorEl(event.currentTarget);
+  };
+
+  const handleCloseStatusFilter = (): void => {
+    setStatusFilterAnchorEl(null);
   };
 
   const handleApplyDateFilter = (): void => {
@@ -65,6 +93,25 @@ const FinanceOverviewIncomeHeader: FunctionComponent<FinanceOverviewIncomeHeader
       pageStart: 0,
     });
     handleCloseDateFilter();
+  };
+
+  const handleApplyStatusFilter = (): void => {
+    setState({
+      ...state,
+      statusFilter: draftStatusFilter,
+      pageStart: 0,
+    });
+    handleCloseStatusFilter();
+  };
+
+  const handleClearStatusFilter = (): void => {
+    setDraftStatusFilter('all');
+    setState({
+      ...state,
+      statusFilter: 'all',
+      pageStart: 0,
+    });
+    handleCloseStatusFilter();
   };
 
   return (
@@ -113,14 +160,17 @@ const FinanceOverviewIncomeHeader: FunctionComponent<FinanceOverviewIncomeHeader
               type="button"
               className={`${styles.reloadButton} ${styles.inlineReloadButton}`}
               onClick={(): void => {
-                if (state.dateFrom || state.dateTo) {
+                if (state.dateFrom || state.dateTo || hasActiveStatusFilter) {
                   setDraftDateFrom('');
                   setDraftDateTo('');
+                  setDraftStatusFilter('all');
                   handleCloseDateFilter();
+                  handleCloseStatusFilter();
                   setState({
                     ...state,
                     dateFrom: '',
                     dateTo: '',
+                    statusFilter: 'all',
                     pageStart: 0,
                   });
                   return;
@@ -146,6 +196,21 @@ const FinanceOverviewIncomeHeader: FunctionComponent<FinanceOverviewIncomeHeader
               aria-expanded={isDateFilterOpen}
             >
               <DateRangeRoundedIcon className={styles.reloadIcon} />
+            </button>
+            <button
+              type="button"
+              className={`${styles.reloadButton} ${styles.inlineReloadButton} ${
+                hasActiveStatusFilter ? styles.dateFilterButtonActive : ''
+              }`}
+              onClick={handleOpenStatusFilter}
+              title={hasActiveStatusFilter ? 'Change status filter' : 'Filter income by status'}
+              aria-label={
+                hasActiveStatusFilter ? 'Change status filter' : 'Filter income by status'
+              }
+              aria-haspopup="dialog"
+              aria-expanded={isStatusFilterOpen}
+            >
+              <FilterAltRoundedIcon className={styles.reloadIcon} />
             </button>
             <div className={styles.buttonContainer}>
               <button
@@ -240,6 +305,70 @@ const FinanceOverviewIncomeHeader: FunctionComponent<FinanceOverviewIncomeHeader
               className={styles.filterPrimaryButton}
               onClick={handleApplyDateFilter}
               disabled={isInvalidDateRange}
+            >
+              Apply
+            </button>
+          </div>
+        </div>
+      </Popover>
+
+      <Popover
+        open={isStatusFilterOpen}
+        anchorEl={statusFilterAnchorEl}
+        onClose={handleCloseStatusFilter}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+        PaperProps={{
+          className: styles.filterPopoverPaper,
+        }}
+      >
+        <div className={styles.filterPopoverBody}>
+          <div className={styles.filterPopoverHeader}>
+            <h3 className={styles.filterPopoverTitle}>Status Filter</h3>
+            <p className={styles.filterPopoverSubtitle}>
+              Show all income records or narrow the list by payment status.
+            </p>
+          </div>
+
+          <div className={styles.filterOptionList}>
+            {(Object.keys(FINANCE_INCOME_STATUS_LABELS) as FinanceIncomeStatusFilter[]).map(
+              (statusOption) => (
+                <button
+                  key={statusOption}
+                  type="button"
+                  className={`${styles.filterOptionButton} ${
+                    draftStatusFilter === statusOption ? styles.filterOptionButtonActive : ''
+                  }`}
+                  onClick={(): void => setDraftStatusFilter(statusOption)}
+                >
+                  <span className={styles.filterOptionTitle}>
+                    {FINANCE_INCOME_STATUS_LABELS[statusOption]}
+                  </span>
+                  <span className={styles.filterOptionHint}>
+                    {statusOption === 'all'
+                      ? 'Keep both paid and pending balance records visible.'
+                      : statusOption === 'pending'
+                      ? 'Only show notes that still have an outstanding balance.'
+                      : 'Only show notes that are already fully paid.'}
+                  </span>
+                </button>
+              )
+            )}
+          </div>
+
+          <div className={styles.filterPopoverActions}>
+            <button
+              type="button"
+              className={styles.filterSecondaryButton}
+              onClick={handleClearStatusFilter}
+              disabled={draftStatusFilter === 'all' && !hasActiveStatusFilter}
+            >
+              Clear
+            </button>
+            <button
+              type="button"
+              className={styles.filterPrimaryButton}
+              onClick={handleApplyStatusFilter}
             >
               Apply
             </button>
