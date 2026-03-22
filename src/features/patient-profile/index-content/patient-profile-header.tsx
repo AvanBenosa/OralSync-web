@@ -1,7 +1,6 @@
 import React, { FunctionComponent, JSX } from 'react';
 import ArrowBackIosNewRoundedIcon from '@mui/icons-material/ArrowBackIosNewRounded';
 import RefreshRoundedIcon from '@mui/icons-material/RefreshRounded';
-import DashboardRoundedIcon from '@mui/icons-material/DashboardRounded';
 import NotesRoundedIcon from '@mui/icons-material/NotesRounded';
 import HistoryEduRoundedIcon from '@mui/icons-material/HistoryEduRounded';
 import PhotoLibraryRoundedIcon from '@mui/icons-material/PhotoLibraryRounded';

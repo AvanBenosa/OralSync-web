@@ -23,6 +23,12 @@ import { toastSuccess } from '../../common/api/responses';
 import { useAuthStore } from '../../common/store/authStore';
 import { getPortalHomePath, getUserPortalType } from '../../common/utils/portal';
 import { DEVOTIONAL_HIDDEN_KEY } from '../dashboard/api/devotional';
+import {
+  authHeroGradient,
+  authPalette,
+  authPrimaryGradient,
+  authSurfaceGradient,
+} from './auth-palette';
 import ClinicRegistrationForm from './clinic-registration-form';
 import RegistrationSuccessPanel from './registration-success-panel';
 
@@ -39,12 +45,6 @@ const carouselSlides = [
     title: 'Built For Daily Operations',
     description:
       'Keep registration, billing, and patient movement aligned with a dashboard designed for fast decisions.',
-    image: '',
-  },
-  {
-    title: 'Ready For Multi-Clinic Use',
-    description:
-      'Keep the seeded demo login for quick previews while new clinics register directly from this landing page.',
     image: '',
   },
 ];
@@ -178,6 +178,19 @@ const Login = () => {
 
   const currentSlide = carouselSlides[activeSlide];
   const isRegisterMode = authMode === 'register';
+  const getModeButtonSx = (active: boolean) => ({
+    borderRadius: 2.25,
+    py: 1.1,
+    fontWeight: 800,
+    letterSpacing: 0.15,
+    color: active ? '#ffffff' : authPalette.dark,
+    background: active ? authPrimaryGradient : 'transparent',
+    boxShadow: active ? authPalette.buttonShadow : 'none',
+    '&:hover': {
+      background: active ? authPrimaryGradient : 'rgba(104, 186, 127, 0.12)',
+      boxShadow: active ? authPalette.buttonShadow : 'none',
+    },
+  });
 
   return (
     <Box
@@ -186,7 +199,7 @@ const Login = () => {
         flexDirection: isMobile ? 'column' : 'row',
         minHeight: '100vh',
         overflow: 'hidden',
-        background: 'linear-gradient(135deg, #e7f0f7 0%, #f9fbfd 55%, #eef6fb 100%)',
+        background: 'linear-gradient(135deg, #eef7f0 0%, #fbfdfa 55%, #f2fbf4 100%)',
       }}
     >
       <Box
@@ -198,8 +211,7 @@ const Login = () => {
           position: 'relative',
           overflow: 'hidden',
           p: isTablet ? 4 : 6,
-          background:
-            'radial-gradient(circle at top left, rgba(109, 187, 255, 0.28), transparent 34%), linear-gradient(160deg, #0b2942 0%, #114a72 52%, #1677a8 100%)',
+          background: authHeroGradient,
         }}
       >
         <Box
@@ -207,7 +219,7 @@ const Login = () => {
             position: 'absolute',
             inset: 0,
             background:
-              'linear-gradient(180deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0) 100%)',
+              'linear-gradient(180deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%)',
           }}
         />
         <Box
@@ -224,9 +236,9 @@ const Login = () => {
             sx={{
               mb: 3,
               color: 'white',
-              backgroundColor: 'rgba(255,255,255,0.12)',
+              backgroundColor: authPalette.chip,
               backdropFilter: 'blur(12px)',
-              border: '1px solid rgba(255,255,255,0.18)',
+              border: `1px solid ${authPalette.chipBorder}`,
             }}
           />
           <Typography
@@ -253,7 +265,7 @@ const Login = () => {
               boxShadow: '0 24px 60px rgba(2, 12, 27, 0.32)',
               background: currentSlide.image
                 ? `linear-gradient(180deg, rgba(3, 22, 37, 0.08), rgba(3, 22, 37, 0.52)), url(${currentSlide.image}) center/cover`
-                : 'linear-gradient(140deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.04) 100%)',
+                : 'linear-gradient(140deg, rgba(207,255,220,0.18) 0%, rgba(255,255,255,0.05) 100%)',
               backdropFilter: 'blur(10px)',
             }}
           >
@@ -263,7 +275,7 @@ const Login = () => {
                 inset: 0,
                 background: currentSlide.image
                   ? 'transparent'
-                  : 'radial-gradient(circle at top right, rgba(133, 217, 255, 0.42), transparent 28%), radial-gradient(circle at bottom left, rgba(255, 255, 255, 0.18), transparent 24%)',
+                  : 'radial-gradient(circle at top right, rgba(207,255,220,0.28), transparent 28%), radial-gradient(circle at bottom left, rgba(255, 255, 255, 0.18), transparent 24%)',
               }}
             />
             <Box
@@ -282,8 +294,8 @@ const Login = () => {
                   width: 88,
                   height: 88,
                   borderRadius: 4,
-                  backgroundColor: 'rgba(255,255,255,0.16)',
-                  border: '1px solid rgba(255,255,255,0.2)',
+                  backgroundColor: authPalette.chip,
+                  border: `1px solid ${authPalette.chipBorder}`,
                 }}
               />
               <Box>
@@ -320,7 +332,8 @@ const Login = () => {
                     borderRadius: 999,
                     cursor: 'pointer',
                     transition: 'all 0.25s ease',
-                    backgroundColor: index === activeSlide ? 'white' : 'rgba(255,255,255,0.35)',
+                    backgroundColor:
+                      index === activeSlide ? authPalette.light : 'rgba(207,255,220,0.35)',
                   }}
                 />
               ))}
@@ -330,8 +343,11 @@ const Login = () => {
                 onClick={handlePreviousSlide}
                 sx={{
                   color: 'white',
-                  backgroundColor: 'rgba(255,255,255,0.1)',
-                  border: '1px solid rgba(255,255,255,0.16)',
+                  backgroundColor: 'rgba(207,255,220,0.1)',
+                  border: `1px solid ${authPalette.chipBorder}`,
+                  '&:hover': {
+                    backgroundColor: 'rgba(207,255,220,0.16)',
+                  },
                 }}
               >
                 <ArrowBackIosNew fontSize="small" />
@@ -340,8 +356,11 @@ const Login = () => {
                 onClick={handleNextSlide}
                 sx={{
                   color: 'white',
-                  backgroundColor: 'rgba(255,255,255,0.1)',
-                  border: '1px solid rgba(255,255,255,0.16)',
+                  backgroundColor: 'rgba(207,255,220,0.1)',
+                  border: `1px solid ${authPalette.chipBorder}`,
+                  '&:hover': {
+                    backgroundColor: 'rgba(207,255,220,0.16)',
+                  },
                 }}
               >
                 <ArrowForwardIos fontSize="small" />
@@ -366,7 +385,7 @@ const Login = () => {
             position: 'absolute',
             inset: 0,
             background:
-              'radial-gradient(circle at top right, rgba(23, 119, 168, 0.08), transparent 26%), radial-gradient(circle at bottom left, rgba(14, 165, 233, 0.08), transparent 28%)',
+              'radial-gradient(circle at top right, rgba(104, 186, 127, 0.12), transparent 28%), radial-gradient(circle at bottom left, rgba(207, 255, 220, 0.18), transparent 30%)',
           }}
         />
         <Box
@@ -376,6 +395,9 @@ const Login = () => {
             width: '100%',
             maxWidth: isRegisterMode ? 720 : 500,
             px: isMobile ? 0 : undefined,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
           }}
         >
           {isMobile ? (
@@ -384,8 +406,7 @@ const Login = () => {
                 px: 2.5,
                 pt: 2,
                 pb: 1,
-                background:
-                  'linear-gradient(180deg, #0f4e76 0%, #1677a8 58%, rgba(22, 119, 168, 0.12) 100%)',
+                background: `linear-gradient(180deg, ${authPalette.dark} 0%, ${authPalette.primary} 58%, rgba(104, 186, 127, 0.14) 100%)`,
               }}
             >
               <Box
@@ -395,8 +416,8 @@ const Login = () => {
                   maxHeight: 182,
                   borderRadius: 4,
                   color: 'white',
-                  backgroundColor: 'rgba(255,255,255,0.12)',
-                  border: '1px solid rgba(255,255,255,0.18)',
+                  backgroundColor: authPalette.chip,
+                  border: `1px solid ${authPalette.chipBorder}`,
                   backdropFilter: 'blur(12px)',
                   boxShadow: '0 18px 40px rgba(5, 22, 41, 0.18)',
                   overflow: 'hidden',
@@ -447,12 +468,41 @@ const Login = () => {
                         borderRadius: 999,
                         cursor: 'pointer',
                         transition: 'all 0.25s ease',
-                        backgroundColor: index === activeSlide ? 'white' : 'rgba(255,255,255,0.35)',
+                        backgroundColor:
+                          index === activeSlide ? authPalette.light : 'rgba(207,255,220,0.35)',
                       }}
                     />
                   ))}
                 </Box>
               </Box>
+            </Box>
+          ) : null}
+
+          {!isMobile ? (
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'center',
+                width: '100%',
+                mb: isRegisterMode ? 0.5 : 0.75,
+                px: 2,
+              }}
+            >
+              <Box
+                component="img"
+                src="/OralSync.png"
+                alt="OralSync logo"
+                sx={{
+                  width: isRegisterMode ? 'min(100%, 228px)' : 'min(100%, 248px)',
+                  height: 'auto',
+                  display: 'block',
+                  objectFit: 'contain',
+                  mt: isRegisterMode ? '-10px' : '-12px',
+                  mb: isRegisterMode ? '-44px' : '-48px',
+                  filter: 'drop-shadow(0 14px 30px rgba(37, 61, 44, 0.14))',
+                  userSelect: 'none',
+                }}
+              />
             </Box>
           ) : null}
 
@@ -468,7 +518,7 @@ const Login = () => {
               maxHeight: isMobile ? 'none' : 'calc(100vh - 64px)',
               overflowY: isRegisterMode ? 'auto' : 'visible',
               borderRadius: isMobile ? '28px 28px 0 0' : 5,
-              border: '1px solid rgba(19, 71, 107, 0.08)',
+              border: `1px solid ${authPalette.border}`,
               boxShadow: isMobile
                 ? '0 -10px 30px rgba(15, 23, 42, 0.06)'
                 : '0 24px 60px rgba(15, 23, 42, 0.12)',
@@ -476,6 +526,7 @@ const Login = () => {
               mt: isMobile ? -0.5 : 0,
               display: 'flex',
               flexDirection: 'column',
+              background: authSurfaceGradient,
             }}
           >
             <Typography
@@ -483,7 +534,7 @@ const Login = () => {
               sx={{
                 display: 'block',
                 textAlign: 'center',
-                color: '#1677a8',
+                color: authPalette.primary,
                 letterSpacing: 2.4,
                 fontWeight: 700,
                 mb: 1,
@@ -510,18 +561,20 @@ const Login = () => {
                 mb: 3,
                 p: 0.75,
                 borderRadius: 3,
-                backgroundColor: 'rgba(22, 119, 168, 0.08)',
+                backgroundColor: 'rgba(104, 186, 127, 0.12)',
               }}
             >
               <Button
                 variant={authMode === 'login' ? 'contained' : 'text'}
                 onClick={() => setAuthMode('login')}
+                sx={getModeButtonSx(authMode === 'login')}
               >
                 Login
               </Button>
               <Button
                 variant={authMode === 'register' ? 'contained' : 'text'}
                 onClick={() => setAuthMode('register')}
+                sx={getModeButtonSx(authMode === 'register')}
               >
                 Register Clinic
               </Button>
@@ -578,7 +631,12 @@ const Login = () => {
                     <Checkbox
                       checked={rememberMe}
                       onChange={(event) => setRememberMe(event.target.checked)}
-                      sx={{ color: '#1677a8' }}
+                      sx={{
+                        color: authPalette.primary,
+                        '&.Mui-checked': {
+                          color: authPalette.primary,
+                        },
+                      }}
                     />
                   }
                   label="Remember me"
@@ -590,7 +648,23 @@ const Login = () => {
                     },
                   }}
                 />
-                <Button type="submit" variant="contained" fullWidth disabled={isSubmitting}>
+                <Button
+                  type="submit"
+                  variant="contained"
+                  fullWidth
+                  disabled={isSubmitting}
+                  sx={{
+                    py: 1.2,
+                    borderRadius: 2.5,
+                    fontWeight: 800,
+                    background: authPrimaryGradient,
+                    boxShadow: authPalette.buttonShadow,
+                    '&:hover': {
+                      background: authPrimaryGradient,
+                      boxShadow: authPalette.buttonShadow,
+                    },
+                  }}
+                >
                   {isSubmitting ? <CircularProgress size={20} color="inherit" /> : 'Login'}
                 </Button>
               </form>

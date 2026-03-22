@@ -24,7 +24,6 @@ import {
 } from '../../common/services/api-client';
 import { toValidDateDisplay } from '../../common/helpers/toValidateDateDisplay';
 import PatientProfileHeader from './index-content/patient-profile-header';
-import PatientOverView from '../patient-profile-modules/overview';
 import PatientProgressNotes from '../patient-profile-modules/progress-note';
 import PatientMedicalHistory from '../patient-profile-modules/medical-history';
 import PatientDentalChart from '../patient-profile-modules/dental-chart';

@@ -19,6 +19,7 @@ import {
   requestClinicRegistrationCode,
   type AuthResponse,
 } from '../../common/services/auth-api';
+import { authPalette, authPrimaryGradient, authSoftSurfaceGradient } from './auth-palette';
 import {
   // REGISTER_EMPLOYMENT_OPTIONS,
   // REGISTER_PREFIX_OPTIONS,
@@ -37,8 +38,8 @@ type ClinicRegistrationFormProps = {
 const sectionCardSx = {
   p: { xs: 2, sm: 2.5 },
   borderRadius: 3,
-  border: '1px solid rgba(19, 71, 107, 0.1)',
-  background: 'linear-gradient(180deg, rgba(255,255,255,0.95) 0%, rgba(245,250,253,0.92) 100%)',
+  border: `1px solid ${authPalette.border}`,
+  background: authSoftSurfaceGradient,
   boxShadow: '0 10px 28px rgba(15, 23, 42, 0.05)',
 };
 
@@ -175,11 +176,16 @@ const ClinicRegistrationForm: FunctionComponent<ClinicRegistrationFormProps> = (
             <Box sx={sectionCardSx}>
               <Typography
                 variant="overline"
-                sx={{ display: 'block', color: '#1677a8', fontWeight: 800, letterSpacing: 1.6 }}
+                sx={{
+                  display: 'block',
+                  color: authPalette.primary,
+                  fontWeight: 800,
+                  letterSpacing: 1.6,
+                }}
               >
                 Step 1
               </Typography>
-              <Typography variant="h6" sx={{ fontWeight: 800, color: '#183b56', mb: 0.5 }}>
+              <Typography variant="h6" sx={{ fontWeight: 800, color: authPalette.text, mb: 0.5 }}>
                 Verify Email
               </Typography>
               <Typography variant="body2" sx={{ color: 'text.secondary', mb: 2 }}>
@@ -211,7 +217,17 @@ const ClinicRegistrationForm: FunctionComponent<ClinicRegistrationFormProps> = (
                     fullWidth
                     onClick={() => void handleSendVerificationCode()}
                     disabled={isSendingCode}
-                    sx={{ height: '100%', minHeight: 40, borderRadius: 2 }}
+                    sx={{
+                      height: '100%',
+                      minHeight: 40,
+                      borderRadius: 2,
+                      color: authPalette.primary,
+                      borderColor: authPalette.borderStrong,
+                      '&:hover': {
+                        borderColor: authPalette.primary,
+                        backgroundColor: 'rgba(104, 186, 127, 0.08)',
+                      },
+                    }}
                   >
                     {isSendingCode ? <CircularProgress size={20} color="inherit" /> : 'Send Code'}
                   </Button>
@@ -241,11 +257,16 @@ const ClinicRegistrationForm: FunctionComponent<ClinicRegistrationFormProps> = (
             <Box sx={sectionCardSx}>
               <Typography
                 variant="overline"
-                sx={{ display: 'block', color: '#1677a8', fontWeight: 800, letterSpacing: 1.6 }}
+                sx={{
+                  display: 'block',
+                  color: authPalette.primary,
+                  fontWeight: 800,
+                  letterSpacing: 1.6,
+                }}
               >
                 Step 2
               </Typography>
-              <Typography variant="h6" sx={{ fontWeight: 800, color: '#183b56', mb: 0.5 }}>
+              <Typography variant="h6" sx={{ fontWeight: 800, color: authPalette.text, mb: 0.5 }}>
                 Clinic Information
               </Typography>
               <Typography variant="body2" sx={{ color: 'text.secondary', mb: 2 }}>
@@ -329,11 +350,16 @@ const ClinicRegistrationForm: FunctionComponent<ClinicRegistrationFormProps> = (
             <Box sx={sectionCardSx}>
               <Typography
                 variant="overline"
-                sx={{ display: 'block', color: '#1677a8', fontWeight: 800, letterSpacing: 1.6 }}
+                sx={{
+                  display: 'block',
+                  color: authPalette.primary,
+                  fontWeight: 800,
+                  letterSpacing: 1.6,
+                }}
               >
                 Step 3
               </Typography>
-              <Typography variant="h6" sx={{ fontWeight: 800, color: '#183b56', mb: 0.5 }}>
+              <Typography variant="h6" sx={{ fontWeight: 800, color: authPalette.text, mb: 0.5 }}>
                 Super Admin Account
               </Typography>
               <Typography variant="body2" sx={{ color: 'text.secondary', mb: 2 }}>
@@ -644,7 +670,12 @@ const ClinicRegistrationForm: FunctionComponent<ClinicRegistrationFormProps> = (
                 borderRadius: 2.5,
                 fontWeight: 800,
                 letterSpacing: 0.5,
-                boxShadow: '0 14px 30px rgba(22, 119, 168, 0.22)',
+                background: authPrimaryGradient,
+                boxShadow: authPalette.buttonShadow,
+                '&:hover': {
+                  background: authPrimaryGradient,
+                  boxShadow: authPalette.buttonShadow,
+                },
               }}
             >
               {isSubmitting ? <CircularProgress size={20} color="inherit" /> : 'Create Clinic'}

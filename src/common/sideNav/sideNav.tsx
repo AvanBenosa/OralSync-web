@@ -20,7 +20,6 @@ import {
 import DashboardCustomizeRoundedIcon from '@mui/icons-material/DashboardCustomizeRounded';
 import GroupAddRoundedIcon from '@mui/icons-material/GroupAddRounded';
 import EventRoundedIcon from '@mui/icons-material/EventRounded';
-import RequestQuoteRoundedIcon from '@mui/icons-material/RequestQuoteRounded';
 import Inventory2RoundedIcon from '@mui/icons-material/Inventory2Rounded';
 import SettingsRoundedIcon from '@mui/icons-material/SettingsRounded';
 import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded';
@@ -29,16 +28,24 @@ import PersonRoundedIcon from '@mui/icons-material/PersonRounded';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
-
+import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 const drawerWidth = 240;
 const collapsedDrawerWidth = 72;
+const navPalette = {
+  main: '#2E6F40',
+  mid: '#68BA7F',
+  light: '#CFFFDC',
+  dark: '#253D2C',
+  hover: '#3E8756',
+  active: 'rgba(207,255,220,0.18)',
+};
 
 const menuItems = [
   { label: 'Dashboard', icon: <DashboardCustomizeRoundedIcon />, path: '/dashboard' },
   { label: 'Patient', icon: <GroupAddRoundedIcon />, path: '/patient' },
   { label: 'Appointment', icon: <EventRoundedIcon />, path: '/appointment' },
   { label: 'Inventory', icon: <Inventory2RoundedIcon />, path: '/inventory' },
-  { label: 'Finance Overview', icon: <RequestQuoteRoundedIcon />, path: '/finance-overview' },
+  { label: 'Finance Overview', icon: <MonetizationOnIcon />, path: '/finance-overview' },
 ];
 
 const footerMenuItems = [{ label: 'Settings', icon: <SettingsRoundedIcon />, path: '/settings' }];
@@ -101,7 +108,12 @@ const SideNav = () => {
         <AppBar
           position="fixed"
           color="primary"
-          sx={{ top: 0, height: 56, justifyContent: 'center' }}
+          sx={{
+            top: 0,
+            height: 56,
+            justifyContent: 'center',
+            background: `linear-gradient(180deg, ${navPalette.main} 0%, ${navPalette.dark} 100%)`,
+          }}
         >
           <Toolbar
             sx={{ display: 'flex', justifyContent: 'space-between', minHeight: '56px !important' }}
@@ -118,7 +130,13 @@ const SideNav = () => {
         <AppBar
           position="fixed"
           color="primary"
-          sx={{ top: 'auto', bottom: 0, height: 56, justifyContent: 'center' }}
+          sx={{
+            top: 'auto',
+            bottom: 0,
+            height: 56,
+            justifyContent: 'center',
+            background: `linear-gradient(180deg, ${navPalette.main} 0%, ${navPalette.dark} 100%)`,
+          }}
         >
           <Toolbar
             sx={{ display: 'flex', justifyContent: 'space-around', minHeight: '56px !important' }}
@@ -130,7 +148,7 @@ const SideNav = () => {
                 <IconButton
                   key={item.path}
                   onClick={() => handleNavigate(item.path)}
-                  sx={{ color: active ? '#ffe082' : 'white' }}
+                  sx={{ color: active ? navPalette.light : 'white' }}
                 >
                   {item.icon}
                 </IconButton>
@@ -211,7 +229,7 @@ const SideNav = () => {
         '& .MuiDrawer-paper': {
           width: drawerOpen ? drawerWidth : collapsedDrawerWidth,
           boxSizing: 'border-box',
-          backgroundColor: theme.palette.primary.main,
+          background: `linear-gradient(180deg, ${navPalette.main} 0%, ${navPalette.dark} 100%)`,
           color: '#fff',
           borderRight: 'none',
           transition: 'width 0.3s',
@@ -239,8 +257,8 @@ const SideNav = () => {
                     py: 0.95,
                     borderRadius: '18px',
                     background:
-                      'linear-gradient(145deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.05) 100%)',
-                    border: '1px solid rgba(255,255,255,0.18)',
+                      'linear-gradient(145deg, rgba(207,255,220,0.14) 0%, rgba(104,186,127,0.08) 100%)',
+                    border: '1px solid rgba(207,255,220,0.2)',
                     boxShadow: '0 8px 18px rgba(8, 29, 48, 0.16)',
                   }}
                 >
@@ -257,7 +275,7 @@ const SideNav = () => {
                       fontSize: '0.92rem',
                       fontWeight: 900,
                       letterSpacing: '0.03em',
-                      background: 'radial-gradient(circle at 30% 30%, #ffffff 0%, #dfeaf3 100%)',
+                      background: `radial-gradient(circle at 30% 30%, #ffffff 0%, ${navPalette.light} 100%)`,
                       boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.55)',
                     }}
                   >
@@ -287,7 +305,7 @@ const SideNav = () => {
                         title={userDisplayName}
                         sx={{
                           mt: 0.2,
-                          color: '#ff9b57',
+                          color: navPalette.light,
                           fontSize: '0.84rem',
                           fontWeight: 700,
                           lineHeight: 1.15,
@@ -326,12 +344,12 @@ const SideNav = () => {
                     width: 30,
                     height: 30,
                     color: '#fff',
-                    border: '1px solid rgba(255,255,255,0.14)',
-                    backgroundColor: theme.palette.primary.dark,
+                    border: '1px solid rgba(207,255,220,0.18)',
+                    backgroundColor: navPalette.dark,
                     backdropFilter: 'blur(10px)',
                     boxShadow: '0 8px 18px rgba(8, 29, 48, 0.2)',
                     '&:hover': {
-                      backgroundColor: '#2f6388',
+                      backgroundColor: navPalette.hover,
                     },
                   }}
                 >
@@ -351,15 +369,15 @@ const SideNav = () => {
                       width: 42,
                       height: 42,
                       color: '#fff',
-                      border: '1px solid rgba(255,255,255,0.12)',
+                      border: '1px solid rgba(207,255,220,0.18)',
                       background:
-                        'linear-gradient(145deg, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0.07) 100%)',
+                        'linear-gradient(145deg, rgba(207,255,220,0.16) 0%, rgba(104,186,127,0.08) 100%)',
                       boxShadow: '0 10px 18px rgba(8, 29, 48, 0.16)',
                       fontSize: '0.95rem',
                       fontWeight: 900,
                       letterSpacing: '0.04em',
                       '&:hover': {
-                        backgroundColor: 'rgba(255,255,255,0.14)',
+                        backgroundColor: 'rgba(207,255,220,0.16)',
                       },
                     }}
                   >
@@ -369,7 +387,7 @@ const SideNav = () => {
               </Box>
             )}
           </Box>
-          <Divider sx={{ borderColor: 'rgba(255,255,255,0.15)' }} />
+          <Divider sx={{ borderColor: 'rgba(207,255,220,0.16)' }} />
           <List>
             {menuItems.map((item) => {
               const active = item.path === location.pathname;
@@ -381,14 +399,35 @@ const SideNav = () => {
                     sx={{
                       justifyContent: drawerOpen ? 'initial' : 'center',
                       px: 2.5,
-                      borderLeft: active ? '4px solid #fff' : '4px solid transparent',
-                      backgroundColor: active ? 'rgba(255,255,255,0.16)' : 'transparent',
+                      borderLeft: active
+                        ? `4px solid ${navPalette.light}`
+                        : '4px solid transparent',
+                      backgroundColor: active ? navPalette.active : 'transparent',
+                      '&:hover': {
+                        backgroundColor: 'rgba(207,255,220,0.1)',
+                      },
                     }}
                   >
-                    <ListItemIcon sx={{ color: '#fff', minWidth: 0, mr: drawerOpen ? 3 : 'auto' }}>
+                    <ListItemIcon
+                      sx={{
+                        color: active ? navPalette.light : '#fff',
+                        minWidth: 0,
+                        mr: drawerOpen ? 3 : 'auto',
+                      }}
+                    >
                       {item.icon}
                     </ListItemIcon>
-                    {drawerOpen ? <ListItemText primary={item.label} /> : null}
+                    {drawerOpen ? (
+                      <ListItemText
+                        primary={item.label}
+                        primaryTypographyProps={{
+                          sx: {
+                            color: active ? navPalette.light : '#fff',
+                            fontWeight: active ? 700 : 600,
+                          },
+                        }}
+                      />
+                    ) : null}
                   </ListItemButton>
                 </Tooltip>
               );
@@ -402,7 +441,7 @@ const SideNav = () => {
               sx={{
                 mb: 1.25,
                 px: 0.5,
-                color: 'rgba(255,255,255,0.48)',
+                color: 'rgba(207,255,220,0.48)',
                 textAlign: 'center',
               }}
             >
@@ -414,7 +453,7 @@ const SideNav = () => {
                   letterSpacing: '0.02em',
                 }}
               >
-                OralSync v1.0.0
+                OralSync v1.0.0 | © 2026
               </Typography>
               <Typography
                 sx={{
@@ -424,7 +463,7 @@ const SideNav = () => {
                   lineHeight: 1.2,
                 }}
               >
-                © 2026 ABSoftware Solutions
+                {/* © 2026 ABSoftware Solutions */}
               </Typography>
             </Box>
           ) : null}
@@ -442,17 +481,37 @@ const SideNav = () => {
                       justifyContent: drawerOpen ? 'initial' : 'center',
                       px: 2.5,
                       borderRadius: drawerOpen ? '14px' : '16px',
-                      border: '1px solid rgba(255,255,255,0.14)',
+                      border: '1px solid rgba(207,255,220,0.18)',
                       background: active
-                        ? 'linear-gradient(180deg, rgba(255,255,255,0.2), rgba(255,255,255,0.12))'
-                        : 'linear-gradient(180deg, rgba(255,255,255,0.12), rgba(255,255,255,0.06))',
+                        ? 'linear-gradient(180deg, rgba(207,255,220,0.24), rgba(104,186,127,0.18))'
+                        : 'linear-gradient(180deg, rgba(207,255,220,0.12), rgba(104,186,127,0.08))',
                       boxShadow: '0 10px 18px rgba(8, 29, 48, 0.14)',
+                      '&:hover': {
+                        background:
+                          'linear-gradient(180deg, rgba(207,255,220,0.18), rgba(104,186,127,0.12))',
+                      },
                     }}
                   >
-                    <ListItemIcon sx={{ color: '#fff', minWidth: 0, mr: drawerOpen ? 3 : 'auto' }}>
+                    <ListItemIcon
+                      sx={{
+                        color: active ? navPalette.light : '#fff',
+                        minWidth: 0,
+                        mr: drawerOpen ? 3 : 'auto',
+                      }}
+                    >
                       {item.icon}
                     </ListItemIcon>
-                    {drawerOpen ? <ListItemText primary={item.label} /> : null}
+                    {drawerOpen ? (
+                      <ListItemText
+                        primary={item.label}
+                        primaryTypographyProps={{
+                          sx: {
+                            color: active ? navPalette.light : '#fff',
+                            fontWeight: active ? 700 : 600,
+                          },
+                        }}
+                      />
+                    ) : null}
                   </ListItemButton>
                 </Tooltip>
               );

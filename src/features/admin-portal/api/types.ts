@@ -44,6 +44,8 @@ export type AdminClinicModel = {
   address?: string;
   emailAddress?: string;
   contactNumber?: string;
+  subscriptionType?: string;
+  validityDate?: string;
   isLocked?: boolean;
   isDataPrivacyAccepted?: boolean;
   createdAt?: string;
@@ -54,6 +56,8 @@ export type AdminClinicModel = {
 export type AdminClinicLockRequest = {
   clinicId: string;
   isLocked: boolean;
+  subscriptionType?: string;
+  validityDate?: string;
 };
 
 export type AdminUserModel = {
