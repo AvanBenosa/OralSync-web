@@ -58,7 +58,8 @@ const parseDateValue = (value?: string | Date): Date | undefined => {
   return Number.isNaN(parsedDate.getTime()) ? undefined : parsedDate;
 };
 
-const formatDateValue = (value?: string | Date): string => toValidDateDisplay(value, 'MMM DD, YYYY');
+const formatDateValue = (value?: string | Date): string =>
+  toValidDateDisplay(value, 'MMM DD, YYYY');
 
 const calculateAge = (birthDate?: string | Date): string => {
   if (!birthDate) {
@@ -91,7 +92,7 @@ export const PatientProfileModule: FunctionComponent<PatientProfileProps> = (
   const [searchParams, setSearchParams] = useSearchParams();
   const patientId = patientIdParam?.trim() || undefined;
   const validTabs = [
-    'overview',
+    // 'overview',
     'progress-notes',
     'medical-history',
     'photos',
@@ -100,11 +101,11 @@ export const PatientProfileModule: FunctionComponent<PatientProfileProps> = (
     'lab-cases',
     'appointments',
   ];
-  const defaultTab = 'overview';
+  const defaultTab = 'progress-notes';
   const tabFromQuery = searchParams.get('tab') || '';
   const activeTab = validTabs.includes(tabFromQuery) ? tabFromQuery : defaultTab;
   const tabLabels: Record<string, string> = {
-    overview: 'Overview',
+    // overview: 'Overview',
     'progress-notes': 'Progress Notes',
     'medical-history': 'Medical History',
     photos: 'Photos',
@@ -452,9 +453,10 @@ export const PatientProfileModule: FunctionComponent<PatientProfileProps> = (
             </aside>
           )}
 
-          {activeTab === 'overview' ? (
+          {/* //activeTab === 'overview' ? (
             <PatientOverView patientId={patientId} onRegisterMobileReload={setMobileReload} />
-          ) : activeTab === 'progress-notes' ? (
+          ) : */}
+          {activeTab === 'progress-notes' ? (
             <PatientProgressNotes
               patientId={patientId}
               onRegisterMobileReload={setMobileReload}

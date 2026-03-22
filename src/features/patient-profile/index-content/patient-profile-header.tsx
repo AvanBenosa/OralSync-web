@@ -30,11 +30,11 @@ const PatientProfileHeader: FunctionComponent<PatientProfileStateProps> = (
     .join(' ');
 
   const patientTabList = [
-    {
-      id: 'overview',
-      label: 'Overview',
-      icon: <DashboardRoundedIcon />,
-    },
+    // {
+    //   id: 'overview',
+    //   label: 'Overview',
+    //   icon: <DashboardRoundedIcon />,
+    // },
     {
       id: 'progress-notes',
       label: 'Progress Notes',

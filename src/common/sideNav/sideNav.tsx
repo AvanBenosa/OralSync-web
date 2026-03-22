@@ -397,6 +397,38 @@ const SideNav = () => {
         </Box>
 
         <Box p={2}>
+          {drawerOpen ? (
+            <Box
+              sx={{
+                mb: 1.25,
+                px: 0.5,
+                color: 'rgba(255,255,255,0.48)',
+                textAlign: 'center',
+              }}
+            >
+              <Typography
+                sx={{
+                  fontSize: '0.68rem',
+                  fontWeight: 700,
+                  lineHeight: 1.25,
+                  letterSpacing: '0.02em',
+                }}
+              >
+                OralSync v1.0.0
+              </Typography>
+              <Typography
+                sx={{
+                  mt: 0.2,
+                  fontSize: '0.62rem',
+                  fontWeight: 500,
+                  lineHeight: 1.2,
+                }}
+              >
+                © 2026 ABSoftware Solutions
+              </Typography>
+            </Box>
+          ) : null}
+
           <List sx={{ p: 0, mb: 1 }}>
             {footerMenuItems.map((item) => {
               const active = item.path === location.pathname;

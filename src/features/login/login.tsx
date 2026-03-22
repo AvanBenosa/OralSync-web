@@ -220,7 +220,7 @@ const Login = () => {
           }}
         >
           <Chip
-            label="DMD Web Platform"
+            label="OralSync"
             sx={{
               mb: 3,
               color: 'white',
@@ -293,10 +293,7 @@ const Login = () => {
                 <Typography variant="h5" fontWeight={700} sx={{ mb: 1.5 }}>
                   Demo login and real clinic onboarding
                 </Typography>
-                <Typography
-                  variant="body2"
-                  sx={{ maxWidth: 360, color: 'rgba(255,255,255,0.82)' }}
-                >
+                <Typography variant="body2" sx={{ maxWidth: 360, color: 'rgba(255,255,255,0.82)' }}>
                   Use the seeded admin for demo deployments, or let each clinic self-register from
                   the landing page with a verification code.
                 </Typography>
@@ -412,7 +409,7 @@ const Login = () => {
                   variant="overline"
                   sx={{ letterSpacing: 2.2, fontWeight: 700, color: 'rgba(255,255,255,0.82)' }}
                 >
-                  CONNECT DMD WEB
+                  CONNECT OralSync
                 </Typography>
                 <Typography
                   variant="h5"
@@ -492,7 +489,7 @@ const Login = () => {
                 mb: 1,
               }}
             >
-              CONNECT DMD WEB
+              CONNECT OralSync
             </Typography>
 
             <Typography
