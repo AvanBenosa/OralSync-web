@@ -1010,6 +1010,285 @@
   justify-content: center;
 }
 
+.subscriptionSurface {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin-top: 20px;
+}
+
+.subscriptionHeroCard {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 22px;
+  border: 1px solid rgba(194, 208, 220, 0.92);
+  border-radius: 20px;
+  background: linear-gradient(135deg, rgba(233, 244, 255, 0.98), rgba(248, 252, 255, 0.98));
+  box-shadow: 0 16px 32px rgba(24, 50, 79, 0.08);
+}
+
+.subscriptionHeroContent {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+  flex: 1;
+}
+
+.subscriptionHeroEyebrow {
+  color: #4b6e90 !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.14em !important;
+  text-transform: uppercase;
+}
+
+.subscriptionHeroTitle {
+  color: #163b62 !important;
+  font-size: 30px !important;
+  font-weight: 900 !important;
+  line-height: 1.1 !important;
+}
+
+.subscriptionHeroText {
+  max-width: 640px;
+  color: #5f7891 !important;
+  font-size: 14px !important;
+  line-height: 1.7 !important;
+}
+
+.subscriptionHeroChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.subscriptionHeroMetrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  width: min(460px, 100%);
+}
+
+.subscriptionHeroMetric {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px;
+  border: 1px solid rgba(198, 212, 225, 0.94);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.84);
+}
+
+.subscriptionHeroMetricLabel {
+  color: #607a93;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.subscriptionHeroMetricValue {
+  color: #163b62;
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.subscriptionHeroMetricMeta {
+  color: #68829a;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.subscriptionPlansGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.subscriptionPlanCard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+  padding: 20px;
+  border: 1px solid rgba(194, 208, 220, 0.92);
+  border-radius: 20px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(244, 249, 253, 0.98));
+  box-shadow: 0 14px 30px rgba(24, 50, 79, 0.06);
+  overflow: hidden;
+  transition: transform 120ms ease, box-shadow 120ms ease, border-color 120ms ease;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto;
+    height: 5px;
+    background: linear-gradient(90deg, rgba(47, 109, 179, 0.55), rgba(71, 152, 220, 0.2));
+  }
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 18px 34px rgba(24, 50, 79, 0.1);
+  }
+}
+
+.subscriptionPlanCardBasic::before {
+  background: linear-gradient(90deg, #5f7f9d, #c7d4df);
+}
+
+.subscriptionPlanCardStandard::before {
+  background: linear-gradient(90deg, #2e6b9d, #69a9de);
+}
+
+.subscriptionPlanCardPro::before {
+  background: linear-gradient(90deg, #2d7f5a, #75c78b);
+}
+
+.subscriptionPlanCardActive {
+  border-color: rgba(46, 107, 157, 0.38);
+  box-shadow: 0 18px 36px rgba(37, 86, 125, 0.14);
+}
+
+.subscriptionPlanHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.subscriptionPlanTagline {
+  color: #5c7992 !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.12em !important;
+  text-transform: uppercase;
+}
+
+.subscriptionPlanTitle {
+  margin-top: 6px !important;
+  color: #163b62 !important;
+  font-size: 25px !important;
+  font-weight: 900 !important;
+  line-height: 1.1 !important;
+}
+
+.subscriptionPlanSummary {
+  color: #607a93 !important;
+  font-size: 13px !important;
+  line-height: 1.7 !important;
+}
+
+.subscriptionPlanMetrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.subscriptionPlanMetric {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 12px;
+  border: 1px solid rgba(206, 218, 229, 0.95);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.86);
+}
+
+.subscriptionPlanMetricLabel {
+  color: #68829a;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.subscriptionPlanMetricValue {
+  color: #17344f;
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.4;
+}
+
+.subscriptionFeatureList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.subscriptionFeatureItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  min-width: 0;
+}
+
+.subscriptionFeatureIcon {
+  width: 30px;
+  height: 30px;
+  flex: 0 0 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: rgba(47, 109, 179, 0.1);
+  color: #2f6db3;
+
+  svg {
+    font-size: 18px !important;
+  }
+}
+
+.subscriptionFeatureText {
+  color: #45647f;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.6;
+}
+
+.subscriptionInfoBanner {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 18px;
+  border: 1px solid rgba(194, 208, 220, 0.92);
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(250, 252, 254, 0.98), rgba(241, 247, 251, 0.98));
+}
+
+.subscriptionInfoBannerIcon {
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
+  background: rgba(47, 109, 179, 0.1);
+  color: #2f6db3;
+
+  svg {
+    font-size: 22px !important;
+  }
+}
+
+.subscriptionInfoBannerTitle {
+  color: #17344f !important;
+  font-size: 15px !important;
+  font-weight: 800 !important;
+}
+
+.subscriptionInfoBannerText {
+  margin-top: 4px !important;
+  color: #627d95 !important;
+  font-size: 13px !important;
+  line-height: 1.6 !important;
+}
+
 .subscriptionMetricCard {
   display: flex;
   flex-direction: column;
@@ -1215,6 +1494,24 @@
     max-height: none;
   }
 
+  .subscriptionHeroCard {
+    flex-direction: column;
+    padding: 18px;
+  }
+
+  .subscriptionHeroMetrics {
+    grid-template-columns: 1fr;
+    width: 100%;
+  }
+
+  .subscriptionPlansGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .subscriptionPlanMetrics {
+    grid-template-columns: 1fr;
+  }
+
   .subscriptionStatusRow {
     flex-direction: column;
     align-items: flex-start;
@@ -1302,6 +1599,14 @@
   .userListMeta,
   .userListEmail {
     font-size: 12px !important;
+  }
+
+  .subscriptionHeroTitle {
+    font-size: 26px !important;
+  }
+
+  .subscriptionPlanTitle {
+    font-size: 22px !important;
   }
 }
 

@@ -29,6 +29,7 @@ import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
+import { isBasicSubscription } from '../utils/subscription';
 const drawerWidth = 240;
 const collapsedDrawerWidth = 72;
 const navPalette = {
@@ -78,8 +79,11 @@ const SideNav = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [drawerOpen, setDrawerOpen] = useState(true);
   const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
+  const visibleMenuItems = isBasicSubscription(user?.subscriptionType)
+    ? menuItems.filter((item) => item.path !== '/inventory')
+    : menuItems;
 
-  const activeItem = menuItems.find((item) => item.path === location.pathname);
+  const activeItem = visibleMenuItems.find((item) => item.path === location.pathname);
   const clinicName = user?.clinicName?.trim() || 'DMD Web';
   const userDisplayName = user?.name?.trim() || username || user?.email || '';
   const clinicInitials = getInitials(clinicName);
@@ -141,7 +145,7 @@ const SideNav = () => {
           <Toolbar
             sx={{ display: 'flex', justifyContent: 'space-around', minHeight: '56px !important' }}
           >
-            {[...menuItems, ...footerMenuItems].map((item) => {
+            {[...visibleMenuItems, ...footerMenuItems].map((item) => {
               const active = item.path === location.pathname;
 
               return (
@@ -389,7 +393,7 @@ const SideNav = () => {
           </Box>
           <Divider sx={{ borderColor: 'rgba(207,255,220,0.16)' }} />
           <List>
-            {menuItems.map((item) => {
+            {visibleMenuItems.map((item) => {
               const active = item.path === location.pathname;
 
               return (

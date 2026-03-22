@@ -1,4 +1,4 @@
-import { Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes } from 'react-router-dom';
 import MainLayout from '../../mainLayout';
 import AdminLayout from '../../adminLayout';
 import NotFoundPage from '../errors/page-not-found';
@@ -16,9 +16,11 @@ import AdminDashboard from '../../features/admin-portal/dashboard';
 import ClinicLockModule from '../../features/admin-portal/clinic-locks';
 import PublicRegistrationPage from '../../features/public-registration';
 import { useAuthStore } from '../store/authStore';
+import { isBasicSubscription } from '../utils/subscription';
 
 const AppRoutes = () => {
   const user = useAuthStore((state) => state.user);
+  const hideInventoryModule = isBasicSubscription(user?.subscriptionType);
 
   return (
     <Routes>
@@ -46,7 +48,13 @@ const AppRoutes = () => {
           />
           <Route
             path="/inventory"
-            element={<InventoryModule clinicId={user?.clinicId ?? undefined} />}
+            element={
+              hideInventoryModule ? (
+                <Navigate to="/dashboard" replace />
+              ) : (
+                <InventoryModule clinicId={user?.clinicId ?? undefined} />
+              )
+            }
           />
           <Route
             path="/finance-overview"

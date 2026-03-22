@@ -41,6 +41,8 @@ export interface AuthUser {
   createdAt?: string;
   updatedAt?: string;
   portalType?: PortalType;
+  subscriptionType?: string;
+  validityDate?: string;
 }
 
 export interface RegisterPayload {

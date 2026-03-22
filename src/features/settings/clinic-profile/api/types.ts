@@ -21,6 +21,9 @@ export type ClinicProfileModel = {
   workingDays?: string[];
   subscriptionType?: string;
   validityDate?: string;
+  patientCount?: number;
+  uploadedFileCount?: number;
+  userCount?: number;
 };
 
 export type ClinicProfileStateModel = {
