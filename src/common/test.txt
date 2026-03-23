@@ -1,1 +1,1 @@
-git push azure
+git push gIThub
