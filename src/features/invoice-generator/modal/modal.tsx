@@ -47,9 +47,6 @@ const InvoiceGeneratorModal: FunctionComponent<InvoiceGeneratorModalProps> = (
             <Typography sx={{ color: '#17344f', fontSize: 16, fontWeight: 800 }}>
               {toValidDateDisplay(filterDate, 'MMM DD, YYYY', '--')}
             </Typography>
-            <Typography sx={{ color: '#6f8297', mt: 0.5 }}>
-              {items.length} {items.length === 1 ? 'progress note' : 'progress notes'} included
-            </Typography>
           </Grid>
         </Grid>
 
@@ -68,8 +65,7 @@ const InvoiceGeneratorModal: FunctionComponent<InvoiceGeneratorModalProps> = (
               p: 2,
               borderRadius: '16px',
               border: '1px solid rgba(194, 208, 220, 0.92)',
-              background:
-                'linear-gradient(180deg, rgba(255,255,255,0.98), rgba(243,248,252,0.99))',
+              background: 'linear-gradient(180deg, rgba(255,255,255,0.98), rgba(243,248,252,0.99))',
             }}
           >
             <Typography sx={{ color: '#6a8197', fontSize: 12, fontWeight: 800 }}>
@@ -84,8 +80,7 @@ const InvoiceGeneratorModal: FunctionComponent<InvoiceGeneratorModalProps> = (
               p: 2,
               borderRadius: '16px',
               border: '1px solid rgba(194, 208, 220, 0.92)',
-              background:
-                'linear-gradient(180deg, rgba(255,255,255,0.98), rgba(243,248,252,0.99))',
+              background: 'linear-gradient(180deg, rgba(255,255,255,0.98), rgba(243,248,252,0.99))',
             }}
           >
             <Typography sx={{ color: '#6a8197', fontSize: 12, fontWeight: 800 }}>
@@ -100,8 +95,7 @@ const InvoiceGeneratorModal: FunctionComponent<InvoiceGeneratorModalProps> = (
               p: 2,
               borderRadius: '16px',
               border: '1px solid rgba(194, 208, 220, 0.92)',
-              background:
-                'linear-gradient(180deg, rgba(255,255,255,0.98), rgba(243,248,252,0.99))',
+              background: 'linear-gradient(180deg, rgba(255,255,255,0.98), rgba(243,248,252,0.99))',
             }}
           >
             <Typography sx={{ color: '#6a8197', fontSize: 12, fontWeight: 800 }}>
