@@ -1,10 +1,12 @@
 import React, { FunctionComponent, JSX } from 'react';
 import PeopleIcon from '@mui/icons-material/People';
 import AddIcon from '@mui/icons-material/Add';
+import DownloadOutlinedIcon from '@mui/icons-material/DownloadOutlined';
 import FileUploadOutlinedIcon from '@mui/icons-material/FileUploadOutlined';
 import RefreshRoundedIcon from '@mui/icons-material/RefreshRounded';
 
 import styles from '../style.scss.module.scss';
+import { downloadPatientImportTemplate } from '../api/import-template';
 import { PatientStateProps } from '../api/types';
 
 const PatientHeader: FunctionComponent<PatientStateProps> = (
@@ -54,6 +56,18 @@ const PatientHeader: FunctionComponent<PatientStateProps> = (
               aria-label="Reload patients"
             >
               <RefreshRoundedIcon className={styles.reloadIcon} />
+            </button>
+            <button
+              type="button"
+              className={`${styles.reloadButton} ${styles.inlineReloadButton}`}
+              onClick={(): void => {
+                downloadPatientImportTemplate();
+              }}
+              disabled={state.load}
+              title="Download patient import template"
+              aria-label="Download patient import template"
+            >
+              <DownloadOutlinedIcon className={styles.reloadIcon} />
             </button>
             <div className={styles.buttonContainer}>
               <button

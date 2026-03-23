@@ -7,6 +7,7 @@ import {
   DialogContent,
   DialogTitle,
   Grid,
+  MenuItem,
   TextField,
   Typography,
 } from '@mui/material';
@@ -42,9 +43,20 @@ type PatientProfileFormValues = {
   birthDate: string;
   contactNumber: string;
   address: string;
+  gender: string;
   occupation: string;
   religion: string;
+  civilStatus: string;
 };
+
+const genderOptions = ['', 'Male', 'Female', 'Other'];
+const civilStatusOptions = [
+  { value: '0', label: 'None' },
+  { value: '1', label: 'Single' },
+  { value: '2', label: 'Married' },
+  { value: '3', label: 'Divorced' },
+  { value: '4', label: 'Widowed' },
+];
 
 const createInitialValues = (
   selectedItem?: PatientProfileModel | null
@@ -61,8 +73,13 @@ const createInitialValues = (
     : '',
   contactNumber: selectedItem?.contactNumber || '',
   address: selectedItem?.address || '',
+  gender: selectedItem?.gender || '',
   occupation: selectedItem?.occupation || '',
   religion: selectedItem?.religion || '',
+  civilStatus:
+    selectedItem?.civilStatus !== undefined && selectedItem?.civilStatus !== null
+      ? String(selectedItem.civilStatus)
+      : '0',
 });
 
 const PatientProfileForm: FunctionComponent<PatientProfileStateProps> = (
@@ -195,8 +212,10 @@ const PatientProfileForm: FunctionComponent<PatientProfileStateProps> = (
       birthDate: values.birthDate ? new Date(values.birthDate) : undefined,
       contactNumber: values.contactNumber.trim(),
       address: values.address.trim(),
+      gender: values.gender.trim(),
       occupation: values.occupation.trim(),
       religion: values.religion.trim(),
+      civilStatus: Number(values.civilStatus),
     };
 
     await HandleUpdatePatientProfile(payload, state, setState);
@@ -325,6 +344,23 @@ const PatientProfileForm: FunctionComponent<PatientProfileStateProps> = (
                       </Grid>
                       <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                         <TextField
+                          select
+                          label="Gender"
+                          name="gender"
+                          value={values.gender}
+                          onChange={handleChange}
+                          fullWidth
+                          size="small"
+                        >
+                          {genderOptions.map((option) => (
+                            <MenuItem key={option || 'blank'} value={option}>
+                              {option || 'Select gender'}
+                            </MenuItem>
+                          ))}
+                        </TextField>
+                      </Grid>
+                      <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                        <TextField
                           label="Email Address"
                           name="emailAddress"
                           type="email"
@@ -333,6 +369,23 @@ const PatientProfileForm: FunctionComponent<PatientProfileStateProps> = (
                           fullWidth
                           size="small"
                         />
+                      </Grid>
+                      <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                        <TextField
+                          select
+                          label="Civil Status"
+                          name="civilStatus"
+                          value={values.civilStatus}
+                          onChange={handleChange}
+                          fullWidth
+                          size="small"
+                        >
+                          {civilStatusOptions.map((option) => (
+                            <MenuItem key={option.value} value={option.value}>
+                              {option.label}
+                            </MenuItem>
+                          ))}
+                        </TextField>
                       </Grid>
                       <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                         <TextField

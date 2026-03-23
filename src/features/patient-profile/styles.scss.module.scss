@@ -276,32 +276,70 @@
 
 .profileCard {
   overflow: hidden;
-  padding-bottom: 14px;
-}
-
-.profileBanner {
-  height: 106px;
-  background: linear-gradient(115deg, #7897b3 0%, #adc5da 56%, #ddeaf5 100%);
-}
-
-.avatarWrap {
-  margin-top: -44px;
-  display: flex;
-  justify-content: center;
-}
-
-.avatarCircle {
-  width: 90px;
-  height: 90px;
-  border-radius: 50%;
-  border: 5px solid rgba(255, 255, 255, 0.95);
-  background: linear-gradient(180deg, #f2f7fc 0%, #dce9f5 100%);
-  overflow: hidden;
   position: relative;
+  padding: 18px 18px 20px;
+  text-align: center;
+}
+
+.profileAccentBadge {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  min-width: 44px;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 10px 20px rgba(39, 74, 108, 0.15);
+  background: linear-gradient(180deg, #fff3c7 0%, #ffe08a 100%);
+  box-shadow: 0 8px 16px rgba(210, 162, 40, 0.18);
+  color: #b97700;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.avatarWrap {
+  padding-top: 12px;
+  display: flex;
+  justify-content: center;
+}
+
+.avatarStage {
+  position: relative;
+  width: 116px;
+  height: 116px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatarGlow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 116px;
+  height: 116px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 35%, #d7d2f4 0%, #c7d8f6 62%, #edf3fb 100%);
+}
+
+.avatarCircle {
+  position: relative;
+  z-index: 1;
+  width: 104px;
+  height: 104px;
+  border-radius: 50%;
+  border: 0;
+  background: linear-gradient(180deg, #f9fbff 0%, #e6eef8 100%);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 14px 28px rgba(39, 74, 108, 0.12);
 }
 
 .avatarImage {
@@ -312,70 +350,78 @@
 }
 
 .avatarIcon {
-  font-size: 46px !important;
+  font-size: 64px !important;
+  line-height: 1 !important;
   color: #6f92b4;
 }
 
 .profileIdentity {
-  text-align: center;
-  padding: 10px 16px 0;
+  padding: 2px 12px 0;
 }
 
 .profileName {
   margin: 0;
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 800;
-  color: #1b3d61;
+  line-height: 1.15;
+  color: #17385a;
   letter-spacing: -0.01em;
 }
 
 .profileNumber {
-  margin: 6px 0 0;
-  color: #4f6d89;
+  margin: 0 0 8px;
+  color: #6d8096;
   font-weight: 700;
-  font-size: 16px;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.profileMeta {
+  margin: 8px 0 0;
+  color: #556d84;
+  font-size: 13px;
+  font-weight: 600;
 }
 
 .profileRemarks {
-  margin: 10px 0 0;
-  color: #8397aa;
+  margin: 10px auto 0;
+  max-width: 210px;
+  color: #8799ab;
   font-size: 12px;
+  line-height: 1.55;
 }
 
 .profileActions {
-  margin-top: 14px;
-  padding: 0 14px;
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
-  align-items: stretch;
-}
-
-.profileActions > :last-child:nth-child(odd) {
-  grid-column: 1 / -1;
+  margin-top: 16px;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
 }
 
 .actionButton {
-  min-height: 40px;
-  padding: 8px 10px;
+  width: 38px;
+  height: 38px;
+  padding: 0;
   border: 1px solid transparent;
-  border-radius: 10px;
+  border-radius: 50%;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  font-size: 11px;
-  font-weight: 700;
   cursor: pointer;
   background: #e5eef6;
   color: #305574;
-  text-align: center;
-  white-space: normal;
-  line-height: 1.15;
   box-sizing: border-box;
+  transition: transform 120ms ease, box-shadow 120ms ease, filter 120ms ease;
+
+  &:hover {
+    transform: translateY(-1px);
+  }
 
   svg {
-    font-size: 16px !important;
+    font-size: 18px !important;
     flex: 0 0 auto;
   }
 }
@@ -534,12 +580,8 @@
     scrollbar-width: thin;
   }
 
-  .profileName {
-    font-size: 22px;
-  }
-
   .profileActions {
-    grid-template-columns: 1fr;
+    gap: 8px;
   }
 
   .infoGrid {
@@ -563,18 +605,8 @@
 }
 
 @media (max-width: 1280px) {
-  .profileActions {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 360px) {
-  .profileActions {
-    grid-template-columns: 1fr;
-  }
-
-  .profileActions > :last-child:nth-child(odd) {
-    grid-column: auto;
+  .profileName {
+    font-size: 22px;
   }
 }
 

@@ -7,7 +7,7 @@ import {
   DialogContent,
   DialogTitle,
   Grid,
-  // MenuItem,
+  MenuItem,
   TextField,
   Typography,
 } from '@mui/material';
@@ -44,9 +44,20 @@ type PatientFormValues = {
   birthDate: string;
   contactNumber: string;
   address: string;
+  gender: string;
   occupation: string;
   religion: string;
+  civilStatus: string;
 };
+
+const genderOptions = ['', 'Male', 'Female', 'Other'];
+const civilStatusOptions = [
+  { value: '0', label: 'None' },
+  { value: '1', label: 'Single' },
+  { value: '2', label: 'Married' },
+  { value: '3', label: 'Divorced' },
+  { value: '4', label: 'Widowed' },
+];
 
 const createInitialValues = (selectedItem?: PatientModel): PatientFormValues => ({
   patientNumber: selectedItem?.patientNumber || '',
@@ -61,12 +72,14 @@ const createInitialValues = (selectedItem?: PatientModel): PatientFormValues => 
     : '',
   contactNumber: selectedItem?.contactNumber || '',
   address: selectedItem?.address || '',
+  gender: selectedItem?.gender || '',
   occupation: selectedItem?.occupation || '',
   religion: selectedItem?.religion || '',
+  civilStatus:
+    selectedItem?.civilStatus !== undefined && selectedItem?.civilStatus !== null
+      ? String(selectedItem.civilStatus)
+      : '0',
 });
-
-// const bloodTypeOptions = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
-// const civilStatusOptions = ['Single', 'Married', 'Widowed', 'Separated'];
 
 const PatientForm: FunctionComponent<PatientStateProps> = (
   props: PatientStateProps
@@ -201,9 +214,10 @@ const PatientForm: FunctionComponent<PatientStateProps> = (
       birthDate: values.birthDate ? new Date(values.birthDate) : undefined,
       contactNumber: values.contactNumber.trim(),
       address: values.address.trim(),
-      //suffix: values.suffix.trim(),
+      gender: values.gender.trim(),
       occupation: values.occupation.trim(),
       religion: values.religion.trim(),
+      civilStatus: Number(values.civilStatus),
       clinicProfileId: state.clinicProfileId,
     };
 
@@ -372,6 +386,24 @@ const PatientForm: FunctionComponent<PatientStateProps> = (
                     </Grid>
                     <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                       <TextField
+                        select
+                        label="Gender"
+                        name="gender"
+                        value={values.gender}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                        fullWidth
+                        size="small"
+                      >
+                        {genderOptions.map((option) => (
+                          <MenuItem key={option || 'blank'} value={option}>
+                            {option || 'Select gender'}
+                          </MenuItem>
+                        ))}
+                      </TextField>
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                      <TextField
                         label="Email Address"
                         name="emailAddress"
                         type="email"
@@ -386,40 +418,24 @@ const PatientForm: FunctionComponent<PatientStateProps> = (
                         }
                       />
                     </Grid>
-                    {/* <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                    <TextField
-                      select
-                      label="Blood Type"
-                      name="bloodType"
-                      value={values.bloodType}
-                      onChange={handleChange}
-                      fullWidth
-                      size="small"
-                    >
-                      {bloodTypeOptions.map((option) => (
-                        <MenuItem key={option} value={option}>
-                          {option}
-                        </MenuItem>
-                      ))}
-                    </TextField>
-                  </Grid> */}
-                    {/* <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                    <TextField
-                      select
-                      label="Civil Status"
-                      name="civilStatus"
-                      value={values.civilStatus}
-                      onChange={handleChange}
-                      fullWidth
-                      size="small"
-                    >
-                      {civilStatusOptions.map((option) => (
-                        <MenuItem key={option} value={option}>
-                          {option}
-                        </MenuItem>
-                      ))}
-                    </TextField>
-                  </Grid> */}
+                    <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                      <TextField
+                        select
+                        label="Civil Status"
+                        name="civilStatus"
+                        value={values.civilStatus}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                        fullWidth
+                        size="small"
+                      >
+                        {civilStatusOptions.map((option) => (
+                          <MenuItem key={option.value} value={option.value}>
+                            {option.label}
+                          </MenuItem>
+                        ))}
+                      </TextField>
+                    </Grid>
                     <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                       <TextField
                         label="Occupation"

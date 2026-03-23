@@ -14,8 +14,10 @@ export type PatientProfileModel = {
   birthDate?: string | Date;
   contactNumber?: string;
   address?: string;
+  gender?: string;
   occupation?: string;
   religion?: string;
+  civilStatus?: number;
   age?: number;
   remarks?: string;
   createdAt?: string | Date;

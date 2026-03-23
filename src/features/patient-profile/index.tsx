@@ -84,6 +84,38 @@ const calculateAge = (birthDate?: string | Date): string => {
   return age >= 0 ? String(age) : '--';
 };
 
+const isRecentlyCreated = (createdAt?: string | Date): boolean => {
+  if (!createdAt) {
+    return false;
+  }
+
+  const createdDate = parseDateValue(createdAt);
+
+  if (!createdDate) {
+    return false;
+  }
+
+  const ageInMilliseconds = Date.now() - createdDate.getTime();
+  const sevenDaysInMilliseconds = 7 * 24 * 60 * 60 * 1000;
+
+  return ageInMilliseconds >= 0 && ageInMilliseconds <= sevenDaysInMilliseconds;
+};
+
+const formatCivilStatusValue = (civilStatus?: number): string => {
+  switch (civilStatus) {
+    case 1:
+      return 'Single';
+    case 2:
+      return 'Married';
+    case 3:
+      return 'Divorced';
+    case 4:
+      return 'Widowed';
+    default:
+      return '--';
+  }
+};
+
 export const PatientProfileModule: FunctionComponent<PatientProfileProps> = (
   props: PatientProfileProps
 ): JSX.Element => {
@@ -307,8 +339,24 @@ export const PatientProfileModule: FunctionComponent<PatientProfileProps> = (
     .join(' ');
   const patientDisplayLabel =
     patientDisplayName || state.profile?.patientNumber || 'Selected patient';
+  const patientAgeLabel = calculateAge(state.profile?.birthDate);
+  const showNewBadge = isRecentlyCreated(state.profile?.createdAt);
+  const patientCardMeta = state.profile?.patientNumber
+    ? `Patient No. ${state.profile.patientNumber}`
+    : 'Patient Record';
+  const patientCardSubline =
+    [
+      state.profile?.occupation?.trim(),
+      patientAgeLabel !== '--' ? `${patientAgeLabel} yrs old` : undefined,
+    ]
+      .filter(Boolean)
+      .join(' | ') ||
+    state.profile?.emailAddress ||
+    'Clinic patient';
+  const patientCardNote =
+    state.profile?.remarks?.trim() || state.profile?.address?.trim() || 'Patient profile overview';
   const patientInfoLabel = state.profile?.patientNumber
-    ? `${state.profile.patientNumber}${patientDisplayName ? ` • ${patientDisplayName}` : ''}`
+    ? `${state.profile.patientNumber}${patientDisplayName ? ` | ${patientDisplayName}` : ''}`
     : patientDisplayLabel;
   const profilePictureSrc =
     profilePictureObjectUrl ||
@@ -340,52 +388,39 @@ export const PatientProfileModule: FunctionComponent<PatientProfileProps> = (
           {!isMobile && (
             <aside className={styles.leftColumn}>
               <section className={styles.profileCard}>
-                <div className={styles.profileBanner}></div>
+                {showNewBadge ? <div className={styles.profileAccentBadge}>New</div> : null}
                 <div className={styles.avatarWrap}>
-                  <div className={styles.avatarCircle}>
-                    {profilePictureSrc ? (
-                      <img
-                        src={profilePictureSrc}
-                        alt={state.profile?.firstName || 'Patient'}
-                        className={styles.avatarImage}
-                        onError={(event) => {
-                          event.currentTarget.style.display = 'none';
-                        }}
-                      />
-                    ) : null}
-                    {!profilePictureSrc ? (
-                      <PersonRoundedIcon className={styles.avatarIcon} />
-                    ) : null}
+                  <div className={styles.avatarStage}>
+                    <div className={styles.avatarGlow} aria-hidden="true"></div>
+                    <div className={styles.avatarCircle}>
+                      {profilePictureSrc ? (
+                        <img
+                          src={profilePictureSrc}
+                          alt={state.profile?.firstName || 'Patient'}
+                          className={styles.avatarImage}
+                          onError={(event) => {
+                            event.currentTarget.style.display = 'none';
+                          }}
+                        />
+                      ) : null}
+                      {!profilePictureSrc ? (
+                        <PersonRoundedIcon className={styles.avatarIcon} />
+                      ) : null}
+                    </div>
                   </div>
                 </div>
                 <div className={styles.profileIdentity}>
-                  <h1 className={styles.profileName}>
-                    {state.profile?.firstName || 'Patient Profile'}
-                  </h1>
-                  <p className={styles.profileNumber}>{state.profile?.patientNumber || '--'}</p>
-                  <p className={styles.profileRemarks}>
-                    {state.profile?.remarks || 'No remarks available'}
-                  </p>
+                  <p className={styles.profileNumber}>{patientCardMeta}</p>
+                  <h1 className={styles.profileName}>{patientDisplayLabel}</h1>
+                  <p className={styles.profileMeta}>{patientCardSubline}</p>
+                  <p className={styles.profileRemarks}>{patientCardNote}</p>
                 </div>
                 <div className={styles.profileActions}>
                   <button
                     type="button"
-                    className={`${styles.actionButton} ${styles.deleteAction}`}
-                    onClick={(): void =>
-                      setState({
-                        ...state,
-                        isUpdate: false,
-                        isDelete: true,
-                        isEmail: false,
-                        openModal: true,
-                      })
-                    }
-                  >
-                    <DeleteOutlineRoundedIcon /> Delete
-                  </button>
-                  <button
-                    type="button"
                     className={`${styles.actionButton} ${styles.editAction}`}
+                    title="Edit profile"
+                    aria-label="Edit profile"
                     onClick={(): void =>
                       setState({
                         ...state,
@@ -397,12 +432,14 @@ export const PatientProfileModule: FunctionComponent<PatientProfileProps> = (
                       })
                     }
                   >
-                    <EditOutlinedIcon /> Edit Profile
+                    <EditOutlinedIcon />
                   </button>
                   {!isBasicPlan ? (
                     <button
                       type="button"
                       className={`${styles.actionButton} ${styles.mailAction}`}
+                      title="Send message"
+                      aria-label="Send message"
                       onClick={(): void =>
                         setState({
                           ...state,
@@ -413,9 +450,26 @@ export const PatientProfileModule: FunctionComponent<PatientProfileProps> = (
                         })
                       }
                     >
-                      <MailOutlineRoundedIcon /> Send Message
+                      <MailOutlineRoundedIcon />
                     </button>
                   ) : null}
+                  <button
+                    type="button"
+                    className={`${styles.actionButton} ${styles.deleteAction}`}
+                    title="Delete patient"
+                    aria-label="Delete patient"
+                    onClick={(): void =>
+                      setState({
+                        ...state,
+                        isUpdate: false,
+                        isDelete: true,
+                        isEmail: false,
+                        openModal: true,
+                      })
+                    }
+                  >
+                    <DeleteOutlineRoundedIcon />
+                  </button>
                 </div>
               </section>
 
@@ -431,7 +485,7 @@ export const PatientProfileModule: FunctionComponent<PatientProfileProps> = (
                   </div>
                   <div>
                     <label>Gender</label>
-                    {/* <p>{state.profile.gender}</p> */}
+                    <p>{state.profile?.gender || '--'}</p>
                   </div>
                   <div>
                     <label>Contact Number</label>
@@ -443,7 +497,7 @@ export const PatientProfileModule: FunctionComponent<PatientProfileProps> = (
                   </div>
                   <div>
                     <label>Civil Status</label>
-                    {/* <p>{state.profile.civilStatus}</p> */}
+                    <p>{formatCivilStatusValue(state.profile?.civilStatus)}</p>
                   </div>
                   <div>
                     <label>Address</label>

@@ -14,8 +14,10 @@ export type PatientModel = {
   birthDate?: Date;
   contactNumber?: string;
   address?: string;
+  gender?: string;
   occupation?: string;
   religion?: string;
+  civilStatus?: number;
 };
 
 export type PatientResponseModel = {
