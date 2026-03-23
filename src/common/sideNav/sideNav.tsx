@@ -21,6 +21,7 @@ import DashboardCustomizeRoundedIcon from '@mui/icons-material/DashboardCustomiz
 import GroupAddRoundedIcon from '@mui/icons-material/GroupAddRounded';
 import EventRoundedIcon from '@mui/icons-material/EventRounded';
 import Inventory2RoundedIcon from '@mui/icons-material/Inventory2Rounded';
+import ReceiptLongRoundedIcon from '@mui/icons-material/ReceiptLongRounded';
 import SettingsRoundedIcon from '@mui/icons-material/SettingsRounded';
 import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded';
 import WarningAmberRoundedIcon from '@mui/icons-material/WarningAmberRounded';
@@ -47,6 +48,7 @@ const menuItems = [
   { label: 'Appointment', icon: <EventRoundedIcon />, path: '/appointment' },
   { label: 'Inventory', icon: <Inventory2RoundedIcon />, path: '/inventory' },
   { label: 'Finance Overview', icon: <MonetizationOnIcon />, path: '/finance-overview' },
+  { label: 'Invoice Generator', icon: <ReceiptLongRoundedIcon />, path: '/invoice-generator' },
 ];
 
 const footerMenuItems = [{ label: 'Settings', icon: <SettingsRoundedIcon />, path: '/settings' }];
