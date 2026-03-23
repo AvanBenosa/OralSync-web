@@ -368,6 +368,19 @@ export const PatientProfileModule: FunctionComponent<PatientProfileProps> = (
     nextParams.set('tab', tabId);
     setSearchParams(nextParams, { replace: true });
   };
+  const infoItems = [
+    { label: 'Age', value: calculateAge(state.profile?.birthDate) },
+    { label: 'Birthday', value: formatDateValue(state.profile?.birthDate) },
+    { label: 'Gender', value: state.profile?.gender || '--' },
+    { label: 'Contact Number', value: state.profile?.contactNumber || '--' },
+    { label: 'Email Address', value: state.profile?.emailAddress || '--' },
+    { label: 'Civil Status', value: formatCivilStatusValue(state.profile?.civilStatus) },
+    { label: 'Address', value: state.profile?.address || '--', wide: true },
+    { label: 'Occupation', value: state.profile?.occupation || '--' },
+    { label: 'Religion', value: state.profile?.religion || '--' },
+    { label: 'Guardian', value: '--' },
+    { label: 'Record Created', value: formatDateValue(state.profile?.createdAt), wide: true },
+  ];
 
   return (
     <div className={styles.wrapper}>
@@ -474,51 +487,19 @@ export const PatientProfileModule: FunctionComponent<PatientProfileProps> = (
               </section>
 
               <section className={styles.infoCard}>
+                <div className={styles.infoCardHeader}>
+                  <p className={styles.infoCardEyebrow}>Profile Details</p>
+                </div>
                 <div className={styles.infoGrid}>
-                  <div>
-                    <label>Age</label>
-                    <p>{calculateAge(state.profile?.birthDate)}</p>
-                  </div>
-                  <div>
-                    <label>Birthday</label>
-                    <p>{formatDateValue(state.profile?.birthDate)}</p>
-                  </div>
-                  <div>
-                    <label>Gender</label>
-                    <p>{state.profile?.gender || '--'}</p>
-                  </div>
-                  <div>
-                    <label>Contact Number</label>
-                    <p>{state.profile?.contactNumber || '--'}</p>
-                  </div>
-                  <div>
-                    <label>Email Address</label>
-                    <p>{state.profile?.emailAddress || '--'}</p>
-                  </div>
-                  <div>
-                    <label>Civil Status</label>
-                    <p>{formatCivilStatusValue(state.profile?.civilStatus)}</p>
-                  </div>
-                  <div>
-                    <label>Address</label>
-                    <p>{state.profile?.address || '--'}</p>
-                  </div>
-                  <div>
-                    <label>Occupation</label>
-                    <p>{state.profile?.occupation || '--'}</p>
-                  </div>
-                  <div>
-                    <label>Religion</label>
-                    <p>{state.profile?.religion || '--'}</p>
-                  </div>
-                  <div>
-                    <label>Guardian</label>
-                    {/* <p>{state.profile.guardian}</p> */}
-                  </div>
-                  <div>
-                    <label>Record Created</label>
-                    <p>{formatDateValue(state.profile?.createdAt)}</p>
-                  </div>
+                  {infoItems.map((item) => (
+                    <div
+                      key={item.label}
+                      className={`${styles.infoRow} ${item.wide ? styles.infoRowWide : ''}`}
+                    >
+                      <label>{item.label}:</label>
+                      <p>{item.value}</p>
+                    </div>
+                  ))}
                 </div>
               </section>
             </aside>

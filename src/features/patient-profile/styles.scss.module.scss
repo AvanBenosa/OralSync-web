@@ -448,28 +448,72 @@
   padding: 14px;
 }
 
+.infoCardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.infoCardEyebrow {
+  margin: 0;
+  color: #6f89a2;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
 .infoGrid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px 22px;
+  grid-template-columns: 1fr;
+  gap: 10px;
 
   label {
-    display: block;
+    display: inline;
     margin: 0;
     font-size: 10px;
-    font-weight: 700;
+    font-weight: 800;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: #90a4b7;
+    letter-spacing: 0.06em;
+    color: #88a0b6;
   }
 
   p {
-    margin: 5px 0 0;
-    color: #1c3e60;
-    font-size: 13px;
-    font-weight: 600;
-    min-height: 18px;
+    margin: 6px 0 0;
+    color: #173b60;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.4;
+    min-height: 20px;
+    word-break: break-word;
   }
+}
+
+.infoRow {
+  min-width: 0;
+  padding-bottom: 9px;
+  border-bottom: 1px solid rgba(221, 230, 238, 0.9);
+
+  label,
+  p {
+    display: inline;
+    margin: 0;
+  }
+
+  p {
+    margin-left: 6px;
+    min-height: 0;
+  }
+}
+
+.infoRowWide {
+  grid-column: auto;
+}
+
+.infoRow p:empty::before {
+  content: '--';
+  color: #8298ad;
 }
 
 .timelineTabs {

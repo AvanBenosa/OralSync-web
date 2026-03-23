@@ -73,7 +73,7 @@ const PatientProfileHeader: FunctionComponent<PatientProfileStateProps> = (
         <div className={styles.headerPrimaryActions}>
           <button type="button" className={styles.backButton} onClick={onBack}>
             <ArrowBackIosNewRoundedIcon className={styles.backIcon} />
-            Back
+            Back to Patient Module
           </button>
           {isMobile && mobileReload?.onReload ? (
             <button
