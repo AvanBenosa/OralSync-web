@@ -315,10 +315,7 @@
   border-radius: 20px;
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.97), rgba(244, 248, 252, 0.98));
   box-shadow: 0 14px 30px rgba(30, 58, 89, 0.07);
-  transition:
-    transform 140ms ease,
-    box-shadow 140ms ease,
-    border-color 140ms ease,
+  transition: transform 140ms ease, box-shadow 140ms ease, border-color 140ms ease,
     background 140ms ease;
 
   &:hover {
@@ -511,6 +508,223 @@
   margin-top: 4px;
   padding-top: 10px;
   border-top: 1px solid rgba(217, 227, 235, 0.95);
+}
+
+.dashboardCalendarShell {
+  margin-top: 14px;
+  min-width: 0;
+  border: 1px solid rgba(211, 223, 233, 0.95);
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(245, 249, 252, 0.96));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.76);
+  overflow: hidden;
+
+  :global(.fc) {
+    font-family: $font-family;
+    color: #2b4762;
+  }
+
+  :global(.fc-theme-standard .fc-scrollgrid),
+  :global(.fc-theme-standard td),
+  :global(.fc-theme-standard th) {
+    border-color: rgba(222, 231, 238, 0.95);
+  }
+
+  :global(.fc .fc-scrollgrid) {
+    border: 0;
+  }
+
+  :global(.fc .fc-col-header-cell-cushion) {
+    display: block;
+    padding: 9px 4px;
+    color: #7290ab;
+    font-size: 11px;
+    font-weight: 700;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    text-decoration: none;
+  }
+
+  :global(.fc .fc-daygrid-day-frame) {
+    min-height: 74px;
+    padding: 8px 6px 6px;
+  }
+
+  :global(.fc .fc-daygrid-day-top) {
+    justify-content: flex-start;
+    position: relative;
+    z-index: 1;
+  }
+
+  :global(.fc .fc-daygrid-day-number) {
+    color: #294867;
+    font-size: 12px;
+    font-weight: 800;
+    text-decoration: none;
+    padding: 0;
+  }
+
+  :global(.fc .fc-day-other .fc-daygrid-day-number) {
+    opacity: 0.45;
+  }
+
+  :global(.fc .fc-day-today) {
+    background: linear-gradient(180deg, rgba(236, 245, 255, 0.99), rgba(214, 232, 252, 0.99));
+  }
+
+  :global(.fc .fc-daygrid-day-events) {
+    margin-top: 0;
+  }
+
+  :global(.fc .fc-daygrid-event-harness) {
+    margin-top: 4px;
+  }
+
+  :global(.fc .fc-daygrid-more-link) {
+    color: #5f7f9f;
+    font-size: 10px;
+    font-weight: 800;
+    text-decoration: none;
+  }
+
+  :global(.fc .fc-popover) {
+    border: 1px solid rgba(196, 210, 224, 0.92);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 16px 34px rgba(28, 56, 86, 0.12);
+  }
+
+  :global(.fc .fc-popover-header) {
+    background: linear-gradient(180deg, rgba(244, 248, 252, 0.98), rgba(232, 240, 247, 0.98));
+  }
+
+  :global(.fc .fc-daygrid-day-bottom) {
+    display: none;
+  }
+}
+
+.dashboardCalendarShellCompact {
+  :global(.fc .fc-daygrid-day-frame) {
+    min-height: 58px;
+    padding: 6px 4px 4px;
+  }
+
+  :global(.fc .fc-daygrid-day-events) {
+    margin-top: 8px;
+  }
+}
+
+.dashboardCalendarShellExpanded {
+  :global(.fc .fc-daygrid-day-frame) {
+    min-height: 84px;
+  }
+}
+
+.dashboardCalendarDayCell {
+  position: relative;
+
+  &::after {
+    content: attr(data-count);
+    position: absolute;
+    left: 50%;
+    top: 54%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transform: translate(-50%, -50%);
+    border-radius: 12px;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65);
+    font-weight: 900;
+    line-height: 1;
+    z-index: 0;
+  }
+}
+
+.dashboardCalendarDayCellCompact {
+  &::after {
+    width: 28px;
+    height: 28px;
+    border-radius: 10px;
+    font-size: 14px;
+  }
+}
+
+.dashboardCalendarDayCellExpanded {
+  &::after {
+    width: 34px;
+    height: 34px;
+    font-size: 18px;
+  }
+}
+
+.dashboardCalendarDayCellToday {
+  &::after {
+    background: linear-gradient(180deg, #2f6db3 0%, #255892 100%);
+    color: #ffffff;
+  }
+}
+
+.dashboardCalendarDayCellActive {
+  &::after {
+    background: linear-gradient(180deg, #55a6f0 0%, #2f7fce 100%);
+    color: #ffffff;
+  }
+}
+
+.dashboardCalendarDayCellIdle {
+  &::after {
+    background: linear-gradient(180deg, #eef3f7 0%, #dde5ed 100%);
+    color: #6d8196;
+  }
+}
+
+.dashboardCalendarEvent {
+  border: 0 !important;
+  border-radius: 10px !important;
+  background: linear-gradient(180deg, #edf6ff 0%, #dbeeff 100%) !important;
+  box-shadow: 0 7px 14px rgba(77, 128, 184, 0.12);
+}
+
+.dashboardCalendarEventscheduled {
+  background: linear-gradient(180deg, #edf6ff 0%, #dbeeff 100%) !important;
+}
+
+.dashboardCalendarEventpending {
+  background: linear-gradient(180deg, #fff7e9 0%, #ffe7c1 100%) !important;
+}
+
+.dashboardCalendarEventcompleted {
+  background: linear-gradient(180deg, #eefcf3 0%, #dcf7e6 100%) !important;
+}
+
+.dashboardCalendarEventcancelled {
+  background: linear-gradient(180deg, #f4f7fa 0%, #e5edf3 100%) !important;
+}
+
+.dashboardCalendarEventno-show {
+  background: linear-gradient(180deg, #fff8e9 0%, #ffefd0 100%) !important;
+}
+
+.dashboardCalendarEventContent {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 5px 7px;
+}
+
+.dashboardCalendarEventTime {
+  color: #1f6eb5;
+  font-size: 9px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.dashboardCalendarEventTitle {
+  color: #2b4762;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1.3;
 }
 
 .calendarHeader {
@@ -1371,6 +1585,12 @@
     gap: 6px;
   }
 
+  .dashboardCalendarShell {
+    :global(.fc .fc-daygrid-day-frame) {
+      min-height: 72px;
+    }
+  }
+
   .calendarCell {
     min-height: 74px;
     padding: 8px 6px;
@@ -1588,6 +1808,20 @@
   .calendarHeader,
   .calendarGrid {
     gap: 4px;
+  }
+
+  .dashboardCalendarShell {
+    border-radius: 14px;
+
+    :global(.fc .fc-col-header-cell-cushion) {
+      padding: 8px 2px;
+      font-size: 10px;
+    }
+
+    :global(.fc .fc-daygrid-day-frame) {
+      min-height: 64px;
+      padding: 6px 4px 4px;
+    }
   }
 
   .calendarCell {

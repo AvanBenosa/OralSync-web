@@ -1,26 +1,65 @@
-import { FunctionComponent, JSX, useEffect, useMemo, useState } from 'react';
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Paper, Typography } from '@mui/material';
+import { FunctionComponent, JSX, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  Box,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Paper,
+  Typography,
+} from '@mui/material';
 import ChevronLeftRoundedIcon from '@mui/icons-material/ChevronLeftRounded';
 import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
 import EventBusyOutlinedIcon from '@mui/icons-material/EventBusyOutlined';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import ScheduleRoundedIcon from '@mui/icons-material/ScheduleRounded';
+import FullCalendar from '@fullcalendar/react';
+import dayGridPlugin from '@fullcalendar/daygrid';
+import interactionPlugin from '@fullcalendar/interaction';
+import listPlugin from '@fullcalendar/list';
+import timeGridPlugin from '@fullcalendar/timegrid';
+import type { EventInput } from '@fullcalendar/core';
 import styles from '../style.scss.module.scss';
 import { AppointmentModel, AppointmentStateProps } from '../api/types';
 import { GetCurrentClinicProfile } from '../../../settings/clinic-profile/api/api';
 import { toValidDateDisplay } from '../../../../common/helpers/toValidateDateDisplay';
 
-const weekDayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const weekDayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
 const getMonthLabel = (date: Date): string => toValidDateDisplay(date, 'MMMM YYYY');
+
+type CalendarViewType = 'dayGridMonth' | 'timeGridDay' | 'listWeek';
+
+const calendarViews: { value: CalendarViewType; label: string }[] = [
+  { value: 'dayGridMonth', label: 'Month' },
+  { value: 'timeGridDay', label: 'Day' },
+  { value: 'listWeek', label: 'List' },
+];
+
+const getDayKey = (date: Date): string =>
+  `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+
+const getAppointmentDate = (value?: string | Date): Date | null => {
+  if (!value) {
+    return null;
+  }
+
+  const parsedDate = value instanceof Date ? value : new Date(value);
+  return Number.isNaN(parsedDate.getTime()) ? null : parsedDate;
+};
 
 const buildAppointmentDateTime = (date: Date, timeValue: string): string => {
   const [hours, minutes] = String(timeValue || '09:00')
     .split(':')
     .map((value) => Number(value));
   const nextDate = new Date(date);
-  nextDate.setHours(Number.isFinite(hours) ? hours : 9, Number.isFinite(minutes) ? minutes : 0, 0, 0);
+  nextDate.setHours(
+    Number.isFinite(hours) ? hours : 9,
+    Number.isFinite(minutes) ? minutes : 0,
+    0,
+    0
+  );
   return nextDate.toISOString();
 };
 
@@ -37,21 +76,10 @@ const addHourToTime = (timeValue: string, fallback: string): string => {
 const formatFullDate = (value: Date): string => toValidDateDisplay(value, 'MMMM D, YYYY');
 
 const formatTimeRange = (item: AppointmentModel): string => {
-  if (!item.appointmentDateFrom) {
-    return '--';
-  }
+  const fromDate = getAppointmentDate(item.appointmentDateFrom);
+  const toDate = getAppointmentDate(item.appointmentDateTo);
 
-  const fromDate =
-    item.appointmentDateFrom instanceof Date
-      ? item.appointmentDateFrom
-      : new Date(item.appointmentDateFrom);
-  const toDate = item.appointmentDateTo
-    ? item.appointmentDateTo instanceof Date
-      ? item.appointmentDateTo
-      : new Date(item.appointmentDateTo)
-    : null;
-
-  if (Number.isNaN(fromDate.getTime())) {
+  if (!fromDate) {
     return '--';
   }
 
@@ -66,10 +94,13 @@ const AppointmentCalendar: FunctionComponent<AppointmentStateProps> = (
   props: AppointmentStateProps
 ): JSX.Element => {
   const { state, setState, clinicId } = props;
+  const calendarRef = useRef<FullCalendar | null>(null);
   const [selectedDay, setSelectedDay] = useState<{
     date: Date;
     items: AppointmentModel[];
   } | null>(null);
+  const [calendarView, setCalendarView] = useState<CalendarViewType>('dayGridMonth');
+  const [calendarTitle, setCalendarTitle] = useState<string>(() => getMonthLabel(new Date()));
   const [clinicOpeningTime, setClinicOpeningTime] = useState('09:00');
   const [clinicClosingTime, setClinicClosingTime] = useState('18:00');
   const [workingDays, setWorkingDays] = useState<string[]>([
@@ -80,20 +111,16 @@ const AppointmentCalendar: FunctionComponent<AppointmentStateProps> = (
     'Friday',
   ]);
   const [displayMonth, setDisplayMonth] = useState<Date>(() => {
-    const firstAppointment = state.items.find((item) => item.appointmentDateFrom);
-    if (!firstAppointment?.appointmentDateFrom) {
+    const firstAppointmentDate = state.items
+      .map((item) => getAppointmentDate(item.appointmentDateFrom))
+      .find((value): value is Date => Boolean(value));
+
+    if (!firstAppointmentDate) {
       const today = new Date();
       return new Date(today.getFullYear(), today.getMonth(), 1);
     }
 
-    const sourceDate =
-      firstAppointment.appointmentDateFrom instanceof Date
-        ? firstAppointment.appointmentDateFrom
-        : new Date(firstAppointment.appointmentDateFrom);
-
-    return Number.isNaN(sourceDate.getTime())
-      ? new Date(new Date().getFullYear(), new Date().getMonth(), 1)
-      : new Date(sourceDate.getFullYear(), sourceDate.getMonth(), 1);
+    return new Date(firstAppointmentDate.getFullYear(), firstAppointmentDate.getMonth(), 1);
   });
 
   useEffect(() => {
@@ -114,86 +141,112 @@ const AppointmentCalendar: FunctionComponent<AppointmentStateProps> = (
       .catch(() => undefined);
   }, [clinicId]);
 
-  const { calendarDays, monthItems } = useMemo(() => {
-    const monthStart = new Date(displayMonth.getFullYear(), displayMonth.getMonth(), 1);
-    const gridStart = new Date(monthStart);
-    gridStart.setDate(monthStart.getDate() - monthStart.getDay());
+  const { calendarEvents, monthItems, itemsByDay } = useMemo(() => {
+    const sortedItems = state.items
+      .map((item) => ({
+        item,
+        fromDate: getAppointmentDate(item.appointmentDateFrom),
+        toDate: getAppointmentDate(item.appointmentDateTo),
+      }))
+      .filter((value): value is { item: AppointmentModel; fromDate: Date; toDate: Date | null } =>
+        Boolean(value.fromDate)
+      )
+      .sort((left, right) => left.fromDate.getTime() - right.fromDate.getTime());
 
-    const monthItemsMap = new Map<string, AppointmentModel[]>();
-    const items = state.items.filter((item) => {
-      if (!item.appointmentDateFrom) {
-        return false;
-      }
+    const nextItemsByDay = new Map<string, AppointmentModel[]>();
 
-      const dateValue =
-        item.appointmentDateFrom instanceof Date
-          ? item.appointmentDateFrom
-          : new Date(item.appointmentDateFrom);
-
-      if (Number.isNaN(dateValue.getTime())) {
-        return false;
-      }
-
-      const key = `${dateValue.getFullYear()}-${dateValue.getMonth()}-${dateValue.getDate()}`;
-      const existingItems = monthItemsMap.get(key) || [];
-      monthItemsMap.set(key, [...existingItems, item]);
-
-      return (
-        dateValue.getFullYear() === displayMonth.getFullYear() &&
-        dateValue.getMonth() === displayMonth.getMonth()
-      );
-    }).sort((left, right) => {
-      const leftDate = left.appointmentDateFrom ? new Date(left.appointmentDateFrom) : new Date(0);
-      const rightDate = right.appointmentDateFrom ? new Date(right.appointmentDateFrom) : new Date(0);
-      return leftDate.getTime() - rightDate.getTime();
+    sortedItems.forEach(({ item, fromDate }) => {
+      const key = getDayKey(fromDate);
+      const existingItems = nextItemsByDay.get(key) || [];
+      nextItemsByDay.set(key, [...existingItems, item]);
     });
 
-    const days = Array.from({ length: 42 }, (_, index) => {
-      const day = new Date(gridStart);
-      day.setDate(gridStart.getDate() + index);
-      const key = `${day.getFullYear()}-${day.getMonth()}-${day.getDate()}`;
+    const nextMonthItems = sortedItems
+      .filter(
+        ({ fromDate }) =>
+          fromDate.getFullYear() === displayMonth.getFullYear() &&
+          fromDate.getMonth() === displayMonth.getMonth()
+      )
+      .map(({ item }) => item);
 
-      return {
-        date: day,
-        items: (monthItemsMap.get(key) || []).sort((left, right) => {
-          const leftDate = left.appointmentDateFrom
-            ? new Date(left.appointmentDateFrom)
-            : new Date(0);
-          const rightDate = right.appointmentDateFrom
-            ? new Date(right.appointmentDateFrom)
-            : new Date(0);
-          return leftDate.getTime() - rightDate.getTime();
-          }),
-          isCurrentMonth: day.getMonth() === displayMonth.getMonth(),
-          isWorkingDay: workingDays.includes(weekDayNames[day.getDay()]),
-          isPastDay: (() => {
-            const today = new Date();
-            const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-            const dayStart = new Date(day.getFullYear(), day.getMonth(), day.getDate());
-            return dayStart.getTime() < todayStart.getTime();
-          })(),
-          isFutureDay: (() => {
-            const today = new Date();
-            const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-            const dayStart = new Date(day.getFullYear(), day.getMonth(), day.getDate());
-            return dayStart.getTime() > todayStart.getTime();
-          })(),
-          isToday: (() => {
-            const today = new Date();
-            return (
-              day.getFullYear() === today.getFullYear() &&
-            day.getMonth() === today.getMonth() &&
-            day.getDate() === today.getDate()
-          );
-        })(),
-      };
-    });
+    const nextCalendarEvents: EventInput[] = sortedItems.map(
+      ({ item, fromDate, toDate }, index) => {
+        const statusKey = String(item.status || 'Scheduled')
+          .toLowerCase()
+          .replace(/\s+/g, '-');
+
+        return {
+          id: item.id || `${getDayKey(fromDate)}-${index}`,
+          title: item.patientName || item.reasonForVisit || 'Appointment',
+          start: fromDate.toISOString(),
+          end: toDate?.toISOString(),
+          allDay: false,
+          classNames: [styles.calendarFcEvent, styles[`calendarFcEvent${statusKey}`] || ''],
+          extendedProps: {
+            appointment: item,
+          },
+        };
+      }
+    );
 
     return {
-      calendarDays: days,
-      monthItems: items,
+      calendarEvents: nextCalendarEvents,
+      monthItems: nextMonthItems,
+      itemsByDay: nextItemsByDay,
     };
-  }, [displayMonth, state.items, workingDays]);
+  }, [displayMonth, state.items]);
+
+  const handleCreateFromDay = (date: Date): void => {
+    const appointmentEndTime =
+      clinicClosingTime && clinicClosingTime !== clinicOpeningTime
+        ? addHourToTime(clinicOpeningTime, clinicClosingTime)
+        : addHourToTime(clinicOpeningTime, '10:00');
+
+    setState({
+      ...state,
+      selectedItem: {
+        appointmentDateFrom: buildAppointmentDateTime(date, clinicOpeningTime),
+        appointmentDateTo: buildAppointmentDateTime(date, appointmentEndTime),
+        status: 'Scheduled',
+      },
+      isUpdate: false,
+      isDelete: false,
+      openModal: true,
+    });
+  };
+
+  const handleCreateFromSlot = (date: Date): void => {
+    const fromDate = new Date(date);
+    const endDate = new Date(fromDate);
+    endDate.setHours(fromDate.getHours() + 1, fromDate.getMinutes(), 0, 0);
+
+    setState({
+      ...state,
+      selectedItem: {
+        appointmentDateFrom: fromDate.toISOString(),
+        appointmentDateTo: endDate.toISOString(),
+        status: 'Scheduled',
+      },
+      isUpdate: false,
+      isDelete: false,
+      openModal: true,
+    });
+  };
+
+  const openUpdateModal = (item: AppointmentModel): void => {
+    setState({
+      ...state,
+      selectedItem: item,
+      isUpdate: true,
+      isDelete: false,
+      openModal: true,
+    });
+  };
+
+  const changeCalendarView = (view: CalendarViewType): void => {
+    setCalendarView(view);
+    calendarRef.current?.getApi().changeView(view);
+  };
 
   if (state.load) {
     return (
@@ -203,200 +256,237 @@ const AppointmentCalendar: FunctionComponent<AppointmentStateProps> = (
     );
   }
 
-  if (state.items.length === 0) {
-    return (
-      <div className={styles.calendarEmptyState}>
-        <div className={styles.emptyStateIcon}>
-          <EventBusyOutlinedIcon className={styles.emptyStateGlyph} />
-        </div>
-        <Typography className={styles.emptyStateTitle}>No appointments to show</Typography>
-        <Typography className={styles.emptyStateText}>
-          Calendar entries will appear here once appointment records are created.
-        </Typography>
-      </div>
-    );
-  }
-
   return (
     <>
       <div className={styles.calendarSurface}>
-      <div className={styles.calendarToolbar}>
-        <div className={styles.calendarToolbarInfo}>
-          <div className={styles.calendarToolbarIcon}>
-            <ScheduleRoundedIcon />
-          </div>
-          <div>
-            <Typography className={styles.calendarToolbarTitle}>
-              Clinic Schedule Calendar
-            </Typography>
-            <div className={styles.calendarLegend}>
-              <div className={styles.calendarLegendItem}>
-                <span
-                  className={`${styles.calendarLegendSwatch} ${styles.calendarWorkingSwatch}`}
-                />
-                <span>Working day</span>
-              </div>
-              <div className={styles.calendarLegendItem}>
-                <span className={`${styles.calendarLegendSwatch} ${styles.calendarRestSwatch}`} />
-                <span>Rest day</span>
-              </div>
-              <div className={styles.calendarLegendItem}>
-                <span className={`${styles.calendarLegendSwatch} ${styles.calendarTodaySwatch}`} />
-                <span>Today</span>
+        <div className={styles.calendarToolbar}>
+          <div className={styles.calendarToolbarInfo}>
+            <div className={styles.calendarToolbarIcon}>
+              <ScheduleRoundedIcon />
+            </div>
+            <div>
+              <Typography className={styles.calendarToolbarTitle}>
+                Clinic Schedule Calendar
+              </Typography>
+              <div className={styles.calendarLegend}>
+                <div className={styles.calendarLegendItem}>
+                  <span
+                    className={`${styles.calendarLegendSwatch} ${styles.calendarWorkingSwatch}`}
+                  />
+                  <span>Working day</span>
+                </div>
+                <div className={styles.calendarLegendItem}>
+                  <span className={`${styles.calendarLegendSwatch} ${styles.calendarRestSwatch}`} />
+                  <span>Rest day</span>
+                </div>
+                <div className={styles.calendarLegendItem}>
+                  <span
+                    className={`${styles.calendarLegendSwatch} ${styles.calendarTodaySwatch}`}
+                  />
+                  <span>Today</span>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-        <div className={styles.calendarMonthControls}>
-          <button
-            type="button"
-            className={styles.calendarNavButton}
-            onClick={() =>
-              setDisplayMonth(new Date(displayMonth.getFullYear(), displayMonth.getMonth() - 1, 1))
-            }
-          >
-            <ChevronLeftRoundedIcon />
-          </button>
-          <Typography className={styles.calendarMonthLabel}>
-            {getMonthLabel(displayMonth)}
-          </Typography>
-          <button
-            type="button"
-            className={styles.calendarNavButton}
-            onClick={() =>
-              setDisplayMonth(new Date(displayMonth.getFullYear(), displayMonth.getMonth() + 1, 1))
-            }
-          >
-            <ChevronRightRoundedIcon />
-          </button>
-        </div>
-      </div>
-
-      <div className={styles.calendarGrid}>
-        {weekDayLabels.map((label, index) => (
-          <div
-            key={label}
-            className={`${styles.calendarWeekday} ${
-              workingDays.includes(weekDayNames[index])
-                ? styles.calendarWeekdayWorking
-                : styles.calendarWeekdayRest
-            }`}
-          >
-            {label}
+          <div className={styles.calendarMonthControls}>
+            <div className={styles.calendarViewSwitcher}>
+              {calendarViews.map((view) => (
+                <button
+                  key={view.value}
+                  type="button"
+                  className={`${styles.calendarViewButton} ${
+                    calendarView === view.value ? styles.calendarViewButtonActive : ''
+                  }`}
+                  onClick={() => changeCalendarView(view.value)}
+                >
+                  {view.label}
+                </button>
+              ))}
+            </div>
+            <button
+              type="button"
+              className={styles.calendarNavButton}
+              onClick={() => calendarRef.current?.getApi().prev()}
+            >
+              <ChevronLeftRoundedIcon />
+            </button>
+            <Typography className={styles.calendarMonthLabel}>{calendarTitle}</Typography>
+            <button
+              type="button"
+              className={styles.calendarNavButton}
+              onClick={() => calendarRef.current?.getApi().next()}
+            >
+              <ChevronRightRoundedIcon />
+            </button>
           </div>
-        ))}
-        {calendarDays.map((day) => (
-          <button
-            key={day.date.toISOString()}
-            type="button"
-            className={`${styles.calendarDayCell} ${
-              day.isCurrentMonth ? '' : styles.calendarDayCellMuted
-            } ${day.isPastDay ? styles.calendarDayPast : ''} ${
-              day.isToday ? styles.calendarDayToday : ''
-            } ${
-              day.isWorkingDay ? styles.calendarDayWorking : styles.calendarDayRest
-            }`}
-            onClick={() => {
-              if (day.items.length === 0) {
-                if (!day.isFutureDay) {
+        </div>
+        <div className={styles.calendarFullWrapper}>
+          <FullCalendar
+            ref={calendarRef}
+            plugins={[dayGridPlugin, interactionPlugin, listPlugin, timeGridPlugin]}
+            initialView={calendarView}
+            initialDate={displayMonth}
+            headerToolbar={false}
+            height="auto"
+            fixedWeekCount
+            dayMaxEvents={3}
+            events={calendarEvents}
+            eventDisplay="block"
+            allDaySlot={false}
+            slotMinTime={`${clinicOpeningTime || '09:00'}:00`}
+            slotMaxTime={`${clinicClosingTime || '18:00'}:00`}
+            slotLabelFormat={{
+              hour: 'numeric',
+              minute: '2-digit',
+              meridiem: 'short',
+            }}
+            eventTimeFormat={{
+              hour: 'numeric',
+              minute: '2-digit',
+              meridiem: 'short',
+            }}
+            datesSet={(arg) => {
+              const currentDate = arg.view.calendar.getDate();
+              const nextMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+
+              setCalendarView(arg.view.type as CalendarViewType);
+              setCalendarTitle(arg.view.title);
+              setDisplayMonth((currentMonth) => {
+                if (
+                  currentMonth.getFullYear() === nextMonth.getFullYear() &&
+                  currentMonth.getMonth() === nextMonth.getMonth()
+                ) {
+                  return currentMonth;
+                }
+
+                return nextMonth;
+              });
+            }}
+            dayHeaderClassNames={(arg) =>
+              workingDays.includes(weekDayNames[arg.date.getDay()])
+                ? [styles.calendarFcWeekdayWorking]
+                : [styles.calendarFcWeekdayRest]
+            }
+            dayCellClassNames={(arg) => {
+              const dayDate = new Date(
+                arg.date.getFullYear(),
+                arg.date.getMonth(),
+                arg.date.getDate()
+              );
+              const today = new Date();
+              const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+              const classNames = [
+                workingDays.includes(weekDayNames[arg.date.getDay()])
+                  ? styles.calendarFcDayWorking
+                  : styles.calendarFcDayRest,
+              ];
+
+              if (arg.isOther) {
+                classNames.push(styles.calendarFcDayOther);
+              }
+
+              if (dayDate.getTime() < todayStart.getTime()) {
+                classNames.push(styles.calendarFcDayPast);
+              }
+
+              if (dayDate.getTime() === todayStart.getTime()) {
+                classNames.push(styles.calendarFcDayToday);
+              }
+
+              return classNames;
+            }}
+            eventContent={(arg) => (
+              <div className={styles.calendarFcEventContent}>
+                {arg.timeText ? (
+                  <span className={styles.calendarFcEventTime}>{arg.timeText}</span>
+                ) : null}
+                <span className={styles.calendarFcEventTitle}>{arg.event.title}</span>
+              </div>
+            )}
+            dateClick={(arg) => {
+              if (calendarView === 'timeGridDay') {
+                if (arg.date.getTime() < new Date().getTime()) {
                   return;
                 }
 
-                const appointmentEndTime =
-                  clinicClosingTime && clinicClosingTime !== clinicOpeningTime
-                    ? addHourToTime(clinicOpeningTime, clinicClosingTime)
-                    : addHourToTime(clinicOpeningTime, '10:00');
+                handleCreateFromSlot(arg.date);
+                return;
+              }
 
-                setState({
-                  ...state,
-                  selectedItem: {
-                    appointmentDateFrom: buildAppointmentDateTime(day.date, clinicOpeningTime),
-                    appointmentDateTo: buildAppointmentDateTime(day.date, appointmentEndTime),
-                    status: 'Scheduled',
-                  },
-                  isUpdate: false,
-                  isDelete: false,
-                  openModal: true,
+              const clickedDate = new Date(
+                arg.date.getFullYear(),
+                arg.date.getMonth(),
+                arg.date.getDate()
+              );
+              const dayItems = itemsByDay.get(getDayKey(clickedDate)) || [];
+
+              if (dayItems.length > 0) {
+                setSelectedDay({
+                  date: clickedDate,
+                  items: dayItems,
                 });
                 return;
               }
 
-              setSelectedDay({
-                date: day.date,
-                items: day.items,
-              });
-            }}
-            disabled={day.items.length === 0 && !day.isFutureDay}
-          >
-            <div className={styles.calendarDayHeader}>
-              <div className={styles.calendarDayNumber}>{day.date.getDate()}</div>
-              <div
-                className={`${styles.calendarDayStatusChip} ${
-                  day.isWorkingDay ? styles.calendarDayStatusWorking : styles.calendarDayStatusRest
-                }`}
-              >
-                {day.isWorkingDay ? 'open' : 'Closed'}
-              </div>
-            </div>
-            <div className={styles.calendarDayEntries}>
-              {day.items.length > 0 ? (
-                <div className={styles.calendarCountCard}>
-                  <span className={styles.calendarCountValue}>{day.items.length}</span>
-                  <span className={styles.calendarCountLabel}>
-                    {day.items.length === 1 ? 'Appointment' : 'Appointments'}
-                  </span>
-                  <span className={styles.calendarCountHint}>Click to view details</span>
-                </div>
-              ) : day.isFutureDay ? (
-                <div className={styles.calendarCountCard}>
-                  <span className={styles.calendarCountValue}>+</span>
-                  <span className={styles.calendarCountLabel}>Create</span>
-                  <span className={styles.calendarCountHint}>Click to add appointment</span>
-                </div>
-              ) : (
-                <Typography className={styles.calendarEmptyDayText}>
-                  No appointments
-                </Typography>
-              )}
-            </div>
-          </button>
-        ))}
-      </div>
+              const today = new Date();
+              const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
 
-      <Paper elevation={0} className={styles.calendarSidebar}>
-        <Typography className={styles.calendarSidebarTitle}>Appointments This Month</Typography>
-        {monthItems.length === 0 ? (
-          <Typography className={styles.calendarSidebarText}>
-            No appointments scheduled for this month.
-          </Typography>
-        ) : (
-          monthItems.map((item, index) => (
-            <Box
-              key={item.id || `month-item-${index}`}
-              className={styles.calendarSidebarItem}
-              onClick={() =>
-                setState({
-                  ...state,
-                  selectedItem: item,
-                  isUpdate: true,
-                  isDelete: false,
-                  openModal: true,
-                })
+              if (clickedDate.getTime() < todayStart.getTime()) {
+                return;
               }
-            >
-              <Typography className={styles.calendarSidebarItemTitle}>
-                {item.patientName || '--'}
+
+              handleCreateFromDay(clickedDate);
+            }}
+            eventClick={(arg) => {
+              const appointment = arg.event.extendedProps.appointment as
+                | AppointmentModel
+                | undefined;
+
+              if (!appointment) {
+                return;
+              }
+
+              openUpdateModal(appointment);
+            }}
+          />
+        </div>
+
+        <Paper elevation={0} className={styles.calendarSidebar}>
+          <Typography className={styles.calendarSidebarTitle}>Appointments This Month</Typography>
+          {state.items.length === 0 ? (
+            <div className={styles.emptyState}>
+              <div className={styles.emptyStateIcon}>
+                <EventBusyOutlinedIcon className={styles.emptyStateGlyph} />
+              </div>
+              <Typography className={styles.emptyStateTitle}>No appointments yet</Typography>
+              <Typography className={styles.emptyStateText}>
+                Use the calendar to click a future day and create the first appointment.
               </Typography>
-              <Typography className={styles.calendarSidebarItemMeta}>
-                {formatTimeRange(item)}
-              </Typography>
-              <Typography className={styles.calendarSidebarItemMeta}>
-                {item.reasonForVisit || 'No reason provided'}
-              </Typography>
-            </Box>
-          ))
-        )}
-      </Paper>
+            </div>
+          ) : monthItems.length === 0 ? (
+            <Typography className={styles.calendarSidebarText}>
+              No appointments scheduled for this month.
+            </Typography>
+          ) : (
+            monthItems.map((item, index) => (
+              <Box
+                key={item.id || `month-item-${index}`}
+                className={styles.calendarSidebarItem}
+                onClick={() => openUpdateModal(item)}
+              >
+                <Typography className={styles.calendarSidebarItemTitle}>
+                  {item.patientName || '--'}
+                </Typography>
+                <Typography className={styles.calendarSidebarItemMeta}>
+                  {formatTimeRange(item)}
+                </Typography>
+                <Typography className={styles.calendarSidebarItemMeta}>
+                  {item.reasonForVisit || 'No reason provided'}
+                </Typography>
+              </Box>
+            ))
+          )}
+        </Paper>
       </div>
 
       <Dialog
@@ -435,13 +525,7 @@ const AppointmentCalendar: FunctionComponent<AppointmentStateProps> = (
                     startIcon={<EditOutlinedIcon />}
                     onClick={() => {
                       setSelectedDay(null);
-                      setState({
-                        ...state,
-                        selectedItem: item,
-                        isUpdate: true,
-                        isDelete: false,
-                        openModal: true,
-                      });
+                      openUpdateModal(item);
                     }}
                   >
                     Update
