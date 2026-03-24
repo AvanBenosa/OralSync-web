@@ -13,7 +13,8 @@ export type PatientInfoDataConverterTargetField =
   | 'Occupation'
   | 'Religion'
   | 'BloodType'
-  | 'CivilStatus';
+  | 'CivilStatus'
+  | 'Gender';
 
 export type PatientProgressNoteDataConverterTargetField =
   | 'SplitPatientName'

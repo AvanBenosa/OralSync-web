@@ -51,13 +51,7 @@ type PatientFormValues = {
 };
 
 const genderOptions = ['', 'Male', 'Female', 'Other'];
-const civilStatusOptions = [
-  { value: '0', label: 'None' },
-  { value: '1', label: 'Single' },
-  { value: '2', label: 'Married' },
-  { value: '3', label: 'Divorced' },
-  { value: '4', label: 'Widowed' },
-];
+const civilStatusOptions = ['None', 'Single', 'Married', 'Divorced', 'Widowed'];
 
 const createInitialValues = (selectedItem?: PatientModel): PatientFormValues => ({
   patientNumber: selectedItem?.patientNumber || '',
@@ -75,10 +69,7 @@ const createInitialValues = (selectedItem?: PatientModel): PatientFormValues => 
   gender: selectedItem?.gender || '',
   occupation: selectedItem?.occupation || '',
   religion: selectedItem?.religion || '',
-  civilStatus:
-    selectedItem?.civilStatus !== undefined && selectedItem?.civilStatus !== null
-      ? String(selectedItem.civilStatus)
-      : '0',
+  civilStatus: selectedItem?.civilStatus || '',
 });
 
 const PatientForm: FunctionComponent<PatientStateProps> = (
@@ -217,7 +208,7 @@ const PatientForm: FunctionComponent<PatientStateProps> = (
       gender: values.gender.trim(),
       occupation: values.occupation.trim(),
       religion: values.religion.trim(),
-      civilStatus: Number(values.civilStatus),
+      civilStatus: values.civilStatus.trim(),
       clinicProfileId: state.clinicProfileId,
     };
 
@@ -430,8 +421,8 @@ const PatientForm: FunctionComponent<PatientStateProps> = (
                         size="small"
                       >
                         {civilStatusOptions.map((option) => (
-                          <MenuItem key={option.value} value={option.value}>
-                            {option.label}
+                          <MenuItem key={option || 'blank'} value={option}>
+                            {option || 'Select civil status'}
                           </MenuItem>
                         ))}
                       </TextField>

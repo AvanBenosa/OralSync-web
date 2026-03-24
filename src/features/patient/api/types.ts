@@ -17,7 +17,7 @@ export type PatientModel = {
   gender?: string;
   occupation?: string;
   religion?: string;
-  civilStatus?: number;
+  civilStatus?: string;
 };
 
 export type PatientResponseModel = {

@@ -49,6 +49,7 @@ const targetFieldOptions: DataConverterFieldOption<PatientInfoDataConverterTarge
   { field: 'EmailAddress', label: 'Email Address', helper: 'Optional email' },
   { field: 'BirthDate', label: 'Birth Date', helper: 'YYYY-MM-DD or Excel date' },
   { field: 'ContactNumber', label: 'Contact Number', helper: 'Optional text' },
+  { field: 'Gender', label: 'Gender', helper: 'Required text' },
   { field: 'Address', label: 'Address', helper: 'Optional text' },
   { field: 'Suffix', label: 'Suffix', helper: 'Enum value' },
   { field: 'Occupation', label: 'Occupation', helper: 'Optional text' },
@@ -133,8 +134,8 @@ const PatientInfoDataConverter: FunctionComponent = (): JSX.Element => {
     () =>
       mappings
         .map((item) => item.targetField)
-        .filter(
-          (targetField): targetField is PatientInfoDataConverterTargetField => Boolean(targetField)
+        .filter((targetField): targetField is PatientInfoDataConverterTargetField =>
+          Boolean(targetField)
         ),
     [mappings]
   );

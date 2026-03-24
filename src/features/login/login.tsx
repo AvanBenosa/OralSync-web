@@ -303,11 +303,11 @@ const Login = () => {
                   Multi-Clinic Rollout
                 </Typography>
                 <Typography variant="h5" fontWeight={700} sx={{ mb: 1.5 }}>
-                  Demo login and real clinic onboarding
+                  Real clinic onboarding
                 </Typography>
                 <Typography variant="body2" sx={{ maxWidth: 360, color: 'rgba(255,255,255,0.82)' }}>
-                  Use the seeded admin for demo deployments, or let each clinic self-register from
-                  the landing page with a verification code.
+                  Manage your dental clinic effortlessly with OralSync — from scheduling to patient
+                  care, all in one secure system..
                 </Typography>
               </Box>
             </Box>
