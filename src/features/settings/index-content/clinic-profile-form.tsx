@@ -171,6 +171,8 @@ const ClinicProfileForm: FunctionComponent<ClinicProfileStateProps> = (
         emailAddress: state.item?.emailAddress?.trim() || '',
         contactNumber: state.item?.contactNumber?.trim() || '',
         isDataPrivacyAccepted: Boolean(state.item?.isDataPrivacyAccepted),
+        forBetaTestingAccepted: Boolean(state.item?.forBetaTestingAccepted),
+        isContractPolicyAccepted: Boolean(state.item?.isContractPolicyAccepted),
         openingTime: state.item?.openingTime || '09:00',
         closingTime: state.item?.closingTime || '18:00',
         lunchStartTime: state.item?.lunchStartTime || '12:00',
@@ -182,6 +184,7 @@ const ClinicProfileForm: FunctionComponent<ClinicProfileStateProps> = (
         isFridayOpen: Boolean(state.item?.isFridayOpen),
         isSaturdayOpen: Boolean(state.item?.isSaturdayOpen),
         isSundayOpen: Boolean(state.item?.isSundayOpen),
+
         workingDays: workingDayOptions
           .filter(({ field }) => Boolean(state.item?.[field]))
           .map(({ label }) => label),
@@ -299,9 +302,6 @@ const ClinicProfileForm: FunctionComponent<ClinicProfileStateProps> = (
                   }
                   label="Data privacy consent already accepted"
                 />
-                <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                  This value matches the `IsDataPrivacyAccepted` field from `ClinicProfiles`.
-                </Typography>
               </Box>
             </Grid>
 
@@ -313,9 +313,6 @@ const ClinicProfileForm: FunctionComponent<ClinicProfileStateProps> = (
                   }
                   label="Contract Policy consent already accepted"
                 />
-                <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                  This value matches the `isContractPolicyAccepted` field from `ClinicProfiles`.
-                </Typography>
               </Box>
             </Grid>
 
@@ -327,9 +324,6 @@ const ClinicProfileForm: FunctionComponent<ClinicProfileStateProps> = (
                   }
                   label="Data Beta testing already accepted"
                 />
-                <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                  This value matches the `forBetaTestingAccepted` field from `ClinicProfiles`.
-                </Typography>
               </Box>
             </Grid>
           </Grid>
