@@ -5,6 +5,8 @@ import SideNav from './common/sideNav/sideNav';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   acceptClinicDataPrivacy,
+  acceptClinicContractPolicy,
+  acceptClinicBetaTesting,
   getClinicDataPrivacyStatus,
   getRegistrationStatus,
 } from './common/services/auth-api';
@@ -12,6 +14,8 @@ import { toastSuccess } from './common/api/responses';
 import { useAuthStore } from './common/store/authStore';
 import ClinicLockedDialog from './features/login/clinic-locked-dialog';
 import DataPrivacyConsentDialog from './features/login/data-privacy-consent-dialog';
+import ContractPolicyDialog from './features/login/contract-policy-dialog';
+import BetaTestingDialog from './features/login/beta-testing-dialog';
 // import RegisterBootstrapModal from './features/register';
 
 const MainLayout = () => {
@@ -23,6 +27,8 @@ const MainLayout = () => {
   const clinicId = user?.clinicId;
   const clinicName = user?.clinicName;
   const isDataPrivacyAccepted = user?.isDataPrivacyAccepted;
+  const isContractPolicyAccepted = user?.isContractPolicyAccepted;
+  const forBetaTestingAccepted = user?.forBetaTestingAccepted;
   const isLocked = user?.isLocked;
   // const requiresRegistration = useAuthStore((state) => state.requiresRegistration);
   const setRequiresRegistration = useAuthStore((state) => state.setRequiresRegistration);
@@ -30,8 +36,14 @@ const MainLayout = () => {
   const logout = useAuthStore((state) => state.logout);
   const [showClinicLockedDialog, setShowClinicLockedDialog] = useState(false);
   const [showDataPrivacyDialog, setShowDataPrivacyDialog] = useState(false);
+  const [showContractPolicyDialog, setShowContractPolicyDialog] = useState(false);
+  const [showBetaTestingDialog, setShowBetaTestingDialog] = useState(false);
   const [isSubmittingDataPrivacy, setIsSubmittingDataPrivacy] = useState(false);
+  const [isSubmittingContractPolicy, setIsSubmittingContractPolicy] = useState(false);
+  const [isSubmittingBetaTesting, setIsSubmittingBetaTesting] = useState(false);
   const [dataPrivacyError, setDataPrivacyError] = useState('');
+  const [contractPolicyError, setContractPolicyError] = useState('');
+  const [betaTestingError, setBetaTestingError] = useState('');
   const lockStatusIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const shouldCheckDataPrivacy = useMemo(
     () => Boolean(isLoggedIn && clinicId),
@@ -107,46 +119,71 @@ const MainLayout = () => {
     if (!shouldCheckDataPrivacy) {
       setShowClinicLockedDialog(false);
       setShowDataPrivacyDialog(false);
+      setShowContractPolicyDialog(false);
+      setShowBetaTestingDialog(false);
       setDataPrivacyError('');
+      setContractPolicyError('');
+      setBetaTestingError('');
       return;
     }
 
     if (isLocked) {
       setShowClinicLockedDialog(true);
       setShowDataPrivacyDialog(false);
+      setShowContractPolicyDialog(false);
+      setShowBetaTestingDialog(false);
       setDataPrivacyError('');
+      setContractPolicyError('');
+      setBetaTestingError('');
       return;
     }
 
-    if (isDataPrivacyAccepted) {
+    if (!isDataPrivacyAccepted) {
+      setShowClinicLockedDialog(false);
+      setShowDataPrivacyDialog(true);
+      setShowContractPolicyDialog(false);
+      setShowBetaTestingDialog(false);
+      return;
+    }
+
+    if (!isContractPolicyAccepted) {
       setShowClinicLockedDialog(false);
       setShowDataPrivacyDialog(false);
-      setDataPrivacyError('');
+      setShowContractPolicyDialog(true);
+      setShowBetaTestingDialog(false);
+      return;
+    }
+
+    if (!forBetaTestingAccepted) {
+      setShowClinicLockedDialog(false);
+      setShowDataPrivacyDialog(false);
+      setShowContractPolicyDialog(false);
+      setShowBetaTestingDialog(true);
       return;
     }
 
     void getClinicDataPrivacyStatus()
       .then((response) => {
-        const isAccepted = response.isDataPrivacyAccepted;
         const currentUser = useAuthStore.getState().user;
         updateUser(
           currentUser
             ? {
                 ...currentUser,
                 clinicName: response.clinicName || clinicName || currentUser.clinicName,
-                isDataPrivacyAccepted: isAccepted,
+                isDataPrivacyAccepted: response.isDataPrivacyAccepted,
+                isContractPolicyAccepted: response.isContractPolicyAccepted,
+                forBetaTestingAccepted: response.forBetaTestingAccepted,
                 isLocked: response.isLocked,
               }
             : currentUser
         );
         setShowClinicLockedDialog(Boolean(response.isLocked));
-        if (response.isLocked) {
-          setShowDataPrivacyDialog(false);
-          setDataPrivacyError('');
-          return;
-        }
-        setShowDataPrivacyDialog(!isAccepted);
+        setShowDataPrivacyDialog(false);
+        setShowContractPolicyDialog(false);
+        setShowBetaTestingDialog(false);
         setDataPrivacyError('');
+        setContractPolicyError('');
+        setBetaTestingError('');
       })
       .catch((error) => {
         setShowClinicLockedDialog(false);
@@ -154,10 +191,18 @@ const MainLayout = () => {
         setDataPrivacyError(
           typeof error?.response?.data === 'string'
             ? error.response.data
-            : 'Unable to load data privacy consent status.'
+            : 'Unable to load consent status.'
         );
       });
-  }, [clinicName, isDataPrivacyAccepted, isLocked, shouldCheckDataPrivacy, updateUser]);
+  }, [
+    clinicName,
+    isDataPrivacyAccepted,
+    isContractPolicyAccepted,
+    forBetaTestingAccepted,
+    isLocked,
+    shouldCheckDataPrivacy,
+    updateUser,
+  ]);
 
   const handleAcceptDataPrivacy = async (): Promise<void> => {
     setIsSubmittingDataPrivacy(true);
@@ -172,6 +217,8 @@ const MainLayout = () => {
               ...currentUser,
               clinicName: response.clinicName || clinicName || currentUser.clinicName,
               isDataPrivacyAccepted: response.isDataPrivacyAccepted,
+              isContractPolicyAccepted: response.isContractPolicyAccepted,
+              forBetaTestingAccepted: response.forBetaTestingAccepted,
               isLocked: response.isLocked,
             }
           : currentUser
@@ -190,6 +237,70 @@ const MainLayout = () => {
     }
   };
 
+  const handleAcceptContractPolicy = async (): Promise<void> => {
+    setIsSubmittingContractPolicy(true);
+    setContractPolicyError('');
+
+    try {
+      const response = await acceptClinicContractPolicy();
+      const currentUser = useAuthStore.getState().user;
+      updateUser(
+        currentUser
+          ? {
+              ...currentUser,
+              clinicName: response.clinicName || clinicName || currentUser.clinicName,
+              isDataPrivacyAccepted: response.isDataPrivacyAccepted,
+              isContractPolicyAccepted: response.isContractPolicyAccepted,
+              forBetaTestingAccepted: response.forBetaTestingAccepted,
+              isLocked: response.isLocked,
+            }
+          : currentUser
+      );
+      setShowContractPolicyDialog(false);
+      toastSuccess('Contract policy accepted successfully.');
+    } catch (error: any) {
+      setContractPolicyError(
+        typeof error?.response?.data === 'string'
+          ? error.response.data
+          : 'Unable to save contract policy acceptance.'
+      );
+    } finally {
+      setIsSubmittingContractPolicy(false);
+    }
+  };
+
+  const handleAcceptBetaTesting = async (): Promise<void> => {
+    setIsSubmittingBetaTesting(true);
+    setBetaTestingError('');
+
+    try {
+      const response = await acceptClinicBetaTesting();
+      const currentUser = useAuthStore.getState().user;
+      updateUser(
+        currentUser
+          ? {
+              ...currentUser,
+              clinicName: response.clinicName || clinicName || currentUser.clinicName,
+              isDataPrivacyAccepted: response.isDataPrivacyAccepted,
+              isContractPolicyAccepted: response.isContractPolicyAccepted,
+              forBetaTestingAccepted: response.forBetaTestingAccepted,
+              isLocked: response.isLocked,
+            }
+          : currentUser
+      );
+      setShowBetaTestingDialog(false);
+      toastSuccess('Beta testing agreement accepted successfully.');
+    } catch (error: any) {
+      setBetaTestingError(
+        typeof error?.response?.data === 'string'
+          ? error.response.data
+          : 'Unable to save beta testing acceptance.'
+      );
+    } finally {
+      setIsSubmittingBetaTesting(false);
+    }
+  };
+
   return (
     <Box display="flex" minHeight="100vh" bgcolor="background.default">
       <SideNav />
@@ -204,6 +315,20 @@ const MainLayout = () => {
         isSubmitting={isSubmittingDataPrivacy}
         submitError={dataPrivacyError}
         onAccept={handleAcceptDataPrivacy}
+      />
+      <ContractPolicyDialog
+        open={showContractPolicyDialog}
+        clinicName={user?.clinicName}
+        isSubmitting={isSubmittingContractPolicy}
+        submitError={contractPolicyError}
+        onAccept={handleAcceptContractPolicy}
+      />
+      <BetaTestingDialog
+        open={showBetaTestingDialog}
+        clinicName={user?.clinicName}
+        isSubmitting={isSubmittingBetaTesting}
+        submitError={betaTestingError}
+        onAccept={handleAcceptBetaTesting}
       />
       <ClinicLockedDialog
         open={showClinicLockedDialog}
