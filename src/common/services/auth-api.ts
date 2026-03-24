@@ -15,6 +15,12 @@ const CLINIC_DATA_PRIVACY_STATUS_ENDPOINT =
 const ACCEPT_CLINIC_DATA_PRIVACY_ENDPOINT =
   process.env.REACT_APP_ACCEPT_CLINIC_DATA_PRIVACY_ENDPOINT ||
   '/api/dmd/clinic/accept-data-privacy';
+const ACCEPT_CLINIC_CONTRACT_POLICY_ENDPOINT =
+  process.env.REACT_APP_ACCEPT_CLINIC_CONTRACT_POLICY_ENDPOINT ||
+  '/api/dmd/clinic/accept-contract-policy';
+const ACCEPT_CLINIC_BETA_TESTING_ENDPOINT =
+  process.env.REACT_APP_ACCEPT_CLINIC_BETA_TESTING_ENDPOINT ||
+  '/api/dmd/clinic/accept-beta-testing';
 const AUTH_RESPONSE_CACHE_TTL_MS = 5000;
 
 export interface LoginPayload {
@@ -34,6 +40,8 @@ export interface AuthUser {
   clinicName?: string;
   bannerImagePath?: string;
   isDataPrivacyAccepted?: boolean;
+  forBetaTestingAccepted?: boolean;
+  isContractPolicyAccepted?: boolean;
   isLocked?: boolean;
   role: string;
   roleLabel: string;
@@ -116,6 +124,8 @@ export interface ClinicDataPrivacyStatusResponse {
   clinicId: string;
   clinicName: string;
   isDataPrivacyAccepted: boolean;
+  forBetaTestingAccepted?: boolean;
+  isContractPolicyAccepted?: boolean;
   isLocked: boolean;
 }
 
@@ -231,6 +241,28 @@ export const getClinicDataPrivacyStatus = async (): Promise<ClinicDataPrivacySta
 export const acceptClinicDataPrivacy = async (): Promise<ClinicDataPrivacyStatusResponse> => {
   const response = await apiClient.post<ClinicDataPrivacyStatusResponse>(
     ACCEPT_CLINIC_DATA_PRIVACY_ENDPOINT
+  );
+  clinicDataPrivacyResponseCache.set('clinic-data-privacy-status', {
+    data: response.data,
+    cachedAt: Date.now(),
+  });
+  return response.data;
+};
+
+export const acceptClinicContractPolicy = async (): Promise<ClinicDataPrivacyStatusResponse> => {
+  const response = await apiClient.post<ClinicDataPrivacyStatusResponse>(
+    ACCEPT_CLINIC_CONTRACT_POLICY_ENDPOINT
+  );
+  clinicDataPrivacyResponseCache.set('clinic-data-privacy-status', {
+    data: response.data,
+    cachedAt: Date.now(),
+  });
+  return response.data;
+};
+
+export const acceptClinicBetaTesting = async (): Promise<ClinicDataPrivacyStatusResponse> => {
+  const response = await apiClient.post<ClinicDataPrivacyStatusResponse>(
+    ACCEPT_CLINIC_BETA_TESTING_ENDPOINT
   );
   clinicDataPrivacyResponseCache.set('clinic-data-privacy-status', {
     data: response.data,
