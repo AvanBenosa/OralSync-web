@@ -304,6 +304,34 @@ const ClinicProfileForm: FunctionComponent<ClinicProfileStateProps> = (
                 </Typography>
               </Box>
             </Grid>
+
+            <Grid size={{ xs: 12 }}>
+              <Box className={styles.inlineCheckboxCard}>
+                <FormControlLabel
+                  control={
+                    <Checkbox checked={Boolean(state.item?.isContractPolicyAccepted)} disabled />
+                  }
+                  label="Contract Policy consent already accepted"
+                />
+                <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                  This value matches the `isContractPolicyAccepted` field from `ClinicProfiles`.
+                </Typography>
+              </Box>
+            </Grid>
+
+            <Grid size={{ xs: 12 }}>
+              <Box className={styles.inlineCheckboxCard}>
+                <FormControlLabel
+                  control={
+                    <Checkbox checked={Boolean(state.item?.forBetaTestingAccepted)} disabled />
+                  }
+                  label="Data Beta testing already accepted"
+                />
+                <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                  This value matches the `forBetaTestingAccepted` field from `ClinicProfiles`.
+                </Typography>
+              </Box>
+            </Grid>
           </Grid>
         </section>
 

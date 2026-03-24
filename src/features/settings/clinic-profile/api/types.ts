@@ -7,6 +7,8 @@ export type ClinicProfileModel = {
   emailAddress?: string;
   contactNumber?: string;
   isDataPrivacyAccepted?: boolean;
+  forBetaTestingAccepted?: boolean;
+  isContractPolicyAccepted?: boolean;
   openingTime?: string;
   closingTime?: string;
   lunchStartTime?: string;
