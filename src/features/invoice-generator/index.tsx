@@ -256,6 +256,7 @@ export const InvoiceGeneratorModule: FunctionComponent<InvoiceGeneratorProps> = 
               openModal: false,
             }));
           }}
+          clinicId={resolvedClinicId}
           patientName={state.selectedPatientName}
           patientNumber={state.items[0]?.patientNumber}
           filterDate={state.filterDate}

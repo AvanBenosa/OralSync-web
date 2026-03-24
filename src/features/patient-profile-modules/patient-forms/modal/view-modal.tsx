@@ -1,9 +1,8 @@
 import PictureAsPdfRoundedIcon from '@mui/icons-material/PictureAsPdfRounded';
 import { Button, DialogActions, DialogContent, DialogTitle } from '@mui/material';
-import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
 import { FunctionComponent, JSX, useMemo, useRef, useState } from 'react';
 
+import { downloadElementAsPdf } from '../../../../common/utils/downloadElementAsPdf';
 import { buildPatientFormPdfFileName } from '../api/template-content';
 import { PatientFormStateProps } from '../api/types';
 import { PatientFormReportPreview } from '../index-content/patient-form-report-preview';
@@ -53,53 +52,6 @@ import { PatientFormReportPreview } from '../index-content/patient-form-report-p
 //     printWindow.close();
 //   }, 250);
 // };
-
-const downloadPreviewAsPdf = async (
-  element: HTMLDivElement | null,
-  fileName: string
-): Promise<void> => {
-  if (!element) {
-    return;
-  }
-
-  const canvas = await html2canvas(element, {
-    scale: 2,
-    useCORS: true,
-    allowTaint: true,
-    backgroundColor: '#ffffff',
-    logging: false,
-    windowWidth: element.scrollWidth,
-  });
-
-  const imageData = canvas.toDataURL('image/png');
-  const pdf = new jsPDF({
-    orientation: 'portrait',
-    unit: 'mm',
-    format: 'a4',
-  });
-
-  const pageWidth = pdf.internal.pageSize.getWidth();
-  const pageHeight = pdf.internal.pageSize.getHeight();
-  const margin = 8;
-  const renderWidth = pageWidth - margin * 2;
-  const renderHeight = (canvas.height * renderWidth) / canvas.width;
-  const usablePageHeight = pageHeight - margin * 2;
-
-  let heightLeft = renderHeight;
-  let position = margin;
-
-  pdf.addImage(imageData, 'PNG', margin, position, renderWidth, renderHeight, undefined, 'FAST');
-  heightLeft -= usablePageHeight;
-
-  while (heightLeft > 0) {
-    position = margin - (renderHeight - heightLeft);
-    pdf.addPage();
-    pdf.addImage(imageData, 'PNG', margin, position, renderWidth, renderHeight, undefined, 'FAST');
-    heightLeft -= usablePageHeight;
-  }
-
-  pdf.save(fileName);
-};
 
 const PatientFormsViewModal: FunctionComponent<PatientFormStateProps> = (
   props: PatientFormStateProps
@@ -152,7 +104,9 @@ const PatientFormsViewModal: FunctionComponent<PatientFormStateProps> = (
             setIsDownloadingPdf(true);
 
             try {
-              await downloadPreviewAsPdf(reportRef.current, pdfFileName);
+              await downloadElementAsPdf(reportRef.current, {
+                fileName: pdfFileName,
+              });
             } finally {
               setIsDownloadingPdf(false);
             }

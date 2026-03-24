@@ -60,6 +60,7 @@ export type InvoiceGeneratorTableProps = {
 export type InvoiceGeneratorModalProps = {
   open: boolean;
   onClose: () => void;
+  clinicId?: string | null;
   patientName?: string;
   patientNumber?: string;
   filterDate?: string;
