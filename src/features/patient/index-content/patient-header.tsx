@@ -22,7 +22,7 @@ const PatientHeader: FunctionComponent<PatientStateProps> = (
         </div>
         <div className={styles.headerText}>
           <div className={styles.headerTitleRow}>
-            <h2 className={styles.headerTitle}>Patient Module</h2>
+            <h2 className={styles.headerTitle}>Patients Module</h2>
             <span className={styles.headerBadge}>
               {state.totalItem} {state.totalItem === 1 ? 'record' : 'records'}
             </span>

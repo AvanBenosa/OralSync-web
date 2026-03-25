@@ -76,7 +76,7 @@ const AppointmentHeader: FunctionComponent<AppointmentHeaderProps> = (
         </div>
         <div className={styles.headerText}>
           <div className={styles.headerTitleRow}>
-            <h2 className={styles.headerTitle}>Appointment Module</h2>
+            <h2 className={styles.headerTitle}>Appointments Module</h2>
             <span className={styles.headerBadge}>
               {state.totalItem} {state.totalItem === 1 ? 'record' : 'records'}
             </span>
