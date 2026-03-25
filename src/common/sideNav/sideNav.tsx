@@ -459,7 +459,7 @@ const SideNav = () => {
                   letterSpacing: '0.02em',
                 }}
               >
-                OralSync v1.0.0 | © 2026
+                OralSync v1.0.0 (Beta) | © 2026
               </Typography>
               <Typography
                 sx={{
