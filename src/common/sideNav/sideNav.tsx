@@ -44,10 +44,10 @@ const navPalette = {
 
 const menuItems = [
   { label: 'Dashboard', icon: <DashboardCustomizeRoundedIcon />, path: '/dashboard' },
-  { label: 'Patient', icon: <GroupAddRoundedIcon />, path: '/patient' },
-  { label: 'Appointment', icon: <EventRoundedIcon />, path: '/appointment' },
-  { label: 'Inventory', icon: <Inventory2RoundedIcon />, path: '/inventory' },
-  { label: 'Finance Overview', icon: <MonetizationOnIcon />, path: '/finance-overview' },
+  { label: 'Patients', icon: <GroupAddRoundedIcon />, path: '/patient' },
+  { label: 'Appointments', icon: <EventRoundedIcon />, path: '/appointment' },
+  { label: 'Inventories', icon: <Inventory2RoundedIcon />, path: '/inventory' },
+  { label: 'Billing & Finance', icon: <MonetizationOnIcon />, path: '/finance-overview' },
   { label: 'Invoice Generator', icon: <ReceiptLongRoundedIcon />, path: '/invoice-generator' },
 ];
 

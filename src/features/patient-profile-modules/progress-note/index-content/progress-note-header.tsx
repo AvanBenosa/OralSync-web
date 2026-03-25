@@ -17,7 +17,7 @@ const PatientProgressNoteHeader: FunctionComponent<PatientProgressNoteStateProps
         <div className={styles.headerMeta}>
           <div className={styles.headerTitleWrap}>
             <DescriptionOutlinedIcon className={styles.headerTitleIcon} />
-            <h3 className={styles.headerTitle}>Progress Notes</h3>
+            <h3 className={styles.headerTitle}>Treatment Plan</h3>
           </div>
           <div className={styles.legendGroup} aria-label="Payment status legend">
             <div className={styles.legendItem}>
@@ -60,7 +60,7 @@ const PatientProgressNoteHeader: FunctionComponent<PatientProgressNoteStateProps
             }
           >
             <AddRoundedIcon className={styles.addButtonIcon} />
-            Add Progress Note
+            Add Treatment Plan
           </button>
         </div>
       </div>

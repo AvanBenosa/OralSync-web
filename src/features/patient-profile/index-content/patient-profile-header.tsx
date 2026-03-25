@@ -5,8 +5,8 @@ import NotesRoundedIcon from '@mui/icons-material/NotesRounded';
 import HistoryEduRoundedIcon from '@mui/icons-material/HistoryEduRounded';
 import PhotoLibraryRoundedIcon from '@mui/icons-material/PhotoLibraryRounded';
 import DescriptionRoundedIcon from '@mui/icons-material/DescriptionRounded';
-import ScienceRoundedIcon from '@mui/icons-material/ScienceRounded';
-import EventAvailableRoundedIcon from '@mui/icons-material/EventAvailableRounded';
+// import ScienceRoundedIcon from '@mui/icons-material/ScienceRounded';
+// import EventAvailableRoundedIcon from '@mui/icons-material/EventAvailableRounded';
 import MedicalServicesRoundedIcon from '@mui/icons-material/MedicalServicesRounded';
 import { useMediaQuery, useTheme } from '@mui/material';
 
@@ -36,35 +36,30 @@ const PatientProfileHeader: FunctionComponent<PatientProfileStateProps> = (
     // },
     {
       id: 'progress-notes',
-      label: 'Progress Notes',
+      label: 'Treatment Plan',
       icon: <NotesRoundedIcon />,
     },
     {
       id: 'medical-history',
-      label: 'Medical History',
+      label: 'Health Profile',
       icon: <HistoryEduRoundedIcon />,
     },
     {
       id: 'photos',
-      label: 'Photos',
+      label: 'Dental Images',
       icon: <PhotoLibraryRoundedIcon />,
     },
     { id: 'dental-chart', label: 'Dental Chart', icon: <MedicalServicesRoundedIcon /> },
     {
       id: 'forms',
-      label: 'Forms',
+      label: 'Documents',
       icon: <DescriptionRoundedIcon />,
     },
-    {
-      id: 'lab-cases',
-      label: 'Lab Cases',
-      icon: <ScienceRoundedIcon />,
-    },
-    {
-      id: 'appointments',
-      label: 'Appointments',
-      icon: <EventAvailableRoundedIcon />,
-    },
+    // {
+    //   id: 'appointments',
+    //   label: 'Appointment Records',
+    //   icon: <EventAvailableRoundedIcon />,
+    // },
   ];
 
   return (
