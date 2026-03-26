@@ -146,8 +146,8 @@ const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
     label: 'Basic',
     tagline: 'Starter clinic plan',
     summary: 'Best for solo or startup clinics handling a lighter daily patient load.',
-    patientLimit: '1,000 patients',
-    storageLimit: '1000 photos/files',
+    patientLimit: '500 patients',
+    storageLimit: '500 photos/files',
     userLimit: '2 users',
     accentClassName: styles.subscriptionPlanCardBasic,
     features: [
@@ -157,7 +157,7 @@ const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
       },
       {
         icon: <PhotoLibraryRoundedIcon />,
-        label: 'Store up to 1000 patient photos/files',
+        label: 'Store up to 500 patient photos/files',
       },
       {
         icon: <SmsRoundedIcon />,
@@ -178,18 +178,18 @@ const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
     label: 'Standard',
     tagline: 'Balanced everyday plan',
     summary: 'Built for growing clinics that want reminders, inventory, and larger storage.',
-    patientLimit: '5,000 patients',
-    storageLimit: '3,000 photos/files',
-    userLimit: '10 users',
+    patientLimit: '1000 patients',
+    storageLimit: '1000 photos/files',
+    userLimit: '5 users',
     accentClassName: styles.subscriptionPlanCardStandard,
     features: [
       {
         icon: <GroupsRoundedIcon />,
-        label: 'Patient records up to 5,000',
+        label: 'Patient records up to 1,000',
       },
       {
         icon: <PhotoLibraryRoundedIcon />,
-        label: 'Store up to 3,000 patient photos/files',
+        label: 'Store up to 1,000 patient photos/files',
       },
       {
         icon: <SmsRoundedIcon />,
@@ -205,38 +205,38 @@ const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
       },
     ],
   },
-  {
-    id: 'pro',
-    label: 'Pro',
-    tagline: 'Advanced clinic operations',
-    summary: 'Designed for busy clinics that need automation, scale, and wider staff access.',
-    patientLimit: '20,000 patients',
-    storageLimit: '10,000 photos/files',
-    userLimit: 'Unlimited users',
-    accentClassName: styles.subscriptionPlanCardPro,
-    features: [
-      {
-        icon: <GroupsRoundedIcon />,
-        label: 'Patient records up to 20,000',
-      },
-      {
-        icon: <PhotoLibraryRoundedIcon />,
-        label: 'Store up to 10,000 patient photos/files',
-      },
-      {
-        icon: <SmsRoundedIcon />,
-        label: 'Full SMS reminders and higher usage capacity',
-      },
-      {
-        icon: <MarkEmailReadRoundedIcon />,
-        label: 'Full email notification support',
-      },
-      {
-        icon: <Inventory2RoundedIcon />,
-        label: 'Inventory module and advanced workflow support',
-      },
-    ],
-  },
+  // {
+  //   id: 'pro',
+  //   label: 'Pro',
+  //   tagline: 'Advanced clinic operations',
+  //   summary: 'Designed for busy clinics that need automation, scale, and wider staff access.',
+  //   patientLimit: '20,000 patients',
+  //   storageLimit: '10,000 photos/files',
+  //   userLimit: 'Unlimited users',
+  //   accentClassName: styles.subscriptionPlanCardPro,
+  //   features: [
+  //     {
+  //       icon: <GroupsRoundedIcon />,
+  //       label: 'Patient records up to 20,000',
+  //     },
+  //     {
+  //       icon: <PhotoLibraryRoundedIcon />,
+  //       label: 'Store up to 10,000 patient photos/files',
+  //     },
+  //     {
+  //       icon: <SmsRoundedIcon />,
+  //       label: 'Full SMS reminders and higher usage capacity',
+  //     },
+  //     {
+  //       icon: <MarkEmailReadRoundedIcon />,
+  //       label: 'Full email notification support',
+  //     },
+  //     {
+  //       icon: <Inventory2RoundedIcon />,
+  //       label: 'Inventory module and advanced workflow support',
+  //     },
+  //   ],
+  // },
 ];
 
 const Subscriptions: FunctionComponent<SubscriptionsProps> = (
