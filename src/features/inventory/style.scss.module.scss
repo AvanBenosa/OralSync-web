@@ -428,13 +428,46 @@
   color: #54697f;
 }
 
+@media (max-width: 1024px) and (min-width: 901px) {
+  .listHeader {
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 14px;
+  }
+
+  .searchInput {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .headerActions,
+  .buttonContainer {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .actionPillButton {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .legendGroup {
+    gap: 10px;
+  }
+
+  .legendItem {
+    gap: 6px;
+    font-size: 11px;
+  }
+}
+
 @media (max-width: 900px) {
-  .listHeader,
   .searchForm {
     flex-direction: column;
     align-items: stretch;
   }
 
+  .listHeader,
   .headerActions,
   .headerActionControls,
   .buttonContainer,
