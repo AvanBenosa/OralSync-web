@@ -49,7 +49,7 @@ const RegistrationSuccessPanel: FunctionComponent<RegistrationSuccessPanelProps>
       Registration Complete
     </Typography>
     <Typography variant="h5" sx={{ mt: 1, fontWeight: 800, color: authPalette.text }}>
-      Thank you for registering with DMD
+      Thank you for registering with OralSync DMS
     </Typography>
     <Typography variant="body1" sx={{ mt: 1.5, color: 'text.secondary' }}>
       Your clinic account has been created successfully. Please return to the login page and sign in

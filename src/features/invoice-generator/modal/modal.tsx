@@ -404,7 +404,7 @@ const InvoiceGeneratorModal: FunctionComponent<InvoiceGeneratorModalProps> = (
           >
             <Box sx={{ textAlign: 'center' }}>
               <Box sx={{ width: '72%', mx: 'auto', borderTop: '1px solid #274c74' }} />
-              <Typography sx={{ mt: 0.5, color: '#0d1520', fontSize: 16, fontWeight: 900 }}>
+              <Typography sx={{ mt: 0.5, color: '#1f4c7bnpm', fontSize: 15 }}>
                 Dentist Signature
               </Typography>
             </Box>

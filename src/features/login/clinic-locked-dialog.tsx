@@ -51,7 +51,7 @@ const ClinicLockedDialog: FunctionComponent<ClinicLockedDialogProps> = ({
                 : 'This clinic account is currently locked.'}
             </Typography>
             <Typography variant="body2" sx={{ color: 'text.secondary', mb: 1.5 }}>
-              Access to DMD has been restricted for this clinic.
+              Access to OralSync DMS has been restricted for this clinic.
             </Typography>
             <Alert severity="warning" sx={{ mb: 1.5 }}>
               Payment is required before the clinic account can be reactivated.
