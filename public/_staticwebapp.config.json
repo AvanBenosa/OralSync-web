@@ -1,0 +1,20 @@
+{
+  "navigationFallback": {
+    "rewrite": "/index.html"
+  },
+  "routes": [
+    {
+      "exclude": [
+        "/static/*",
+        "/favicon.ico",
+        "/OralSync.png",
+        "/manifest.json",
+        "/robots.txt",
+        "/sitemap.xml"
+      ]
+    },
+    {
+      "rewrite": "/index.html"
+    }
+  ]
+}
