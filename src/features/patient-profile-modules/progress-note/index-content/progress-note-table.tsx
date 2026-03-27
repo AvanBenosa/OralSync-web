@@ -20,22 +20,11 @@ import styles from '../../styles.module.scss';
 import { PatientProgressNoteModel, PatientProgressNoteStateProps } from '../api/types';
 import TableLoadingSkeleton from '../../../../common/components/TableLoadingSkeleton';
 import { toValidDateDisplay } from '../../../../common/helpers/toValidateDateDisplay';
+import { formatCurrency } from '../../../../common/helpers/formatCurrency';
 
 type PaymentStatus = 'pending' | 'paid';
 
 const formatDate = (value?: string | Date): string => toValidDateDisplay(value, 'MMM DD, YYYY');
-
-const formatCurrency = (value?: number): string => {
-  if (value === undefined || value === null || Number.isNaN(value)) {
-    return '--';
-  }
-
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'Php',
-    minimumFractionDigits: 2,
-  }).format(value);
-};
 
 const getResolvedTotalAmountDue = (item: PatientProgressNoteModel): number | undefined => {
   if (typeof item.totalAmountDue === 'number' && !Number.isNaN(item.totalAmountDue)) {
