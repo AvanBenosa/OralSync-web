@@ -31,6 +31,7 @@ import PatientMedicalHistory from '../patient-profile-modules/medical-history';
 import PatientDentalChart from '../patient-profile-modules/dental-chart';
 import PatientDentalPhoto from '../patient-profile-modules/photos';
 import PatientForms from '../patient-profile-modules/patient-forms';
+import PatientAppointmentRecords from '../patient-profile-modules/appointment-records';
 
 const resolveProfilePictureSrc = (profilePicture?: string): string => {
   if (!profilePicture?.trim()) {
@@ -145,7 +146,7 @@ export const PatientProfileModule: FunctionComponent<PatientProfileProps> = (
     'dental-chart': 'Dental Chart',
     forms: 'Forms',
     'lab-cases': 'Lab Cases',
-    appointments: 'Appointments',
+    appointments: 'Appointment Records',
   };
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -539,6 +540,12 @@ export const PatientProfileModule: FunctionComponent<PatientProfileProps> = (
               onRegisterMobileReload={setMobileReload}
               patientLabel={patientInfoLabel}
               patientProfile={state.profile}
+            />
+          ) : activeTab === 'appointments' ? (
+            <PatientAppointmentRecords
+              patientId={patientId}
+              onRegisterMobileReload={setMobileReload}
+              patientLabel={patientInfoLabel}
             />
           ) : (
             <section className={styles.maintenancePanel}>
