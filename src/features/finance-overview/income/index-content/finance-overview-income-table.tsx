@@ -15,6 +15,7 @@ import {
 import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import MonetizationOnOutlinedIcon from '@mui/icons-material/MonetizationOnOutlined';
+import PictureAsPdfRoundedIcon from '@mui/icons-material/PictureAsPdfRounded';
 
 import TableLoadingSkeleton from '../../../../common/components/TableLoadingSkeleton';
 import { toValidDateDisplay } from '../../../../common/helpers/toValidateDateDisplay';
@@ -85,16 +86,29 @@ const getPaymentStatusLabel = (status?: PaymentStatus): string | undefined => {
   return undefined;
 };
 
-const FinanceOverviewIncomeTable: FunctionComponent<FinanceIncomeStateProps> = (
-  props: FinanceIncomeStateProps
+type FinanceOverviewIncomeTableProps = FinanceIncomeStateProps & {
+  onOpenInvoice: (item: FinanceIncomeModel) => void;
+};
+
+const FinanceOverviewIncomeTable: FunctionComponent<FinanceOverviewIncomeTableProps> = (
+  props: FinanceOverviewIncomeTableProps
 ): JSX.Element => {
-  const { state, setState } = props;
+  const { state, setState, onOpenInvoice } = props;
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const columnCount = isMobile ? 1 : 11;
 
   const renderActionButtons = (item: FinanceIncomeModel): JSX.Element => (
     <div className={`${styles.buttonContainer} ${styles.tableButtonContainer}`}>
+      <button
+        type="button"
+        title="Download Invoice"
+        aria-label="Preview and download invoice"
+        className={`${styles.buttonItem} ${styles.tableActionButton} ${styles.invoiceButton}`}
+        onClick={(): void => onOpenInvoice(item)}
+      >
+        <PictureAsPdfRoundedIcon className={styles.iconInvoice} />
+      </button>
       <button
         type="button"
         title="Edit"
@@ -178,7 +192,7 @@ const FinanceOverviewIncomeTable: FunctionComponent<FinanceIncomeStateProps> = (
                 secondaryHeight: 18,
                 badgeWidth: 108,
                 badgeHeight: 24,
-                actionCount: 2,
+                actionCount: 3,
                 actionSize: 34,
               }}
             />

@@ -6,7 +6,7 @@ import {
   toastSuccess,
 } from '../../../../common/api/responses';
 import { apiClient } from '../../../../common/services/api-client';
-import { PatientMedicalHistoryModel } from './types';
+import { normalizeMedicalHistoryConditions, PatientMedicalHistoryModel } from './types';
 
 const MEDICAL_HISTORY_ENDPOINT = '/api/dmd/patient-medical-history/get-patient-medical-history';
 const CREATE_MEDICAL_HISTORY_ENDPOINT =
@@ -24,6 +24,29 @@ const medicalHistoryResponseCache = new Map<
   }
 >();
 const MEDICAL_HISTORY_RESPONSE_CACHE_TTL_MS = 5000;
+
+type PatientMedicalHistoryApiModel = Omit<PatientMedicalHistoryModel, 'q11Conditions'> & {
+  q11Conditions?: unknown;
+};
+
+const normalizePatientMedicalHistoryItem = (
+  item?: PatientMedicalHistoryApiModel | PatientMedicalHistoryModel | null
+): PatientMedicalHistoryModel => ({
+  ...(item || {}),
+  q11Conditions: normalizeMedicalHistoryConditions(item?.q11Conditions),
+});
+
+const normalizePatientMedicalHistoryItems = (
+  items?: PatientMedicalHistoryApiModel[] | PatientMedicalHistoryModel[] | null
+): PatientMedicalHistoryModel[] =>
+  (items || []).map((item) => normalizePatientMedicalHistoryItem(item));
+
+export const InvalidatePatientMedicalHistoryCache = (patientId?: string): void => {
+  const requestKey = patientId?.trim() || 'current-patient';
+
+  medicalHistoryRequestCache.delete(requestKey);
+  medicalHistoryResponseCache.delete(requestKey);
+};
 
 export const GetPatientMedicalHistoryItems = async (
   patientId?: string,
@@ -50,13 +73,18 @@ export const GetPatientMedicalHistoryItems = async (
 
   const request = (async (): Promise<PatientMedicalHistoryModel[]> => {
     try {
-      const response = await apiClient.get<PatientMedicalHistoryModel[]>(MEDICAL_HISTORY_ENDPOINT, {
-        params: {
-          PatientInfoId: patientId,
-        },
-      });
+      const response = await apiClient.get<PatientMedicalHistoryApiModel[]>(
+        MEDICAL_HISTORY_ENDPOINT,
+        {
+          params: {
+            PatientInfoId: patientId,
+          },
+        }
+      );
 
-      const responseData = SuccessResponse(response, ResponseMethod.Fetch, undefined, false) || [];
+      const responseData = normalizePatientMedicalHistoryItems(
+        SuccessResponse(response, ResponseMethod.Fetch, undefined, false) || []
+      );
       medicalHistoryResponseCache.set(requestKey, {
         data: responseData,
         cachedAt: Date.now(),
@@ -80,11 +108,15 @@ export const CreatePatientMedicalHistoryItem = async (
   request: PatientMedicalHistoryModel
 ): Promise<PatientMedicalHistoryModel> => {
   try {
-    const response = await apiClient.post<PatientMedicalHistoryModel>(
+    const normalizedRequest = normalizePatientMedicalHistoryItem(request);
+    const response = await apiClient.post<PatientMedicalHistoryApiModel>(
       CREATE_MEDICAL_HISTORY_ENDPOINT,
-      request
+      normalizedRequest
     );
-    return SuccessResponse(response, ResponseMethod.Create) as PatientMedicalHistoryModel;
+    const responseData = SuccessResponse(response, ResponseMethod.Create) as
+      | PatientMedicalHistoryApiModel
+      | undefined;
+    return normalizePatientMedicalHistoryItem(responseData ?? normalizedRequest);
   } catch (error) {
     if (isAxiosError(error)) {
       await ExceptionResponse(error);
@@ -97,11 +129,15 @@ export const UpdatePatientMedicalHistoryItem = async (
   request: PatientMedicalHistoryModel
 ): Promise<PatientMedicalHistoryModel> => {
   try {
-    const response = await apiClient.put<PatientMedicalHistoryModel>(
+    const normalizedRequest = normalizePatientMedicalHistoryItem(request);
+    const response = await apiClient.put<PatientMedicalHistoryApiModel>(
       UPDATE_MEDICAL_HISTORY_ENDPOINT,
-      request
+      normalizedRequest
     );
-    return SuccessResponse(response, ResponseMethod.Update) as PatientMedicalHistoryModel;
+    const responseData = SuccessResponse(response, ResponseMethod.Update) as
+      | PatientMedicalHistoryApiModel
+      | undefined;
+    return normalizePatientMedicalHistoryItem(responseData ?? normalizedRequest);
   } catch (error) {
     if (isAxiosError(error)) {
       await ExceptionResponse(error);

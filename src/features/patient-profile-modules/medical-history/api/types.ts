@@ -39,6 +39,95 @@ export const MEDICAL_HISTORY_CONDITION_OPTIONS = [
 
 export type MedicalHistoryCondition = (typeof MEDICAL_HISTORY_CONDITION_OPTIONS)[number];
 
+const medicalHistoryConditionOptionSet = new Set<string>(MEDICAL_HISTORY_CONDITION_OPTIONS);
+
+const toMedicalHistoryCondition = (value: string): MedicalHistoryCondition | undefined => {
+  const normalizedValue = value.trim();
+
+  if (!normalizedValue || !medicalHistoryConditionOptionSet.has(normalizedValue)) {
+    return undefined;
+  }
+
+  return normalizedValue as MedicalHistoryCondition;
+};
+
+const appendMedicalHistoryConditions = (
+  source: unknown,
+  conditions: Set<MedicalHistoryCondition>
+): void => {
+  if (!source) {
+    return;
+  }
+
+  if (Array.isArray(source)) {
+    source.forEach((item) => appendMedicalHistoryConditions(item, conditions));
+    return;
+  }
+
+  if (typeof source === 'string') {
+    const trimmedValue = source.trim();
+    if (!trimmedValue) {
+      return;
+    }
+
+    const looksSerializedJson =
+      (trimmedValue.startsWith('[') && trimmedValue.endsWith(']')) ||
+      (trimmedValue.startsWith('{') && trimmedValue.endsWith('}')) ||
+      (trimmedValue.startsWith('"') && trimmedValue.endsWith('"'));
+
+    if (looksSerializedJson) {
+      try {
+        appendMedicalHistoryConditions(JSON.parse(trimmedValue), conditions);
+        return;
+      } catch {
+        // Fall back to plain text parsing when the string is not valid JSON.
+      }
+    }
+
+    trimmedValue
+      .split(/[\r\n,;]+/)
+      .map((item) => toMedicalHistoryCondition(item))
+      .filter((item): item is MedicalHistoryCondition => Boolean(item))
+      .forEach((item) => conditions.add(item));
+
+    return;
+  }
+
+  if (typeof source === 'object') {
+    Object.entries(source as Record<string, unknown>).forEach(([key, value]) => {
+      if (value) {
+        const condition = toMedicalHistoryCondition(key);
+        if (condition) {
+          conditions.add(condition);
+        }
+      }
+    });
+  }
+};
+
+export const normalizeMedicalHistoryConditions = (value?: unknown): MedicalHistoryCondition[] => {
+  const conditions = new Set<MedicalHistoryCondition>();
+
+  appendMedicalHistoryConditions(value, conditions);
+
+  return MEDICAL_HISTORY_CONDITION_OPTIONS.filter((option) => conditions.has(option));
+};
+
+export const getMedicalHistoryConditionSummary = (value?: unknown, others?: string): string => {
+  const selectedConditions = normalizeMedicalHistoryConditions(value);
+  const otherCondition = others?.trim();
+
+  if (selectedConditions.length === 0 && !otherCondition) {
+    return '--';
+  }
+
+  if (!otherCondition) {
+    return selectedConditions.join(', ');
+  }
+
+  return [...selectedConditions, `Others: ${otherCondition}`].join(', ');
+};
+
 export type PatientMedicalHistoryProps = {
   patientId?: string | undefined;
   patientLabel?: string;

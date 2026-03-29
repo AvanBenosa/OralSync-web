@@ -19,6 +19,7 @@ import { Formik } from 'formik';
 import { isAxiosError } from 'axios';
 
 import {
+  normalizeMedicalHistoryConditions,
   MedicalHistoryCondition,
   MEDICAL_HISTORY_CONDITION_OPTIONS,
   PatientMedicalHistoryModel,
@@ -121,7 +122,7 @@ const createInitialValues = (
   q9: toRadioValue(selectedItem?.q9),
   q10Nursing: toRadioValue(selectedItem?.q10Nursing),
   q10Pregnant: toRadioValue(selectedItem?.q10Pregnant),
-  q11Conditions: selectedItem?.q11Conditions || [],
+  q11Conditions: normalizeMedicalHistoryConditions(selectedItem?.q11Conditions),
   others: selectedItem?.others ?? '',
   remarks: selectedItem?.remarks ?? '',
 });
@@ -194,7 +195,7 @@ const PatientMedicalHistoryForm: FunctionComponent<PatientMedicalHistoryFormProp
       q9: toBooleanValue(values.q9),
       q10Nursing: toBooleanValue(values.q10Nursing),
       q10Pregnant: toBooleanValue(values.q10Pregnant),
-      q11Conditions: values.q11Conditions,
+      q11Conditions: normalizeMedicalHistoryConditions(values.q11Conditions),
       others: values.others.trim() || '',
       remarks: values.remarks.trim() || '',
     };

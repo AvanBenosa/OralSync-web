@@ -18,16 +18,13 @@ import { QRCodeSVG } from 'qrcode.react';
 
 import { formatCurrency } from '../../../common/helpers/formatCurrency';
 import { toValidDateDisplay } from '../../../common/helpers/toValidateDateDisplay';
-import {
-  isProtectedStoragePath,
-  loadProtectedAssetObjectUrl,
-  resolveApiAssetUrl,
-} from '../../../common/services/api-client';
 import { useAuthStore } from '../../../common/store/authStore';
 import { downloadElementAsPdf } from '../../../common/utils/downloadElementAsPdf';
 import { GetCurrentClinicProfile } from '../../settings/clinic-profile/api/api';
 import type { ClinicProfileModel } from '../../settings/clinic-profile/api/types';
 import type { InvoiceGeneratorModalProps, InvoiceGeneratorModel } from '../api/types';
+
+const SYSTEM_BADGE_SRC = '/OralSync.png';
 
 const formatReceiptCurrency = (value?: number | string | null): string =>
   formatCurrency(value, {
@@ -61,26 +58,13 @@ const createReferenceSegment = (value?: string): string => {
   return (normalized.slice(-4) || '0001').padStart(4, '0');
 };
 
-const buildClinicInitials = (value?: string): string => {
-  const initials = (value || '')
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((segment) => segment.charAt(0).toUpperCase())
-    .join('');
-
-  return initials || 'LS';
-};
-
 const InvoiceGeneratorModal: FunctionComponent<InvoiceGeneratorModalProps> = (
   props: InvoiceGeneratorModalProps
 ): JSX.Element => {
   const { onClose, clinicId, patientName, patientNumber, filterDate, items, summary } = props;
   const authUser = useAuthStore((store) => store.user);
-  const authBannerImagePath = authUser?.bannerImagePath?.trim() || '';
   const receiptRef = useRef<HTMLDivElement | null>(null);
   const [clinicProfile, setClinicProfile] = useState<ClinicProfileModel | null>(null);
-  const [clinicBannerSrc, setClinicBannerSrc] = useState<string>('');
   const [isDownloadingPdf, setIsDownloadingPdf] = useState<boolean>(false);
 
   useEffect(() => {
@@ -107,75 +91,6 @@ const InvoiceGeneratorModal: FunctionComponent<InvoiceGeneratorModalProps> = (
     };
   }, [clinicId]);
 
-  const resolvedBannerPath = clinicProfile?.bannerImagePath?.trim() || authBannerImagePath;
-
-  useEffect(() => {
-    let isActive = true;
-
-    if (!resolvedBannerPath) {
-      setClinicBannerSrc((previousValue) => {
-        if (previousValue?.startsWith('blob:')) {
-          URL.revokeObjectURL(previousValue);
-        }
-
-        return '';
-      });
-      return;
-    }
-
-    if (!isProtectedStoragePath(resolvedBannerPath)) {
-      setClinicBannerSrc((previousValue) => {
-        if (previousValue?.startsWith('blob:')) {
-          URL.revokeObjectURL(previousValue);
-        }
-
-        return resolveApiAssetUrl(resolvedBannerPath);
-      });
-      return;
-    }
-
-    void loadProtectedAssetObjectUrl(resolvedBannerPath)
-      .then((objectUrl) => {
-        if (!isActive) {
-          URL.revokeObjectURL(objectUrl);
-          return;
-        }
-
-        setClinicBannerSrc((previousValue) => {
-          if (previousValue?.startsWith('blob:')) {
-            URL.revokeObjectURL(previousValue);
-          }
-
-          return objectUrl;
-        });
-      })
-      .catch(() => {
-        if (!isActive) {
-          return;
-        }
-
-        setClinicBannerSrc((previousValue) => {
-          if (previousValue?.startsWith('blob:')) {
-            URL.revokeObjectURL(previousValue);
-          }
-
-          return '';
-        });
-      });
-
-    return () => {
-      isActive = false;
-    };
-  }, [resolvedBannerPath]);
-
-  useEffect(() => {
-    return () => {
-      if (clinicBannerSrc?.startsWith('blob:')) {
-        URL.revokeObjectURL(clinicBannerSrc);
-      }
-    };
-  }, [clinicBannerSrc]);
-
   const resolvedClinicName =
     clinicProfile?.clinicName?.trim() || authUser?.clinicName?.trim() || 'Clinic Name';
   const resolvedClinicAddress = clinicProfile?.address?.trim() || 'Clinic address not set';
@@ -187,10 +102,6 @@ const InvoiceGeneratorModal: FunctionComponent<InvoiceGeneratorModalProps> = (
     .join(' | ');
   const qrCodeValue =
     clinicProfile?.qrCodeValue?.trim() || clinicId?.trim() || authUser?.clinicId?.trim() || '';
-  const clinicInitials = useMemo(
-    () => buildClinicInitials(resolvedClinicName),
-    [resolvedClinicName]
-  );
   const registrationLink = useMemo(() => {
     if (!qrCodeValue || typeof window === 'undefined') {
       return '';
@@ -200,6 +111,11 @@ const InvoiceGeneratorModal: FunctionComponent<InvoiceGeneratorModalProps> = (
       qrCodeValue
     )}`;
   }, [qrCodeValue]);
+  const resolvedCashierName =
+    authUser?.name?.trim() ||
+    [authUser?.firstName?.trim(), authUser?.lastName?.trim()].filter(Boolean).join(' ').trim() ||
+    authUser?.roleLabel?.trim() ||
+    'Admin';
   const receiptDateValue = items[0]?.date ?? filterDate;
   const rawReceiptDateValue =
     typeof receiptDateValue === 'string'
@@ -225,6 +141,7 @@ const InvoiceGeneratorModal: FunctionComponent<InvoiceGeneratorModalProps> = (
   const amountPaid = Number(summary.amountPaid ?? 0);
   const remainingBalance = Math.max(Number(summary.balance ?? 0), 0);
   const changeAmount = Math.max(amountPaid - totalAmount, 0);
+  const showPaidWatermark = amountPaid > 0 && remainingBalance <= 0;
   const pdfFileName = useMemo(() => {
     const resolvedPatientName = createSafeFileSegment(patientName?.trim() || 'Patient');
     const resolvedDate = createSafeFileSegment(
@@ -355,13 +272,13 @@ const InvoiceGeneratorModal: FunctionComponent<InvoiceGeneratorModalProps> = (
               }}
             >
               <Box>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.4 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
                   <Box
                     sx={{
-                      width: 76,
-                      height: 76,
-                      borderRadius: '20px',
-                      border: '1px solid rgba(199, 210, 222, 0.95)',
+                      width: 78,
+                      height: 78,
+                      borderRadius: '18px',
+                      border: '1px solid rgba(196, 208, 221, 0.92)',
                       bgcolor: '#ffffff',
                       display: 'grid',
                       placeItems: 'center',
@@ -369,34 +286,22 @@ const InvoiceGeneratorModal: FunctionComponent<InvoiceGeneratorModalProps> = (
                       boxShadow: '0 8px 18px rgba(23, 49, 74, 0.08)',
                       flexShrink: 0,
                       '@media print': {
-                        width: 54,
-                        height: 54,
-                        borderRadius: '16px',
+                        width: 58,
+                        height: 58,
+                        borderRadius: '14px',
                       },
                     }}
                   >
-                    {clinicBannerSrc ? (
-                      <Box
-                        component="img"
-                        src={clinicBannerSrc}
-                        alt={resolvedClinicName}
-                        sx={{ width: '100%', height: '100%', objectFit: 'contain', p: 1.1 }}
-                      />
-                    ) : (
-                      <Typography
-                        sx={{
-                          color: '#1f4c7b',
-                          fontSize: 28,
-                          fontWeight: 900,
-                          letterSpacing: 0.5,
-                          '@media print': {
-                            fontSize: 21,
-                          },
-                        }}
-                      >
-                        {clinicInitials}
-                      </Typography>
-                    )}
+                    <Box
+                      component="img"
+                      src={SYSTEM_BADGE_SRC}
+                      alt="OralSync"
+                      sx={{
+                        width: '76%',
+                        height: '76%',
+                        objectFit: 'contain',
+                      }}
+                    />
                   </Box>
 
                   <Box sx={{ minWidth: 0 }}>
@@ -434,11 +339,11 @@ const InvoiceGeneratorModal: FunctionComponent<InvoiceGeneratorModalProps> = (
 
                 <Typography
                   sx={{
-                    mt: 1.45,
+                    mt: 1.25,
                     color: '#324252',
                     fontSize: 12.5,
                     '@media print': {
-                      mt: 0.9,
+                      mt: 0.85,
                       fontSize: 10.5,
                     },
                   }}
@@ -494,6 +399,7 @@ const InvoiceGeneratorModal: FunctionComponent<InvoiceGeneratorModalProps> = (
                     { label: 'Receipt No:', value: receiptNumber },
                     { label: 'Invoice No:', value: invoiceNumber },
                     { label: 'Date:', value: receiptDateTimeLabel },
+                    { label: 'Cashier:', value: resolvedCashierName },
                   ].map((item) => (
                     <Typography
                       key={item.label}
@@ -579,6 +485,45 @@ const InvoiceGeneratorModal: FunctionComponent<InvoiceGeneratorModalProps> = (
             />
 
             <Box sx={{ position: 'relative', mt: 2.2 }}>
+              {showPaidWatermark ? (
+                <>
+                  <Typography
+                    sx={{
+                      position: 'absolute',
+                      top: '16%',
+                      left: '41%',
+                      color: 'rgba(55, 76, 96, 0.07)',
+                      fontSize: { xs: 64, sm: 92 },
+                      fontWeight: 900,
+                      letterSpacing: 4,
+                      transform: 'rotate(-18deg)',
+                      pointerEvents: 'none',
+                      userSelect: 'none',
+                      zIndex: 0,
+                    }}
+                  >
+                    PAID
+                  </Typography>
+                  <Typography
+                    sx={{
+                      position: 'absolute',
+                      right: '8%',
+                      bottom: '-6%',
+                      color: 'rgba(55, 76, 96, 0.06)',
+                      fontSize: { xs: 58, sm: 82 },
+                      fontWeight: 900,
+                      letterSpacing: 4,
+                      transform: 'rotate(-18deg)',
+                      pointerEvents: 'none',
+                      userSelect: 'none',
+                      zIndex: 0,
+                    }}
+                  >
+                    PAID
+                  </Typography>
+                </>
+              ) : null}
+
               <Box
                 sx={{
                   position: 'relative',
@@ -636,13 +581,28 @@ const InvoiceGeneratorModal: FunctionComponent<InvoiceGeneratorModalProps> = (
                     </Typography>
                   ) : null}
 
+                  <Typography
+                    sx={{
+                      mt: 2.15,
+                      color: '#2f4051',
+                      fontSize: 13.5,
+                      '@media print': {
+                        mt: 1.05,
+                        fontSize: 10.75,
+                      },
+                    }}
+                  >
+                    <Box component="span" sx={{ fontWeight: 700 }}>
+                      Cashier:
+                    </Box>{' '}
+                    {resolvedCashierName}
+                  </Typography>
                   <Box
                     sx={{
                       mt: 1.4,
-                      border: '1px solid rgba(207, 216, 226, 0.95)',
-                      borderRadius: '8px',
+                      border: '1px solid rgba(210, 218, 226, 0.95)',
                       overflow: 'hidden',
-                      bgcolor: 'rgba(255, 255, 255, 0.86)',
+                      bgcolor: '#ffffff',
                       '@media print': {
                         mt: 0.85,
                       },
@@ -650,7 +610,7 @@ const InvoiceGeneratorModal: FunctionComponent<InvoiceGeneratorModalProps> = (
                   >
                     <Table size="small" aria-label="Receipt preview table" sx={{ minWidth: 0 }}>
                       <TableHead>
-                        <TableRow sx={{ bgcolor: 'rgba(242, 246, 251, 0.92)' }}>
+                        <TableRow>
                           <TableCell
                             sx={{
                               px: 1.5,
@@ -658,7 +618,8 @@ const InvoiceGeneratorModal: FunctionComponent<InvoiceGeneratorModalProps> = (
                               color: '#2b3947',
                               fontSize: 12,
                               fontWeight: 800,
-                              borderBottom: '1px solid rgba(207, 216, 226, 0.95)',
+                              borderBottom: '1px solid rgba(210, 218, 226, 0.95)',
+                              backgroundColor: '#ffffff',
                               '@media print': {
                                 px: 0.85,
                                 py: 0.5,
@@ -678,7 +639,8 @@ const InvoiceGeneratorModal: FunctionComponent<InvoiceGeneratorModalProps> = (
                                 color: '#2b3947',
                                 fontSize: 12,
                                 fontWeight: 800,
-                                borderBottom: '1px solid rgba(207, 216, 226, 0.95)',
+                                borderBottom: '1px solid rgba(210, 218, 226, 0.95)',
+                                backgroundColor: '#ffffff',
                                 '@media print': {
                                   px: 0.85,
                                   py: 0.5,
@@ -701,7 +663,8 @@ const InvoiceGeneratorModal: FunctionComponent<InvoiceGeneratorModalProps> = (
                                   py: 0.75,
                                   color: '#1d2f40',
                                   fontSize: 12.5,
-                                  borderBottom: '1px solid rgba(220, 227, 234, 0.95)',
+                                  borderBottom: '1px solid rgba(220, 226, 232, 0.95)',
+                                  backgroundColor: '#ffffff',
                                   '@media print': {
                                     px: 0.85,
                                     py: 0.45,
@@ -718,7 +681,8 @@ const InvoiceGeneratorModal: FunctionComponent<InvoiceGeneratorModalProps> = (
                                   py: 0.75,
                                   color: '#1d2f40',
                                   fontSize: 12.5,
-                                  borderBottom: '1px solid rgba(220, 227, 234, 0.95)',
+                                  borderBottom: '1px solid rgba(220, 226, 232, 0.95)',
+                                  backgroundColor: '#ffffff',
                                   '@media print': {
                                     px: 0.85,
                                     py: 0.45,
@@ -735,7 +699,8 @@ const InvoiceGeneratorModal: FunctionComponent<InvoiceGeneratorModalProps> = (
                                   py: 0.75,
                                   color: '#1d2f40',
                                   fontSize: 12.5,
-                                  borderBottom: '1px solid rgba(220, 227, 234, 0.95)',
+                                  borderBottom: '1px solid rgba(220, 226, 232, 0.95)',
+                                  backgroundColor: '#ffffff',
                                   '@media print': {
                                     px: 0.85,
                                     py: 0.45,
@@ -752,7 +717,8 @@ const InvoiceGeneratorModal: FunctionComponent<InvoiceGeneratorModalProps> = (
                                   py: 0.75,
                                   color: '#1d2f40',
                                   fontSize: 12.5,
-                                  borderBottom: '1px solid rgba(220, 227, 234, 0.95)',
+                                  borderBottom: '1px solid rgba(220, 226, 232, 0.95)',
+                                  backgroundColor: '#ffffff',
                                   '@media print': {
                                     px: 0.85,
                                     py: 0.45,
@@ -769,7 +735,8 @@ const InvoiceGeneratorModal: FunctionComponent<InvoiceGeneratorModalProps> = (
                                   py: 0.75,
                                   color: '#1d2f40',
                                   fontSize: 12.5,
-                                  borderBottom: '1px solid rgba(220, 227, 234, 0.95)',
+                                  borderBottom: '1px solid rgba(220, 226, 232, 0.95)',
+                                  backgroundColor: '#ffffff',
                                   '@media print': {
                                     px: 0.85,
                                     py: 0.45,

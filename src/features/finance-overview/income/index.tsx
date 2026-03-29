@@ -1,4 +1,4 @@
-import { FunctionComponent, JSX, useEffect, useRef, useState } from 'react';
+import { FunctionComponent, JSX, useEffect, useMemo, useRef, useState } from 'react';
 import TrendingDownRoundedIcon from '@mui/icons-material/TrendingDownRounded';
 import TrendingUpRoundedIcon from '@mui/icons-material/TrendingUpRounded';
 import { Dialog } from '@mui/material';
@@ -16,6 +16,11 @@ import FinanceOverviewIncomeTable from './index-content/finance-overview-income-
 import FinanceOverviewIncomeDeleteModal from './modal/modal';
 import styles from '../style.scss.module.scss';
 import FormatCurrency from '../../../common/helpers/formatCurrency';
+import InvoiceGeneratorModal from '../../invoice-generator/modal/modal';
+import type {
+  InvoiceGeneratorModel,
+  InvoiceGeneratorSummaryModel,
+} from '../../invoice-generator/api/types';
 
 type FinanceOverviewIncomeProps = {
   clinicId?: string;
@@ -39,6 +44,24 @@ const createInitialModuleState = <T,>(clinicId?: string | null): FinanceModuleSt
   clinicId,
 });
 
+const getResolvedInvoiceTotalAmount = (item?: FinanceIncomeModel | null): number =>
+  Number(item?.totalAmountDue ?? (item?.amount ?? 0) - (item?.discount ?? 0));
+
+const getResolvedInvoiceBalance = (item?: FinanceIncomeModel | null): number =>
+  Number(item?.balance ?? getResolvedInvoiceTotalAmount(item) - Number(item?.amountPaid ?? 0));
+
+const buildInvoicePreviewItem = (item: FinanceIncomeModel): InvoiceGeneratorModel => ({
+  id: item.id,
+  patientInfoId: item.patientInfoId,
+  patientName: item.patientName,
+  patientNumber: item.patientNumber,
+  date: item.date,
+  procedure: item.procedure?.trim() || item.category?.trim() || '--',
+  totalAmount: getResolvedInvoiceTotalAmount(item),
+  amountPaid: Number(item.amountPaid ?? 0),
+  balance: getResolvedInvoiceBalance(item),
+});
+
 export const FinanceOverviewIncome: FunctionComponent<FinanceOverviewIncomeProps> = (
   props: FinanceOverviewIncomeProps
 ): JSX.Element => {
@@ -53,12 +76,44 @@ export const FinanceOverviewIncome: FunctionComponent<FinanceOverviewIncomeProps
   const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastLoadedClinicIdRef = useRef<string | null | undefined>(undefined);
   const resolvedClinicId = useClinicId(clinicId);
+  const [invoicePreviewItem, setInvoicePreviewItem] = useState<FinanceIncomeModel | null>(null);
   const [state, setState] = useState<FinanceIncomeStateModel>(() => ({
     ...createInitialModuleState<FinanceIncomeModel>(resolvedClinicId),
     amount: 0,
     hasDateFilter: false,
     statusFilter: 'all',
   }));
+
+  const invoicePreviewItems = useMemo<InvoiceGeneratorModel[]>(
+    () => (invoicePreviewItem ? [buildInvoicePreviewItem(invoicePreviewItem)] : []),
+    [invoicePreviewItem]
+  );
+  const invoicePreviewSummary = useMemo<InvoiceGeneratorSummaryModel>(
+    () => ({
+      totalAmount: invoicePreviewItems.reduce(
+        (accumulator, item) => accumulator + Number(item.totalAmount ?? 0),
+        0
+      ),
+      amountPaid: invoicePreviewItems.reduce(
+        (accumulator, item) => accumulator + Number(item.amountPaid ?? 0),
+        0
+      ),
+      balance: invoicePreviewItems.reduce(
+        (accumulator, item) => accumulator + Number(item.balance ?? 0),
+        0
+      ),
+    }),
+    [invoicePreviewItems]
+  );
+  const invoicePreviewDate = useMemo(() => {
+    const rawValue = invoicePreviewItem?.date;
+
+    if (!rawValue) {
+      return '';
+    }
+
+    return rawValue instanceof Date ? rawValue.toISOString() : rawValue;
+  }, [invoicePreviewItem]);
 
   const loadFinanceIncome = async (
     showToast: boolean = false,
@@ -273,6 +328,7 @@ export const FinanceOverviewIncome: FunctionComponent<FinanceOverviewIncomeProps
                 state={state}
                 setState={setState}
                 clinicId={state.clinicId}
+                onOpenInvoice={(item) => setInvoicePreviewItem(item)}
               />
             </div>
             <div className={styles.paginationArea}>
@@ -308,6 +364,27 @@ export const FinanceOverviewIncome: FunctionComponent<FinanceOverviewIncomeProps
         ) : (
           <FinanceOverviewIncomeForm state={state} setState={setState} clinicId={state.clinicId} />
         )}
+      </Dialog>
+      <Dialog
+        open={Boolean(invoicePreviewItem)}
+        onClose={() => setInvoicePreviewItem(null)}
+        fullWidth
+        maxWidth="md"
+      >
+        <InvoiceGeneratorModal
+          open={Boolean(invoicePreviewItem)}
+          onClose={() => setInvoicePreviewItem(null)}
+          clinicId={resolvedClinicId}
+          patientName={
+            invoicePreviewItem?.patientName?.trim() ||
+            invoicePreviewItem?.patientNumber?.trim() ||
+            '--'
+          }
+          patientNumber={invoicePreviewItem?.patientNumber}
+          filterDate={invoicePreviewDate}
+          items={invoicePreviewItems}
+          summary={invoicePreviewSummary}
+        />
       </Dialog>
     </div>
   );

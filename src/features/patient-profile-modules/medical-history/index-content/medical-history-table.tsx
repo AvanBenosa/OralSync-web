@@ -17,11 +17,17 @@ import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined
 import PersonSearchOutlinedIcon from '@mui/icons-material/PersonSearchOutlined';
 
 import styles from '../../styles.module.scss';
-import { PatientMedicalHistoryModel, PatientMedicalHistoryStateProps } from '../api/types';
+import {
+  getMedicalHistoryConditionSummary,
+  PatientMedicalHistoryModel,
+  PatientMedicalHistoryStateProps,
+} from '../api/types';
 import TableLoadingSkeleton from '../../../../common/components/TableLoadingSkeleton';
 import { toValidDateDisplay } from '../../../../common/helpers/toValidateDateDisplay';
 
 const formatDate = (value?: string | Date): string => toValidDateDisplay(value, 'MMM DD, YYYY');
+const getConditionSummary = (item: PatientMedicalHistoryModel): string =>
+  getMedicalHistoryConditionSummary(item.q11Conditions, item.others);
 
 const PatientMedicalHistoryTable: FunctionComponent<PatientMedicalHistoryStateProps> = (
   props: PatientMedicalHistoryStateProps
@@ -29,7 +35,7 @@ const PatientMedicalHistoryTable: FunctionComponent<PatientMedicalHistoryStatePr
   const { state, setState } = props;
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const columnCount = isMobile ? 1 : 2;
+  const columnCount = isMobile ? 1 : 3;
 
   const renderActionButtons = (item: PatientMedicalHistoryModel): JSX.Element => (
     <div className={`${styles.buttonContainer} ${styles.tableButtonContainer}`}>
@@ -84,6 +90,9 @@ const PatientMedicalHistoryTable: FunctionComponent<PatientMedicalHistoryStatePr
         <TableHead>
           <TableRow>
             <TableCell className={styles.tableHeaderCell}>Date</TableCell>
+            {!isMobile ? (
+              <TableCell className={styles.tableHeaderCell}>Conditions</TableCell>
+            ) : null}
             {!isMobile ? <TableCell className={styles.tableHeaderCell} align="right" /> : null}
           </TableRow>
         </TableHead>
@@ -95,11 +104,13 @@ const PatientMedicalHistoryTable: FunctionComponent<PatientMedicalHistoryStatePr
               cellClassName={styles.tableBodyCell}
               rowClassName={styles.noHoverRow}
               desktopCells={[
-                { width: '42%' },
+                { width: '24%' },
+                { width: '58%' },
                 { kind: 'actions', align: 'right' },
               ]}
               mobileConfig={{
                 primaryWidth: '56%',
+                secondaryWidth: '80%',
                 actionCount: 2,
                 actionSize: 34,
               }}
@@ -133,6 +144,13 @@ const PatientMedicalHistoryTable: FunctionComponent<PatientMedicalHistoryStatePr
                         <Typography component="span" className={styles.mobileName}>
                           {formatDate(item.date)}
                         </Typography>
+                        <Typography
+                          component="span"
+                          className={styles.mobileContact}
+                          title={getConditionSummary(item)}
+                        >
+                          {getConditionSummary(item)}
+                        </Typography>
                       </div>
                       <div className={styles.mobileActions}>{renderActionButtons(item)}</div>
                     </div>
@@ -140,6 +158,25 @@ const PatientMedicalHistoryTable: FunctionComponent<PatientMedicalHistoryStatePr
                     formatDate(item.date)
                   )}
                 </TableCell>
+                {!isMobile ? (
+                  <TableCell className={styles.tableBodyCell}>
+                    <Typography
+                      title={getConditionSummary(item)}
+                      sx={{
+                        color: '#35506b',
+                        fontSize: '14px',
+                        lineHeight: 1.5,
+                        display: '-webkit-box',
+                        overflow: 'hidden',
+                        WebkitBoxOrient: 'vertical',
+                        WebkitLineClamp: 2,
+                        wordBreak: 'break-word',
+                      }}
+                    >
+                      {getConditionSummary(item)}
+                    </Typography>
+                  </TableCell>
+                ) : null}
                 {!isMobile ? (
                   <TableCell className={styles.tableBodyCell} align="right">
                     {renderActionButtons(item)}

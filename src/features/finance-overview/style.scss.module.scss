@@ -90,6 +90,17 @@
   color: #18864a;
 }
 
+.invoiceButton {
+  border-color: #a7d1db;
+  background: linear-gradient(180deg, #effdff 0%, #d9f3f8 100%);
+  box-shadow: 0 8px 14px rgba(60, 127, 148, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+.iconInvoice {
+  font-size: 18px !important;
+  color: #2e7b90;
+}
+
 .mobileMeta {
   display: inline-flex;
   align-items: center;
@@ -417,6 +428,10 @@
 
   .filterFieldGrid {
     grid-template-columns: 1fr;
+  }
+
+  .mobileActions .iconInvoice {
+    font-size: 16px !important;
   }
 
   .expenseHeaderNote {
