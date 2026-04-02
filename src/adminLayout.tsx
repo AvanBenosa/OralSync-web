@@ -3,12 +3,18 @@ import { useLocation, useOutlet } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import { useMediaQuery, useTheme } from '@mui/material';
 import AdminSideNav from './common/adminNav/adminSideNav';
+import PostLoginBootScreen, { usePostLoginBoot } from './common/loading/post-login-boot';
 
 const AdminLayout = () => {
   const outlet = useOutlet();
   const location = useLocation();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const showPostLoginBoot = usePostLoginBoot();
+
+  if (showPostLoginBoot) {
+    return <PostLoginBootScreen portalLabel="Admin workspace" />;
+  }
 
   return (
     <Box display="flex" minHeight="100vh" bgcolor="background.default">

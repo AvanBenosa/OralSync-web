@@ -12,6 +12,8 @@ import { HandleGetCurrentClinicProfile } from './clinic-profile/api/handlers';
 import { ClinicProfileStateModel } from './clinic-profile/api/types';
 import { HandleGetClinicUsers } from './create-user/api/handlers';
 import { CreateUserStateModel } from './create-user/api/types';
+import { HandleGetLabProviders } from './lab-provider/api/handlers';
+import { LabProviderStateModel } from './lab-provider/api/types';
 import { HandleGetTemplateForms } from './template-form/api/handlers';
 import { TemplateFormStateModel } from './template-form/api/types';
 import BuildUp from './index-content/build-up';
@@ -55,6 +57,16 @@ const SettingsModule: FunctionComponent<SettingsProps> = (props: SettingsProps):
     clinicId: resolvedClinicId,
   });
   const [templateFormState, setTemplateFormState] = useState<TemplateFormStateModel>({
+    items: [],
+    selectedItem: null,
+    load: true,
+    totalItem: 0,
+    clinicId: resolvedClinicId,
+    openModal: false,
+    isUpdate: false,
+    isDelete: false,
+  });
+  const [labProviderState, setLabProviderState] = useState<LabProviderStateModel>({
     items: [],
     selectedItem: null,
     load: true,
@@ -228,6 +240,35 @@ const SettingsModule: FunctionComponent<SettingsProps> = (props: SettingsProps):
     }
   };
 
+  const loadLabProviders = async (showToast: boolean = false): Promise<void> => {
+    setLabProviderState((prev: LabProviderStateModel) => ({
+      ...prev,
+      load: true,
+      clinicId: resolvedClinicId,
+    }));
+
+    try {
+      await HandleGetLabProviders(
+        {
+          ...labProviderState,
+          load: true,
+          clinicId: resolvedClinicId,
+        },
+        setLabProviderState,
+        resolvedClinicId
+      );
+
+      if (showToast) {
+        toast.info('Lab providers have been refreshed.', toastConfig);
+      }
+    } catch {
+      setLabProviderState((prev: LabProviderStateModel) => ({
+        ...prev,
+        load: false,
+      }));
+    }
+  };
+
   useEffect(() => {
     setState((prev: ClinicProfileStateModel) => ({
       ...prev,
@@ -252,6 +293,7 @@ const SettingsModule: FunctionComponent<SettingsProps> = (props: SettingsProps):
 
     if (activeTab === 'build-up') {
       void loadTemplateForms(false);
+      void loadLabProviders(false);
     }
 
     return () => {
@@ -297,7 +339,12 @@ const SettingsModule: FunctionComponent<SettingsProps> = (props: SettingsProps):
               <CreateUserManagement state={createUserState} setState={setCreateUserState} />
             ) : null}
             {activeTab === 'build-up' ? (
-              <BuildUp state={templateFormState} setState={setTemplateFormState} />
+              <BuildUp
+                templateFormState={templateFormState}
+                setTemplateFormState={setTemplateFormState}
+                labProviderState={labProviderState}
+                setLabProviderState={setLabProviderState}
+              />
             ) : null}
             {activeTab === 'data-mapping' ? <DataConverter /> : null}
             {activeTab === 'subscriptions' ? <Subscriptions state={state} /> : null}

@@ -20,6 +20,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { loginUser, type AuthResponse } from '../../common/services/auth-api';
 import { toastSuccess } from '../../common/api/responses';
+import { queuePostLoginBoot } from '../../common/loading/post-login-boot';
 import { useAuthStore } from '../../common/store/authStore';
 import { getPortalHomePath, getUserPortalType } from '../../common/utils/portal';
 import { DEVOTIONAL_HIDDEN_KEY } from '../dashboard/api/devotional';
@@ -118,6 +119,7 @@ const Login = () => {
 
   const handleLoginSuccess = (response: AuthResponse): void => {
     window.sessionStorage.removeItem(DEVOTIONAL_HIDDEN_KEY);
+    queuePostLoginBoot();
     setSession(
       response.token,
       response.user?.name || response.user?.userName || response.user?.email,

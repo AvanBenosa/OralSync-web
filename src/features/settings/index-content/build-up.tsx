@@ -1,18 +1,26 @@
 import ArticleRoundedIcon from '@mui/icons-material/ArticleRounded';
+import BiotechRoundedIcon from '@mui/icons-material/BiotechRounded';
 import EmailRoundedIcon from '@mui/icons-material/EmailRounded';
 import SmsRoundedIcon from '@mui/icons-material/SmsRounded';
-import { FunctionComponent, JSX, useMemo, useState } from 'react';
+import { Dispatch, FunctionComponent, JSX, SetStateAction, useMemo, useState } from 'react';
 
+import LabProviderManagement from '../lab-provider';
+import { LabProviderStateModel } from '../lab-provider/api/types';
 import styles from '../style.scss.module.scss';
 import TemplateFormManagement from '../template-form';
-import { TemplateFormStateProps, TemplateType } from '../template-form/api/types';
+import { TemplateFormStateModel, TemplateType } from '../template-form/api/types';
 
-type BuildUpTabId = 'form-template' | 'email-template' | 'sms-template';
+type BuildUpTabId = 'form-template' | 'email-template' | 'sms-template' | 'lab-providers';
 
-const BuildUp: FunctionComponent<TemplateFormStateProps> = (
-  props: TemplateFormStateProps
-): JSX.Element => {
-  const { state, setState } = props;
+type BuildUpProps = {
+  templateFormState: TemplateFormStateModel;
+  setTemplateFormState: Dispatch<SetStateAction<TemplateFormStateModel>>;
+  labProviderState: LabProviderStateModel;
+  setLabProviderState: Dispatch<SetStateAction<LabProviderStateModel>>;
+};
+
+const BuildUp: FunctionComponent<BuildUpProps> = (props: BuildUpProps): JSX.Element => {
+  const { templateFormState, setTemplateFormState, labProviderState, setLabProviderState } = props;
   const [activeTab, setActiveTab] = useState<BuildUpTabId>('form-template');
 
   const tabs = useMemo(
@@ -31,6 +39,11 @@ const BuildUp: FunctionComponent<TemplateFormStateProps> = (
         id: 'sms-template' as const,
         label: 'SMS Template',
         icon: <SmsRoundedIcon />,
+      },
+      {
+        id: 'lab-providers' as const,
+        label: 'Lab Providers',
+        icon: <BiotechRoundedIcon />,
       },
     ],
     []
@@ -62,22 +75,30 @@ const BuildUp: FunctionComponent<TemplateFormStateProps> = (
 
       {activeTab === 'form-template' ? (
         <TemplateFormManagement
-          state={state}
-          setState={setState}
+          state={templateFormState}
+          setState={setTemplateFormState}
           templateType={TemplateType.Form}
         />
       ) : null}
 
       {activeTab === 'email-template' ? (
         <TemplateFormManagement
-          state={state}
-          setState={setState}
+          state={templateFormState}
+          setState={setTemplateFormState}
           templateType={TemplateType.Email}
         />
       ) : null}
 
       {activeTab === 'sms-template' ? (
-        <TemplateFormManagement state={state} setState={setState} templateType={TemplateType.Sms} />
+        <TemplateFormManagement
+          state={templateFormState}
+          setState={setTemplateFormState}
+          templateType={TemplateType.Sms}
+        />
+      ) : null}
+
+      {activeTab === 'lab-providers' ? (
+        <LabProviderManagement state={labProviderState} setState={setLabProviderState} />
       ) : null}
     </>
   );

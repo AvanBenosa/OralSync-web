@@ -16,6 +16,7 @@ import ClinicLockedDialog from './features/login/clinic-locked-dialog';
 import DataPrivacyConsentDialog from './features/login/data-privacy-consent-dialog';
 import ContractPolicyDialog from './features/login/contract-policy-dialog';
 import BetaTestingDialog from './features/login/beta-testing-dialog';
+import PostLoginBootScreen, { usePostLoginBoot } from './common/loading/post-login-boot';
 // import RegisterBootstrapModal from './features/register';
 
 const MainLayout = () => {
@@ -45,6 +46,7 @@ const MainLayout = () => {
   const [contractPolicyError, setContractPolicyError] = useState('');
   const [betaTestingError, setBetaTestingError] = useState('');
   const lockStatusIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const showPostLoginBoot = usePostLoginBoot();
   const shouldCheckDataPrivacy = useMemo(
     () => Boolean(isLoggedIn && clinicId),
     [clinicId, isLoggedIn]
@@ -300,6 +302,10 @@ const MainLayout = () => {
       setIsSubmittingBetaTesting(false);
     }
   };
+
+  if (showPostLoginBoot) {
+    return <PostLoginBootScreen clinicName={user?.clinicName} portalLabel="Clinic workspace" />;
+  }
 
   return (
     <Box display="flex" minHeight="100vh" bgcolor="background.default">
