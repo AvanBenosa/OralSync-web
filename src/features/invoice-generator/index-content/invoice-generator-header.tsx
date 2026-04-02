@@ -10,7 +10,7 @@ const InvoiceGeneratorHeader: FunctionComponent<InvoiceGeneratorHeaderProps> = (
   props: InvoiceGeneratorHeaderProps
 ): JSX.Element => {
   const { state, onReload, onOpenPreview, canPreview } = props;
-  const recordCount = state.totalItem;
+  //const recordCount = state.totalItem;
 
   return (
     <div className={styles.listHeader}>
@@ -21,9 +21,9 @@ const InvoiceGeneratorHeader: FunctionComponent<InvoiceGeneratorHeaderProps> = (
         <div className={styles.headerText}>
           <div className={styles.headerTitleRow}>
             <h2 className={styles.headerTitle}>Invoice Generator</h2>
-            <span className={styles.headerBadge}>
+            {/* <span className={styles.headerBadge}>
               {recordCount} {recordCount === 1 ? 'record' : 'records'}
-            </span>
+            </span> */}
           </div>
           <p className={styles.headerSubtitle}>
             Select a patient and treatment date to pull invoice-ready progress notes.

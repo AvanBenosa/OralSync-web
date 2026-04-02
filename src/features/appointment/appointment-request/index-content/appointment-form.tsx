@@ -1,14 +1,17 @@
-import { FunctionComponent, JSX, useMemo, useState } from 'react';
+import { ChangeEvent, FunctionComponent, JSX, useEffect, useMemo, useState } from 'react';
+import AccessTimeRoundedIcon from '@mui/icons-material/AccessTimeRounded';
 import {
   Alert,
   Box,
   Button,
+  ButtonBase,
   DialogActions,
   DialogContent,
   DialogTitle,
   Grid,
   MenuItem,
   TextField,
+  Typography,
 } from '@mui/material';
 import { Formik } from 'formik';
 import { isAxiosError } from 'axios';
@@ -18,15 +21,24 @@ import { PatientModel } from '../../../patient/api/types';
 import { HandleCreateAppointment, HandleUpdateAppointment } from '../api/handlers';
 import { appointmentValidationSchema } from '../api/validation';
 import { AppointmentModel, AppointmentStateProps } from '../api/types';
+import { GetCurrentClinicProfile } from '../../../settings/clinic-profile/api/api';
 
 const APPOINTMENT_STATUS_OPTIONS = ['Pending', 'Scheduled', 'Completed', 'Cancelled', 'NoShow'];
+const DEFAULT_CLINIC_OPENING_TIME = '09:00';
+const DEFAULT_CLINIC_CLOSING_TIME = '18:00';
+const HOUR_PICKER_COLUMNS = {
+  xs: 'repeat(2, minmax(0, 1fr))',
+  sm: 'repeat(4, minmax(0, 1fr))',
+  md: 'repeat(5, minmax(0, 1fr))',
+};
 
 type AppointmentFormValues = {
   id: string;
   patientInfoId: string;
   patientName: string;
-  appointmentDateFrom: string;
-  appointmentDateTo: string;
+  appointmentDate: string;
+  appointmentStartTime: string;
+  appointmentEndTime: string;
   reasonForVisit: string;
   status: string;
   remarks: string;
@@ -62,29 +74,154 @@ const toDatetimeLocalValue = (value?: string | Date): string => {
   return localDate.toISOString().slice(0, 16);
 };
 
-const createInitialValues = (selectedItem?: AppointmentModel): AppointmentFormValues => ({
-  id: selectedItem?.id || '',
-  patientInfoId: selectedItem?.patientInfoId || '',
-  patientName: selectedItem?.patientName || '',
-  appointmentDateFrom: toDatetimeLocalValue(selectedItem?.appointmentDateFrom),
-  appointmentDateTo: selectedItem?.appointmentDateTo
-    ? toDatetimeLocalValue(selectedItem?.appointmentDateTo).slice(11, 16)
-    : '',
-  reasonForVisit: selectedItem?.reasonForVisit || '',
-  status: selectedItem?.status || 'Scheduled',
-  remarks: selectedItem?.remarks || '',
-});
+const toDateInputValue = (value?: string | Date): string => {
+  const dateValue = toDatetimeLocalValue(value);
+  return dateValue ? dateValue.slice(0, 10) : '';
+};
+
+const toTimeInputValue = (value?: string | Date): string => {
+  const dateValue = toDatetimeLocalValue(value);
+  return dateValue ? dateValue.slice(11, 16) : '';
+};
+
+const parseTimeValue = (timeValue?: string): { hours: number; minutes: number } | null => {
+  if (!timeValue) {
+    return null;
+  }
+
+  const [hours, minutes] = timeValue.split(':').map(Number);
+
+  if (Number.isNaN(hours) || Number.isNaN(minutes)) {
+    return null;
+  }
+
+  return { hours, minutes };
+};
+
+const toHourValue = (timeValue?: string, fallbackHour: number = 9): number => {
+  const parsedTime = parseTimeValue(timeValue);
+  return parsedTime ? parsedTime.hours : fallbackHour;
+};
+
+const formatHourValue = (hour: number): string => `${String(hour).padStart(2, '0')}:00`;
+
+const toHourInputValue = (value?: string | Date): string => {
+  const parsedTime = parseTimeValue(toTimeInputValue(value));
+  return parsedTime ? formatHourValue(parsedTime.hours) : '';
+};
+
+const formatHourLabel = (timeValue?: string): string => {
+  const parsedTime = parseTimeValue(timeValue);
+
+  if (!parsedTime) {
+    return '--';
+  }
+
+  const normalizedHours = parsedTime.hours % 12 || 12;
+  const suffix = parsedTime.hours >= 12 ? 'PM' : 'AM';
+  return `${String(normalizedHours).padStart(2, '0')}:${String(parsedTime.minutes).padStart(
+    2,
+    '0'
+  )} ${suffix}`;
+};
+
+const buildHourOptions = (
+  openingTime: string,
+  closingTime: string,
+  selectedStartTime?: string,
+  selectedEndTime?: string
+): string[] => {
+  const openingHour = toHourValue(openingTime, 9);
+  const closingHour = toHourValue(closingTime, Math.max(openingHour + 1, 18));
+  const selectedStartHour = parseTimeValue(selectedStartTime)?.hours ?? openingHour;
+  const selectedEndHour = parseTimeValue(selectedEndTime)?.hours ?? closingHour;
+
+  const firstHour = Math.max(0, Math.min(openingHour, selectedStartHour, selectedEndHour));
+  const lastHour = Math.min(23, Math.max(closingHour, selectedStartHour + 1, selectedEndHour));
+
+  return Array.from({ length: lastHour - firstHour + 1 }, (_, index) =>
+    formatHourValue(firstHour + index)
+  );
+};
+
+const isTimeWithinSelectedRange = (
+  timeValue: string,
+  selectedStartTime?: string,
+  selectedEndTime?: string
+): boolean => {
+  const currentHour = parseTimeValue(timeValue)?.hours;
+  const startHour = parseTimeValue(selectedStartTime)?.hours;
+  const endHour = parseTimeValue(selectedEndTime)?.hours;
+
+  if (
+    !Number.isFinite(currentHour) ||
+    !Number.isFinite(startHour) ||
+    !Number.isFinite(endHour) ||
+    currentHour === undefined ||
+    startHour === undefined ||
+    endHour === undefined
+  ) {
+    return false;
+  }
+
+  return currentHour >= startHour && currentHour <= endHour;
+};
+
+const createInitialValues = (selectedItem?: AppointmentModel): AppointmentFormValues => {
+  const appointmentStartTime = toHourInputValue(selectedItem?.appointmentDateFrom);
+  const rawAppointmentEndTime = toHourInputValue(selectedItem?.appointmentDateTo);
+  const appointmentEndTime =
+    appointmentStartTime && rawAppointmentEndTime <= appointmentStartTime
+      ? formatHourValue(Math.min(toHourValue(appointmentStartTime, 9) + 1, 23))
+      : rawAppointmentEndTime;
+
+  return {
+    id: selectedItem?.id || '',
+    patientInfoId: selectedItem?.patientInfoId || '',
+    patientName: selectedItem?.patientName || '',
+    appointmentDate: toDateInputValue(selectedItem?.appointmentDateFrom),
+    appointmentStartTime,
+    appointmentEndTime,
+    reasonForVisit: selectedItem?.reasonForVisit || '',
+    status: selectedItem?.status || 'Scheduled',
+    remarks: selectedItem?.remarks || '',
+  };
+};
 
 const AppointmentForm: FunctionComponent<AppointmentStateProps> = (
   props: AppointmentStateProps
 ): JSX.Element => {
   const { state, setState, clinicId } = props;
   const [patientSelectionError, setPatientSelectionError] = useState<string>('');
+  const [clinicOpeningTime, setClinicOpeningTime] = useState<string>(DEFAULT_CLINIC_OPENING_TIME);
+  const [clinicClosingTime, setClinicClosingTime] = useState<string>(DEFAULT_CLINIC_CLOSING_TIME);
+  const [hourRangeAnchor, setHourRangeAnchor] = useState<string | null>(null);
 
   const dialogTitle = useMemo(
     () => (state.isUpdate ? 'Update Appointment' : 'Add Appointment'),
     [state.isUpdate]
   );
+
+  useEffect(() => {
+    if (!clinicId) {
+      return;
+    }
+
+    void GetCurrentClinicProfile(clinicId)
+      .then((response) => {
+        setClinicOpeningTime(response.openingTime || DEFAULT_CLINIC_OPENING_TIME);
+        setClinicClosingTime(response.closingTime || DEFAULT_CLINIC_CLOSING_TIME);
+      })
+      .catch(() => undefined);
+  }, [clinicId]);
+
+  useEffect(() => {
+    setHourRangeAnchor(null);
+  }, [
+    state.openModal,
+    state.selectedItem?.appointmentDateFrom,
+    state.selectedItem?.appointmentDateTo,
+  ]);
 
   const handleClose = (): void => {
     setState({
@@ -97,13 +234,14 @@ const AppointmentForm: FunctionComponent<AppointmentStateProps> = (
   };
 
   const handleSubmitForm = async (values: AppointmentFormValues): Promise<void> => {
-    const appointmentDateFrom = values.appointmentDateFrom
-      ? `${values.appointmentDateFrom}${values.appointmentDateFrom.length === 16 ? ':00' : ''}`
-      : '';
+    const appointmentDateFrom =
+      values.appointmentDate && values.appointmentStartTime
+        ? `${values.appointmentDate}T${values.appointmentStartTime}:00`
+        : '';
 
     const appointmentDateTo =
-      values.appointmentDateFrom && values.appointmentDateTo
-        ? `${values.appointmentDateFrom.slice(0, 10)}T${values.appointmentDateTo}:00`
+      values.appointmentDate && values.appointmentEndTime
+        ? `${values.appointmentDate}T${values.appointmentEndTime}:00`
         : '';
 
     const payload: AppointmentModel = {
@@ -165,6 +303,88 @@ const AppointmentForm: FunctionComponent<AppointmentStateProps> = (
           const shouldShowError = (fieldName: keyof AppointmentFormValues): boolean =>
             Boolean(touched[fieldName] || submitCount > 0) && Boolean(errors[fieldName]);
 
+          const hourOptions = buildHourOptions(
+            clinicOpeningTime,
+            clinicClosingTime,
+            values.appointmentStartTime,
+            values.appointmentEndTime
+          );
+          const selectedRangeText =
+            values.appointmentStartTime && values.appointmentEndTime
+              ? `${formatHourLabel(values.appointmentStartTime)} - ${formatHourLabel(
+                  values.appointmentEndTime
+                )}`
+              : 'Choose a start hour, then click a later hour to complete the range.';
+          const hourPickerHint = values.appointmentDate
+            ? hourRangeAnchor
+              ? 'Choose a later hour to finish the range.'
+              : `Clinic hours: ${formatHourLabel(clinicOpeningTime)} - ${formatHourLabel(
+                  clinicClosingTime
+                )}`
+            : 'Choose the appointment date first to enable the hour range picker.';
+          const hourRangeError =
+            (shouldShowError('appointmentStartTime') && errors.appointmentStartTime) ||
+            (shouldShowError('appointmentEndTime') && errors.appointmentEndTime);
+
+          const handleAppointmentDateChange = (
+            event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+          ): void => {
+            const nextDate = event.target.value;
+
+            setFieldValue('appointmentDate', nextDate);
+            setHourRangeAnchor(null);
+
+            if (!nextDate) {
+              setFieldValue('appointmentStartTime', '');
+              setFieldValue('appointmentEndTime', '');
+            }
+          };
+
+          const handleHourRangeSelection = (timeValue: string): void => {
+            if (!values.appointmentDate) {
+              return;
+            }
+
+            const selectedIndex = hourOptions.indexOf(timeValue);
+
+            if (selectedIndex < 0) {
+              return;
+            }
+
+            if (!hourRangeAnchor) {
+              if (selectedIndex === hourOptions.length - 1) {
+                return;
+              }
+
+              setFieldValue('appointmentStartTime', timeValue);
+              setFieldValue('appointmentEndTime', hourOptions[selectedIndex + 1]);
+              setHourRangeAnchor(timeValue);
+              return;
+            }
+
+            const anchorIndex = hourOptions.indexOf(hourRangeAnchor);
+
+            if (anchorIndex < 0) {
+              setHourRangeAnchor(null);
+              return;
+            }
+
+            if (selectedIndex <= anchorIndex) {
+              if (selectedIndex === hourOptions.length - 1) {
+                return;
+              }
+
+              setFieldValue('appointmentStartTime', timeValue);
+              setFieldValue('appointmentEndTime', hourOptions[selectedIndex + 1]);
+              setHourRangeAnchor(timeValue);
+              return;
+            }
+
+            setFieldValue('appointmentStartTime', hourOptions[anchorIndex]);
+            setFieldValue('appointmentEndTime', timeValue);
+            setHourRangeAnchor(null);
+          };
+
           return (
             <>
               <DialogContent dividers sx={{ px: { xs: 2, sm: 3 }, py: 2 }}>
@@ -203,44 +423,167 @@ const AppointmentForm: FunctionComponent<AppointmentStateProps> = (
                     </Grid>
                     <Grid size={{ xs: 12, sm: 6 }}>
                       <TextField
-                        label="Appointment Date From"
-                        name="appointmentDateFrom"
-                        type="datetime-local"
-                        value={values.appointmentDateFrom}
-                        onChange={handleChange}
+                        label="Appointment Date"
+                        name="appointmentDate"
+                        type="date"
+                        value={values.appointmentDate}
+                        onChange={handleAppointmentDateChange}
                         onBlur={handleBlur}
                         fullWidth
                         size="small"
                         required
                         InputLabelProps={{ shrink: true }}
-                        error={shouldShowError('appointmentDateFrom')}
+                        error={shouldShowError('appointmentDate')}
                         helperText={
-                          shouldShowError('appointmentDateFrom')
-                            ? errors.appointmentDateFrom
-                            : undefined
+                          shouldShowError('appointmentDate') ? errors.appointmentDate : undefined
                         }
                       />
                     </Grid>
-                    <Grid size={{ xs: 12, sm: 6 }}>
-                      <TextField
-                        label="Appointment Date To"
-                        name="appointmentDateTo"
-                        type="time"
-                        value={values.appointmentDateTo}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                        fullWidth
-                        size="small"
-                        required
-                        InputLabelProps={{ shrink: true }}
-                        inputProps={{ step: 300 }}
-                        error={shouldShowError('appointmentDateTo')}
-                        helperText={
-                          shouldShowError('appointmentDateTo')
-                            ? errors.appointmentDateTo
-                            : 'Uses the same date as Appointment Date From.'
-                        }
-                      />
+                    <Grid size={{ xs: 12, sm: 6 }} />
+                    <Grid size={{ xs: 12 }}>
+                      <Box
+                        sx={{
+                          border: '1px solid',
+                          borderColor: hourRangeError ? 'error.main' : 'rgba(92, 108, 234, 0.18)',
+                          borderRadius: 2.5,
+                          p: { xs: 1.5, sm: 1.75 },
+                          bgcolor: hourRangeError ? 'rgba(211, 47, 47, 0.04)' : '#fcfcff',
+                          boxShadow: hourRangeError
+                            ? 'none'
+                            : '0 10px 24px rgba(93, 108, 234, 0.08)',
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            alignItems: { xs: 'flex-start', sm: 'center' },
+                            justifyContent: 'space-between',
+                            gap: 1,
+                            flexDirection: { xs: 'column', sm: 'row' },
+                            mb: 1.25,
+                          }}
+                        >
+                          <Box>
+                            <Typography
+                              variant="subtitle2"
+                              sx={{ fontWeight: 700, fontSize: '0.92rem', color: '#1b3553' }}
+                            >
+                              Appointment Hours
+                            </Typography>
+                            <Typography
+                              variant="caption"
+                              sx={{ color: '#6f7c8f', display: 'block', mt: 0.35 }}
+                            >
+                              Pick a start hour, then choose the end hour on the same day.
+                            </Typography>
+                          </Box>
+                          <Box
+                            sx={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: 0.75,
+                              px: 1.1,
+                              py: 0.7,
+                              borderRadius: 999,
+                              border: '1px solid',
+                              borderColor:
+                                values.appointmentStartTime && values.appointmentEndTime
+                                  ? 'rgba(92, 108, 234, 0.2)'
+                                  : 'rgba(27, 53, 83, 0.08)',
+                              bgcolor:
+                                values.appointmentStartTime && values.appointmentEndTime
+                                  ? 'rgba(92, 108, 234, 0.1)'
+                                  : 'rgba(27, 53, 83, 0.04)',
+                            }}
+                          >
+                            <AccessTimeRoundedIcon sx={{ fontSize: 15, color: '#4b5fd6' }} />
+                            <Typography
+                              variant="caption"
+                              sx={{ fontWeight: 700, color: '#1f3d63', lineHeight: 1 }}
+                            >
+                              {selectedRangeText}
+                            </Typography>
+                          </Box>
+                        </Box>
+                        <Box
+                          sx={{
+                            display: 'grid',
+                            gridTemplateColumns: HOUR_PICKER_COLUMNS,
+                            gap: 0.75,
+                          }}
+                        >
+                          {hourOptions.map((timeValue, index) => {
+                            const isSelected = isTimeWithinSelectedRange(
+                              timeValue,
+                              values.appointmentStartTime,
+                              values.appointmentEndTime
+                            );
+                            const isAnchor = timeValue === hourRangeAnchor;
+                            const isLastBoundary = index === hourOptions.length - 1;
+                            const isDisabled =
+                              !values.appointmentDate || (isLastBoundary && !isAnchor);
+
+                            return (
+                              <ButtonBase
+                                key={timeValue}
+                                onClick={() => handleHourRangeSelection(timeValue)}
+                                disabled={isDisabled}
+                                sx={{
+                                  justifyContent: 'center',
+                                  borderRadius: 999,
+                                  px: 1.1,
+                                  py: 0.8,
+                                  border: '1px solid',
+                                  borderColor:
+                                    isSelected || isAnchor ? '#8a83ff' : 'rgba(27, 53, 83, 0.12)',
+                                  bgcolor: isSelected
+                                    ? 'rgba(138, 131, 255, 0.16)'
+                                    : 'rgba(255, 255, 255, 0.94)',
+                                  color:
+                                    values.appointmentStartTime === timeValue ||
+                                    values.appointmentEndTime === timeValue
+                                      ? '#1d4264'
+                                      : '#647287',
+                                  fontSize: '0.84rem',
+                                  fontWeight:
+                                    values.appointmentStartTime === timeValue ||
+                                    values.appointmentEndTime === timeValue
+                                      ? 700
+                                      : 500,
+                                  minHeight: 40,
+                                  opacity: isDisabled ? 0.45 : 1,
+                                  transition:
+                                    'background-color 160ms ease, border-color 160ms ease, color 160ms ease, transform 160ms ease, box-shadow 160ms ease',
+                                  boxShadow:
+                                    isSelected || isAnchor
+                                      ? '0 8px 16px rgba(138, 131, 255, 0.14)'
+                                      : 'none',
+                                  '&:hover': {
+                                    bgcolor: isSelected
+                                      ? 'rgba(138, 131, 255, 0.2)'
+                                      : 'rgba(246, 243, 255, 0.96)',
+                                    transform: isDisabled ? 'none' : 'translateY(-1px)',
+                                  },
+                                }}
+                              >
+                                {formatHourLabel(timeValue)}
+                              </ButtonBase>
+                            );
+                          })}
+                        </Box>
+                        <Typography
+                          variant="caption"
+                          color={hourRangeError ? 'error.main' : 'text.secondary'}
+                          sx={{
+                            display: 'block',
+                            mt: 1,
+                            px: 0.25,
+                            color: hourRangeError ? undefined : '#6f7c8f',
+                          }}
+                        >
+                          {hourRangeError || hourPickerHint}
+                        </Typography>
+                      </Box>
                     </Grid>
                     <Grid size={{ xs: 12, sm: 6 }}>
                       <TextField

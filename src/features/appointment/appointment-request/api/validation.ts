@@ -2,8 +2,9 @@ import * as yup from 'yup';
 
 export const appointmentValidationSchema = yup.object({
   patientInfoId: yup.string().trim().required('Patient is required.'),
-  appointmentDateFrom: yup.string().trim().required('Appointment start date is required.'),
-  appointmentDateTo: yup
+  appointmentDate: yup.string().trim().required('Appointment date is required.'),
+  appointmentStartTime: yup.string().trim().required('Appointment start time is required.'),
+  appointmentEndTime: yup
     .string()
     .trim()
     .required('Appointment end time is required.')
@@ -11,28 +12,28 @@ export const appointmentValidationSchema = yup.object({
       'appointment-time-range',
       'Appointment end time is invalid. It must be later than the start time.',
       function (value?: string) {
-        const { appointmentDateFrom } = this.parent as { appointmentDateFrom?: string };
+        const { appointmentStartTime } = this.parent as { appointmentStartTime?: string };
 
-        if (!appointmentDateFrom || !value) {
+        if (!appointmentStartTime || !value) {
           return true;
         }
 
-        const startDate = new Date(appointmentDateFrom);
+        const [startHours, startMinutes] = appointmentStartTime.split(':').map(Number);
+        const [endHours, endMinutes] = value.split(':').map(Number);
 
-        if (Number.isNaN(startDate.getTime())) {
+        if (
+          Number.isNaN(startHours) ||
+          Number.isNaN(startMinutes) ||
+          Number.isNaN(endHours) ||
+          Number.isNaN(endMinutes)
+        ) {
           return true;
         }
 
-        const [hours, minutes] = value.split(':').map(Number);
+        const startTotalMinutes = startHours * 60 + startMinutes;
+        const endTotalMinutes = endHours * 60 + endMinutes;
 
-        if (Number.isNaN(hours) || Number.isNaN(minutes)) {
-          return true;
-        }
-
-        const endDate = new Date(startDate);
-        endDate.setHours(hours, minutes, 0, 0);
-
-        return endDate.getTime() > startDate.getTime();
+        return endTotalMinutes > startTotalMinutes;
       }
     ),
   reasonForVisit: yup
