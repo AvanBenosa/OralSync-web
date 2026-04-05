@@ -511,338 +511,307 @@ const PatientPerioChartForm: FunctionComponent<PatientPerioChartFormProps> = (
   }, []);
 
   return (
-      <Formik
-        enableReinitialize
-        validateOnChange={false}
-        initialValues={createInitialValues(state.selectedItem, state.selectedToothId, chartKind)}
-        onSubmit={async (values, { setSubmitting, setStatus }): Promise<void> => {
-          setStatus(undefined);
+    <Formik
+      enableReinitialize
+      validateOnChange={false}
+      initialValues={createInitialValues(state.selectedItem, state.selectedToothId, chartKind)}
+      onSubmit={async (values, { setSubmitting, setStatus }): Promise<void> => {
+        setStatus(undefined);
 
-          try {
-            await handleSubmit(values);
-          } catch (error) {
-            if (isAxiosError(error)) {
-              setStatus(
-                typeof error.response?.data === 'string' ? error.response.data : error.message
-              );
-            } else if (error instanceof Error) {
-              setStatus(error.message);
-            } else {
-              setStatus('Unable to save perio chart entry.');
-            }
-          } finally {
-            setSubmitting(false);
+        try {
+          await handleSubmit(values);
+        } catch (error) {
+          if (isAxiosError(error)) {
+            setStatus(
+              typeof error.response?.data === 'string' ? error.response.data : error.message
+            );
+          } else if (error instanceof Error) {
+            setStatus(error.message);
+          } else {
+            setStatus('Unable to save perio chart entry.');
           }
-        }}
-      >
-        {({ values, handleSubmit, status, setValues }): JSX.Element => {
-          currentValuesRef.current = values;
-          setValuesRef.current = setValues;
-          const draftPayload = buildPayloadFromValues(values, chartKind, state.patientId);
-          const isEditingExistingEntry = Boolean(values.id.trim());
-          const canvasView =
-            getPerioChartViewByToothId(values.toothId, chartKind) || state.circleHalf;
-          const canvasViewLabel = canvasView === 'upper' ? 'upper' : 'lower';
-          const resolvedToothLabel = getToothDisplayLabel(
-            getToothNumberFromToothId(values.toothId, chartKind),
-            chartKind
-          );
-          const selectedToothLabel = values.toothId ? resolvedToothLabel : 'No tooth selected';
-          const mobilitySummaryValue = values.mobility.trim() || '--';
-          const furcationSummaryValue = values.furcation.trim() || '--';
-          const commentSummaryValue = values.notes.trim() ? 'Saved' : 'None';
-          const hasPendingAutosave =
-            Boolean(autosaveTimeoutRef.current) ||
-            Boolean(queuedSaveValuesRef.current) ||
-            saveInFlightRef.current;
+        } finally {
+          setSubmitting(false);
+        }
+      }}
+    >
+      {({ values, handleSubmit, status, setValues }): JSX.Element => {
+        currentValuesRef.current = values;
+        setValuesRef.current = setValues;
+        const draftPayload = buildPayloadFromValues(values, chartKind, state.patientId);
+        const isEditingExistingEntry = Boolean(values.id.trim());
+        const canvasView =
+          getPerioChartViewByToothId(values.toothId, chartKind) || state.circleHalf;
+        const canvasViewLabel = canvasView === 'upper' ? 'upper' : 'lower';
+        const resolvedToothLabel = getToothDisplayLabel(
+          getToothNumberFromToothId(values.toothId, chartKind),
+          chartKind
+        );
+        const selectedToothLabel = values.toothId ? resolvedToothLabel : 'No tooth selected';
+        const mobilitySummaryValue = values.mobility.trim() || '--';
+        const furcationSummaryValue = values.furcation.trim() || '--';
+        const commentSummaryValue = values.notes.trim() ? 'Saved' : 'None';
+        const hasPendingAutosave =
+          Boolean(autosaveTimeoutRef.current) ||
+          Boolean(queuedSaveValuesRef.current) ||
+          saveInFlightRef.current;
 
-          const handleCanvasToothSelect = (toothId: string): void => {
-            void (async () => {
-              try {
-                if (hasPendingAutosave) {
-                  await flushAutosave(values);
-                }
-              } catch {
-                return;
+        const handleCanvasToothSelect = (toothId: string): void => {
+          void (async () => {
+            try {
+              if (hasPendingAutosave) {
+                await flushAutosave(values);
               }
+            } catch {
+              return;
+            }
 
-              const selectedItem = getExistingItemByToothId(state.items, toothId, chartKind);
-              const selectedView =
-                getPerioChartViewByToothId(toothId, chartKind) || state.circleHalf;
-              const nextValues = resolveValuesForTooth(toothId, values, state.items, chartKind);
+            const selectedItem = getExistingItemByToothId(state.items, toothId, chartKind);
+            const selectedView = getPerioChartViewByToothId(toothId, chartKind) || state.circleHalf;
+            const nextValues = resolveValuesForTooth(toothId, values, state.items, chartKind);
 
-              setState((prevState: PatientPerioChartStateProps['state']) => ({
-                ...prevState,
-                circleHalf: selectedView,
-                selectedItem,
-                selectedToothId: toothId,
-                isUpdate: Boolean(selectedItem),
-                isDelete: false,
-              }));
+            setState((prevState: PatientPerioChartStateProps['state']) => ({
+              ...prevState,
+              circleHalf: selectedView,
+              selectedItem,
+              selectedToothId: toothId,
+              isUpdate: Boolean(selectedItem),
+              isDelete: false,
+            }));
 
-              if (nextValues !== values) {
-                setValues(nextValues, false);
-                currentValuesRef.current = nextValues;
+            if (nextValues !== values) {
+              setValues(nextValues, false);
+              currentValuesRef.current = nextValues;
+            }
+          })();
+        };
+
+        const handleCanvasCellValueChange = (
+          cell: PerioChartEditableCell,
+          nextValue: string
+        ): void => {
+          const baseValues = resolveValuesForTooth(cell.toothId, values, state.items, chartKind);
+          const nextValues = applyEditableCellValue(baseValues, cell, nextValue);
+          setValues(nextValues, false);
+          scheduleAutosave(nextValues);
+        };
+
+        const handleCanvasBooleanToggle = (cell: PerioChartEditableCell): void => {
+          const baseValues = resolveValuesForTooth(cell.toothId, values, state.items, chartKind);
+          const nextValues = applyBooleanCellToggle(baseValues, cell);
+          setValues(nextValues, false);
+          scheduleAutosave(nextValues);
+        };
+
+        const handleCommentIconClick = (toothId: string): void => {
+          void (async () => {
+            try {
+              if (hasPendingAutosave) {
+                await flushAutosave(values);
               }
-            })();
+            } catch {
+              return;
+            }
+
+            const selectedItem = getExistingItemByToothId(state.items, toothId, chartKind);
+            const selectedView = getPerioChartViewByToothId(toothId, chartKind) || state.circleHalf;
+            const nextValues = resolveValuesForTooth(toothId, values, state.items, chartKind);
+
+            setState((prevState: PatientPerioChartStateProps['state']) => ({
+              ...prevState,
+              circleHalf: selectedView,
+              selectedItem,
+              selectedToothId: toothId,
+              isUpdate: Boolean(selectedItem),
+              isDelete: false,
+            }));
+
+            if (nextValues !== values) {
+              setValues(nextValues, false);
+              currentValuesRef.current = nextValues;
+            }
+
+            setCommentModalError('');
+            setCommentDraft(nextValues.notes);
+            setCommentModalToothId(toothId);
+          })();
+        };
+
+        const handleMobilityChange = (nextMobility: string): void => {
+          const nextValues = {
+            ...values,
+            mobility: nextMobility,
           };
 
-          const handleCanvasCellValueChange = (
-            cell: PerioChartEditableCell,
-            nextValue: string
-          ): void => {
-            const baseValues = resolveValuesForTooth(cell.toothId, values, state.items, chartKind);
-            const nextValues = applyEditableCellValue(baseValues, cell, nextValue);
-            setValues(nextValues, false);
-            scheduleAutosave(nextValues);
-          };
+          setValues(nextValues, false);
+          scheduleAutosave(nextValues);
+        };
 
-          const handleCanvasBooleanToggle = (cell: PerioChartEditableCell): void => {
-            const baseValues = resolveValuesForTooth(cell.toothId, values, state.items, chartKind);
-            const nextValues = applyBooleanCellToggle(baseValues, cell);
-            setValues(nextValues, false);
-            scheduleAutosave(nextValues);
-          };
+        const handleCommentSave = (): void => {
+          void (async () => {
+            if (!commentModalToothId) {
+              return;
+            }
 
-          const handleCommentIconClick = (toothId: string): void => {
-            void (async () => {
-              try {
-                if (hasPendingAutosave) {
-                  await flushAutosave(values);
-                }
-              } catch {
-                return;
-              }
+            setCommentModalSaving(true);
+            setCommentModalError('');
 
-              const selectedItem = getExistingItemByToothId(state.items, toothId, chartKind);
-              const selectedView =
-                getPerioChartViewByToothId(toothId, chartKind) || state.circleHalf;
-              const nextValues = resolveValuesForTooth(toothId, values, state.items, chartKind);
-
-              setState((prevState: PatientPerioChartStateProps['state']) => ({
-                ...prevState,
-                circleHalf: selectedView,
-                selectedItem,
-                selectedToothId: toothId,
-                isUpdate: Boolean(selectedItem),
-                isDelete: false,
-              }));
-
-              if (nextValues !== values) {
-                setValues(nextValues, false);
-                currentValuesRef.current = nextValues;
-              }
-
-              setCommentModalError('');
-              setCommentDraft(nextValues.notes);
-              setCommentModalToothId(toothId);
-            })();
-          };
-
-          const handleMobilityChange = (nextMobility: string): void => {
+            const baseValues = resolveValuesForTooth(
+              commentModalToothId,
+              currentValuesRef.current || values,
+              state.items,
+              chartKind
+            );
             const nextValues = {
-              ...values,
-              mobility: nextMobility,
+              ...baseValues,
+              toothId: commentModalToothId,
+              notes: commentDraft,
             };
 
             setValues(nextValues, false);
-            scheduleAutosave(nextValues);
-          };
+            currentValuesRef.current = nextValues;
 
-          const handleCommentSave = (): void => {
-            void (async () => {
-              if (!commentModalToothId) {
-                return;
+            try {
+              await persistValues(nextValues, true);
+              setCommentModalToothId(null);
+              setCommentDraft('');
+            } catch (error) {
+              if (isAxiosError(error)) {
+                setCommentModalError(
+                  typeof error.response?.data === 'string' ? error.response.data : error.message
+                );
+              } else if (error instanceof Error) {
+                setCommentModalError(error.message);
+              } else {
+                setCommentModalError('Unable to save comment.');
               }
+            } finally {
+              setCommentModalSaving(false);
+            }
+          })();
+        };
 
-              setCommentModalSaving(true);
-              setCommentModalError('');
+        const commentToothLabel = commentModalToothId
+          ? getToothDisplayLabel(
+              getToothNumberFromToothId(commentModalToothId, chartKind),
+              chartKind
+            )
+          : 'Selected tooth';
 
-              const baseValues = resolveValuesForTooth(
-                commentModalToothId,
-                currentValuesRef.current || values,
-                state.items,
-                chartKind
-              );
-              const nextValues = {
-                ...baseValues,
-                toothId: commentModalToothId,
-                notes: commentDraft,
-              };
-
-              setValues(nextValues, false);
-              currentValuesRef.current = nextValues;
-
-              try {
-                await persistValues(nextValues, true);
-                setCommentModalToothId(null);
-                setCommentDraft('');
-              } catch (error) {
-                if (isAxiosError(error)) {
-                  setCommentModalError(
-                    typeof error.response?.data === 'string' ? error.response.data : error.message
-                  );
-                } else if (error instanceof Error) {
-                  setCommentModalError(error.message);
-                } else {
-                  setCommentModalError('Unable to save comment.');
-                }
-              } finally {
-                setCommentModalSaving(false);
-              }
-            })();
-          };
-
-          const commentToothLabel = commentModalToothId
-            ? getToothDisplayLabel(
-                getToothNumberFromToothId(commentModalToothId, chartKind),
-                chartKind
-              )
-            : 'Selected tooth';
-
-          return (
-            <>
-              <Box component="form" onSubmit={handleSubmit} className={localStyles.editorShell}>
-                <div className={localStyles.editorHeader}>
-                  <div>
-                    <h3 className={localStyles.editorTitle}>Perio Chart Editor</h3>
-                    <p className={localStyles.editorText}>
-                      Select a tooth and edit it directly on this page. Use the chart for site
-                      measurements, the mobility control below for grade, and the comment icon
-                      above each column for per-tooth notes.
-                    </p>
-                  </div>
-                  <span className={localStyles.toothPickerValue}>{selectedToothLabel}</span>
+        return (
+          <>
+            <Box component="form" onSubmit={handleSubmit} className={localStyles.editorShell}>
+              <div className={localStyles.editorHeader}>
+                <div>
+                  <h3 className={localStyles.editorTitle}>Perio Chart Editor</h3>
+                  <p className={localStyles.editorText}>
+                    Select a tooth and edit it directly on this page. Use the chart for site
+                    measurements, the mobility control below for grade, and the comment icon above
+                    each column for per-tooth notes.
+                  </p>
                 </div>
+                <span className={localStyles.toothPickerValue}>{selectedToothLabel}</span>
+              </div>
 
-                {status ? (
-                  <Alert severity="error" sx={{ mb: 0 }}>
-                    {status}
-                  </Alert>
-                ) : null}
+              {status ? (
+                <Alert severity="error" sx={{ mb: 0 }}>
+                  {status}
+                </Alert>
+              ) : null}
 
-                <div className={localStyles.formSection}>
-                  <div className={localStyles.toothPickerCard}>
-                    <div className={localStyles.toothPickerHeader}>
-                      <div>
-                        <h4 className={localStyles.toothPickerTitle}>Tooth Picker</h4>
-                        <p className={localStyles.toothPickerText}>
-                          {`Click inside the ${canvasViewLabel} arch sheet to select a tooth, type numeric values directly in the table, toggle BOP or plaque marks, then use the mobility control below or the comment icon above the column for extra details.`}
-                        </p>
-                      </div>
-                      <span className={localStyles.toothPickerValue}>{selectedToothLabel}</span>
+              <div className={localStyles.formSection}>
+                <div className={localStyles.toothPickerCard}>
+                  <div className={localStyles.toothPickerHeader}>
+                    <div>
+                      <h4 className={localStyles.toothPickerTitle}>Tooth Picker</h4>
+                      <p className={localStyles.toothPickerText}>
+                        {`Click inside the ${canvasViewLabel} arch sheet to select a tooth, type numeric values directly in the table, toggle BOP or plaque marks, then use the mobility control below or the comment icon above the column for extra details.`}
+                      </p>
                     </div>
-                    <div className={localStyles.toothPickerChart}>
-                      <PerioChartCanvas
-                        items={mergePreviewItems(state.items, draftPayload)}
-                        chartKind={chartKind}
-                        selectedToothId={values.toothId || undefined}
-                        onSelectTooth={handleCanvasToothSelect}
-                        onCommentClick={handleCommentIconClick}
-                        onCellValueChange={handleCanvasCellValueChange}
-                        onBooleanCellToggle={handleCanvasBooleanToggle}
-                        zoom={chartKind === 'child' ? 1.18 : 1.1}
-                        view={canvasView}
-                        showLegend={false}
-                        editable
-                      />
-                    </div>
+                    <span className={localStyles.toothPickerValue}>{selectedToothLabel}</span>
                   </div>
-
-                  <div className={localStyles.toothDetailsCard}>
-                    <div className={localStyles.toothDetailsHeader}>
-                      <div>
-                        <h4 className={localStyles.toothDetailsTitle}>Tooth Details</h4>
-                        <p className={localStyles.toothDetailsText}>
-                          Set the mobility grade for the selected tooth. It saves with the rest of
-                          the perio entry and appears in the tooth summary.
-                        </p>
-                      </div>
-                      <span className={localStyles.toothPickerValue}>{selectedToothLabel}</span>
-                    </div>
-
-                    <div className={localStyles.summaryStrip}>
-                      <span className={localStyles.summaryChip}>
-                        {`Mobility: ${mobilitySummaryValue}`}
-                      </span>
-                      <span className={localStyles.summaryChip}>
-                        {`Furcation: ${furcationSummaryValue}`}
-                      </span>
-                      <span className={localStyles.summaryChip}>
-                        {`Comment: ${commentSummaryValue}`}
-                      </span>
-                    </div>
-
-                    <div className={localStyles.toothDetailsGrid}>
-                      <TextField
-                        select
-                        size="small"
-                        fullWidth
-                        label="Mobility"
-                        value={values.mobility}
-                        onChange={(event) => handleMobilityChange(event.target.value)}
-                        disabled={!values.toothId}
-                        helperText={
-                          values.toothId
-                            ? 'Choose the mobility grade for this tooth. Leave it as Not charted if it was not assessed.'
-                            : 'Select a tooth first to set mobility.'
-                        }
-                      >
-                        {MOBILITY_OPTIONS.map((option) => (
-                          <MenuItem key={`mobility-option-${option.label}`} value={option.value}>
-                            {option.label}
-                          </MenuItem>
-                        ))}
-                      </TextField>
-                    </div>
+                  <div className={localStyles.toothPickerChart}>
+                    <PerioChartCanvas
+                      items={mergePreviewItems(state.items, draftPayload)}
+                      chartKind={chartKind}
+                      selectedToothId={values.toothId || undefined}
+                      onSelectTooth={handleCanvasToothSelect}
+                      onCommentClick={handleCommentIconClick}
+                      onCellValueChange={handleCanvasCellValueChange}
+                      onBooleanCellToggle={handleCanvasBooleanToggle}
+                      zoom={chartKind === 'child' ? 1.18 : 1.1}
+                      view={canvasView}
+                      showLegend={false}
+                      editable
+                    />
                   </div>
                 </div>
 
-                <div className={localStyles.editorActions}>
-                  <div
-                    className={`${localStyles.autosaveStatus} ${
-                      localStyles[
-                        `autosaveStatus${autosavePhase.charAt(0).toUpperCase()}${autosavePhase.slice(
-                          1
-                        )}`
-                      ]
-                    }`}
-                  >
-                    {autosaveMessage}
+                <div className={localStyles.toothDetailsCard}>
+                  <div className={localStyles.toothDetailsHeader}>
+                    <div>
+                      <h4 className={localStyles.toothDetailsTitle}>Tooth Details</h4>
+                      <p className={localStyles.toothDetailsText}>
+                        Set the mobility grade for the selected tooth. It saves with the rest of the
+                        perio entry and appears in the tooth summary.
+                      </p>
+                    </div>
+                    <span className={localStyles.toothPickerValue}>{selectedToothLabel}</span>
                   </div>
-                  <div className={localStyles.editorActionButtons}>
-                    {isEditingExistingEntry ? (
-                      <Button
-                        color="error"
-                        onClick={() => {
-                          void (async () => {
-                            try {
-                              if (hasPendingAutosave) {
-                                await flushAutosave(values);
-                              }
 
-                              setState((prevState: PatientPerioChartStateProps['state']) => ({
-                                ...prevState,
-                                isUpdate: false,
-                                isDelete: true,
-                                selectedToothId: values.toothId || prevState.selectedToothId,
-                                selectedItem:
-                                  getExistingItemByToothId(
-                                    prevState.items,
-                                    values.toothId,
-                                    chartKind
-                                  ) || prevState.selectedItem,
-                              }));
-                            } catch {
-                              return;
-                            }
-                          })();
-                        }}
-                      >
-                        Delete
-                      </Button>
-                    ) : null}
+                  <div className={localStyles.summaryStrip}>
+                    <span className={localStyles.summaryChip}>
+                      {`Mobility: ${mobilitySummaryValue}`}
+                    </span>
+                    <span className={localStyles.summaryChip}>
+                      {`Furcation: ${furcationSummaryValue}`}
+                    </span>
+                    <span className={localStyles.summaryChip}>
+                      {`Comment: ${commentSummaryValue}`}
+                    </span>
+                  </div>
+
+                  <div className={localStyles.toothDetailsGrid}>
+                    <TextField
+                      select
+                      size="small"
+                      fullWidth
+                      label="Mobility"
+                      value={values.mobility}
+                      onChange={(event) => handleMobilityChange(event.target.value)}
+                      disabled={!values.toothId}
+                      helperText={
+                        values.toothId
+                          ? 'Choose the mobility grade for this tooth. Leave it as Not charted if it was not assessed.'
+                          : 'Select a tooth first to set mobility.'
+                      }
+                    >
+                      {MOBILITY_OPTIONS.map((option) => (
+                        <MenuItem key={`mobility-option-${option.label}`} value={option.value}>
+                          {option.label}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+                  </div>
+                </div>
+              </div>
+
+              <div className={localStyles.editorActions}>
+                <div
+                  className={`${localStyles.autosaveStatus} ${
+                    localStyles[
+                      `autosaveStatus${autosavePhase.charAt(0).toUpperCase()}${autosavePhase.slice(
+                        1
+                      )}`
+                    ]
+                  }`}
+                >
+                  {autosaveMessage}
+                </div>
+                <div className={localStyles.editorActionButtons}>
+                  {isEditingExistingEntry ? (
                     <Button
+                      color="error"
                       onClick={() => {
                         void (async () => {
                           try {
@@ -850,67 +819,96 @@ const PatientPerioChartForm: FunctionComponent<PatientPerioChartFormProps> = (
                               await flushAutosave(values);
                             }
 
-                            handleClearSelection();
+                            setState((prevState: PatientPerioChartStateProps['state']) => ({
+                              ...prevState,
+                              isUpdate: false,
+                              isDelete: true,
+                              selectedToothId: values.toothId || prevState.selectedToothId,
+                              selectedItem:
+                                getExistingItemByToothId(
+                                  prevState.items,
+                                  values.toothId,
+                                  chartKind
+                                ) || prevState.selectedItem,
+                            }));
                           } catch {
                             return;
                           }
                         })();
                       }}
-                      color="inherit"
                     >
-                      Clear Selection
+                      Delete
                     </Button>
-                  </div>
-                </div>
-              </Box>
-
-              <Dialog
-                open={Boolean(commentModalToothId)}
-                onClose={handleCloseCommentModal}
-                fullWidth
-                maxWidth="sm"
-              >
-                <DialogTitle sx={{ pb: 1, fontWeight: 700 }}>
-                  {`Comment for ${commentToothLabel}`}
-                </DialogTitle>
-                <DialogContent dividers sx={{ px: { xs: 2, sm: 3 }, py: 2 }}>
-                  {commentModalError ? (
-                    <Alert severity="error" sx={{ mb: 2 }}>
-                      {commentModalError}
-                    </Alert>
                   ) : null}
-                  <TextField
-                    label="Comment"
-                    value={commentDraft}
-                    onChange={(event) => setCommentDraft(event.target.value)}
-                    fullWidth
-                    size="small"
-                    multiline
-                    minRows={5}
-                    placeholder="Add per-tooth comment, observations, treatment context, or reminders."
-                  />
-                </DialogContent>
-                <DialogActions sx={{ px: 3, py: 2 }}>
                   <Button
-                    onClick={handleCloseCommentModal}
+                    onClick={() => {
+                      void (async () => {
+                        try {
+                          if (hasPendingAutosave) {
+                            await flushAutosave(values);
+                          }
+
+                          handleClearSelection();
+                        } catch {
+                          return;
+                        }
+                      })();
+                    }}
                     color="inherit"
-                    disabled={commentModalSaving}
                   >
-                    Cancel
+                    Clear Selection
                   </Button>
-                  <Button
-                    onClick={handleCommentSave}
-                    variant="contained"
-                    disabled={commentModalSaving}
-                  >
-                    Save Comment
-                  </Button>
-                </DialogActions>
-              </Dialog>
-            </>
-          );
-        }}
-      </Formik>
+                </div>
+              </div>
+            </Box>
+
+            <Dialog
+              open={Boolean(commentModalToothId)}
+              onClose={handleCloseCommentModal}
+              fullWidth
+              maxWidth="sm"
+            >
+              <DialogTitle sx={{ pb: 1, fontWeight: 700 }}>
+                {`Comment for ${commentToothLabel}`}
+              </DialogTitle>
+              <DialogContent dividers sx={{ px: { xs: 2, sm: 3 }, py: 2 }}>
+                {commentModalError ? (
+                  <Alert severity="error" sx={{ mb: 2 }}>
+                    {commentModalError}
+                  </Alert>
+                ) : null}
+                <TextField
+                  label="Comment"
+                  value={commentDraft}
+                  onChange={(event) => setCommentDraft(event.target.value)}
+                  fullWidth
+                  size="small"
+                  multiline
+                  minRows={5}
+                  placeholder="Add per-tooth comment, observations, treatment context, or reminders."
+                />
+              </DialogContent>
+              <DialogActions sx={{ px: 3, py: 2 }}>
+                <Button
+                  onClick={handleCloseCommentModal}
+                  color="inherit"
+                  disabled={commentModalSaving}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleCommentSave}
+                  variant="contained"
+                  disabled={commentModalSaving}
+                >
+                  Save Comment
+                </Button>
+              </DialogActions>
+            </Dialog>
+          </>
+        );
+      }}
+    </Formik>
   );
 };
 
