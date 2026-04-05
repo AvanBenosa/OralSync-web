@@ -6,6 +6,7 @@ import HistoryEduRoundedIcon from '@mui/icons-material/HistoryEduRounded';
 import PhotoLibraryRoundedIcon from '@mui/icons-material/PhotoLibraryRounded';
 import DescriptionRoundedIcon from '@mui/icons-material/DescriptionRounded';
 import EventAvailableRoundedIcon from '@mui/icons-material/EventAvailableRounded';
+import BiotechRoundedIcon from '@mui/icons-material/BiotechRounded';
 // import ScienceRoundedIcon from '@mui/icons-material/ScienceRounded';
 import MedicalServicesRoundedIcon from '@mui/icons-material/MedicalServicesRounded';
 import { useMediaQuery, useTheme } from '@mui/material';
@@ -50,6 +51,7 @@ const PatientProfileHeader: FunctionComponent<PatientProfileStateProps> = (
       icon: <PhotoLibraryRoundedIcon />,
     },
     { id: 'dental-chart', label: 'Dental Chart', icon: <MedicalServicesRoundedIcon /> },
+    { id: 'perio-chart', label: 'Perio Chart', icon: <BiotechRoundedIcon /> },
     {
       id: 'forms',
       label: 'Documents',

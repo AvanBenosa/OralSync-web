@@ -1,0 +1,605 @@
+.chartPanel {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid rgba(206, 218, 229, 0.95);
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(243, 248, 252, 0.98));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.92);
+}
+
+.chartPanelHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex: 0 0 auto;
+  margin-bottom: 0;
+}
+
+.chartPanelTitle {
+  margin: 0;
+  color: #1f4467;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.chartPanelText {
+  margin: 0;
+  color: #73869b;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.headerCaption {
+  margin: 2px 0 0;
+  color: #73869b;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.chartPreview {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+}
+
+.konvaShell {
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.chartLegend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chartLegendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 30px;
+  padding: 0 12px;
+  border: 1px solid rgba(194, 208, 220, 0.92);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.chartLegendSwatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+}
+
+.chartLegendLabel {
+  color: #47627d;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.konvaScrollArea {
+  width: 100%;
+  min-height: 0;
+  overflow: auto;
+  padding: 10px;
+  box-sizing: border-box;
+  border: 1px solid rgba(206, 218, 229, 0.95);
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.32), rgba(255, 255, 255, 0)) 0 0 / 100%
+      54px no-repeat,
+    linear-gradient(180deg, rgba(252, 243, 244, 0.96), rgba(246, 229, 232, 0.92));
+}
+
+.konvaStageWrap {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.konvaEditorOverlay {
+  position: absolute;
+  z-index: 3;
+  padding: 1px;
+  border: 1px solid rgba(23, 105, 170, 0.7);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow: 0 8px 18px rgba(44, 77, 108, 0.18);
+}
+
+.konvaEditorInput {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  outline: none;
+  box-sizing: border-box;
+  padding: 0 2px;
+  background: transparent;
+  color: #27435d;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+
+  &[type='number'] {
+    appearance: textfield;
+    -moz-appearance: textfield;
+  }
+
+  &[type='number']::-webkit-outer-spin-button,
+  &[type='number']::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+}
+
+.konvaHint {
+  margin-bottom: 10px;
+  color: #6f5661;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.circlePageLayout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(360px, 0.85fr);
+  gap: 14px;
+  flex: 1;
+  min-height: 0;
+}
+
+.circlePageChartPane,
+.circlePageTablePane {
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.layoutTabs {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px;
+  border: 1px solid rgba(194, 208, 220, 0.92);
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(250, 252, 254, 0.96), rgba(239, 244, 248, 0.98));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.92);
+}
+
+.layoutTabButton {
+  border: 0;
+  background: transparent;
+  color: #54708c;
+  border-radius: 10px;
+  min-height: 34px;
+  padding: 0 14px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 120ms ease, color 120ms ease, box-shadow 120ms ease;
+}
+
+.layoutTabButtonActive {
+  background: linear-gradient(180deg, #3e7eb9 0%, #2c69a1 100%);
+  color: #ffffff;
+  box-shadow: 0 8px 14px rgba(60, 106, 150, 0.18);
+}
+
+.zoomControls {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+  border: 1px solid rgba(194, 208, 220, 0.92);
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(250, 252, 254, 0.96), rgba(239, 244, 248, 0.98));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.92);
+}
+
+.zoomButton {
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: 10px;
+  background: rgba(62, 126, 185, 0.1);
+  color: #2c69a1;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.zoomButton:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.zoomValue {
+  min-width: 44px;
+  text-align: center;
+  color: #355674;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.tableWrap {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.editorShell {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.editorHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.editorTitle {
+  margin: 0;
+  color: #1f4467;
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.editorText {
+  margin: 4px 0 0;
+  color: #73869b;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.formSection {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-right: 4px;
+}
+
+.toothPickerCard {
+  padding: 16px;
+  border: 1px solid rgba(208, 220, 231, 0.95);
+  border-radius: 16px;
+  background: linear-gradient(180deg, #f8fbfd 0%, #eef4f8 100%);
+}
+
+.toothPickerHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.toothPickerTitle {
+  margin: 0;
+  color: #1f4467;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.toothPickerText {
+  margin: 4px 0 0;
+  color: #73869b;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.toothPickerValue {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 0 10px;
+  border: 1px solid rgba(185, 204, 220, 0.9);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #3e617f;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.toothPickerChart {
+  width: 100%;
+  overflow: hidden;
+  padding-bottom: 4px;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.toothDetailsCard {
+  padding: 16px;
+  border: 1px solid rgba(208, 220, 231, 0.95);
+  border-radius: 16px;
+  background: linear-gradient(180deg, #ffffff 0%, #f5f9fc 100%);
+}
+
+.toothDetailsHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.toothDetailsTitle {
+  margin: 0;
+  color: #1f4467;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.toothDetailsText {
+  margin: 4px 0 0;
+  color: #73869b;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.toothDetailsGrid {
+  display: grid;
+  grid-template-columns: minmax(240px, 340px);
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.toothNotesCard {
+  padding: 16px;
+  border: 1px solid rgba(208, 220, 231, 0.95);
+  border-radius: 16px;
+  background: linear-gradient(180deg, #ffffff 0%, #f5f9fc 100%);
+}
+
+.toothNotesHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.toothNotesTitle {
+  margin: 0;
+  color: #1f4467;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.toothNotesText {
+  margin: 4px 0 0;
+  color: #73869b;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.summaryStrip {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.summaryChip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(190, 205, 219, 0.9);
+  background: rgba(245, 249, 253, 0.96);
+  color: #355674;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.autosaveStatus {
+  color: #5e7288;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.autosaveStatusIdle {
+  color: #5e7288;
+}
+
+.autosaveStatusSaving {
+  color: #1c6fb3;
+}
+
+.autosaveStatusSaved {
+  color: #2d7d46;
+}
+
+.autosaveStatusError {
+  color: #c14c3f;
+}
+
+.editorActions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding-top: 4px;
+}
+
+.editorActionButtons {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.metricGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.metricSection {
+  padding: 14px;
+  border: 1px solid rgba(208, 220, 231, 0.95);
+  border-radius: 16px;
+  background: linear-gradient(180deg, #f8fbfd 0%, #eef4f8 100%);
+}
+
+.metricSectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.metricSectionTitle {
+  margin: 0;
+  color: #1f4467;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.metricSectionMeta {
+  color: #73869b;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.metricMatrixWrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.metricMatrix {
+  min-width: 480px;
+  display: grid;
+  grid-template-columns: minmax(130px, 1.2fr) repeat(3, minmax(84px, 1fr));
+  gap: 8px;
+  align-items: center;
+}
+
+.metricCell {
+  min-width: 0;
+}
+
+.metricHeaderCell {
+  color: #486481;
+  font-size: 12px;
+  font-weight: 800;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.metricLabelCell {
+  color: #314a63;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.metricCheckboxCell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  border: 1px solid rgba(208, 220, 231, 0.95);
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.measurementStack {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.measurementLine {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  color: #4c6782;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.measurementLabel {
+  color: #1f4467;
+  font-weight: 700;
+}
+
+.mobileSummary {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+@media (max-width: 960px) {
+  .circlePageLayout,
+  .metricGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .layoutTabs {
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .chartLegend {
+    flex-direction: column;
+  }
+
+  .zoomControls {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .layoutTabButton {
+    flex: 1 1 0;
+  }
+
+  .summaryStrip {
+    flex-direction: column;
+  }
+
+  .toothDetailsGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .metricMatrix {
+    min-width: 440px;
+  }
+
+  .editorActions {
+    align-items: stretch;
+  }
+
+  .editorActionButtons {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}

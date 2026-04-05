@@ -29,6 +29,7 @@ import PatientProfileHeader from './index-content/patient-profile-header';
 import PatientProgressNotes from '../patient-profile-modules/progress-note';
 import PatientMedicalHistory from '../patient-profile-modules/medical-history';
 import PatientDentalChart from '../patient-profile-modules/dental-chart';
+import PatientPerioChart from '../patient-profile-modules/perio-chart';
 import PatientDentalPhoto from '../patient-profile-modules/photos';
 import PatientForms from '../patient-profile-modules/patient-forms';
 import PatientAppointmentRecords from '../patient-profile-modules/appointment-records';
@@ -131,6 +132,7 @@ export const PatientProfileModule: FunctionComponent<PatientProfileProps> = (
     'medical-history',
     'photos',
     'dental-chart',
+    'perio-chart',
     'forms',
     'lab-cases',
     'appointments',
@@ -144,6 +146,7 @@ export const PatientProfileModule: FunctionComponent<PatientProfileProps> = (
     'medical-history': 'Medical History',
     photos: 'Photos',
     'dental-chart': 'Dental Chart',
+    'perio-chart': 'Perio Chart',
     forms: 'Forms',
     'lab-cases': 'Lab Cases',
     appointments: 'Appointment Records',
@@ -523,6 +526,13 @@ export const PatientProfileModule: FunctionComponent<PatientProfileProps> = (
             />
           ) : activeTab === 'dental-chart' ? (
             <PatientDentalChart
+              patientId={patientId}
+              onRegisterMobileReload={setMobileReload}
+              patientLabel={patientInfoLabel}
+              patientProfile={state.profile}
+            />
+          ) : activeTab === 'perio-chart' ? (
+            <PatientPerioChart
               patientId={patientId}
               onRegisterMobileReload={setMobileReload}
               patientLabel={patientInfoLabel}
