@@ -5,7 +5,11 @@
       "/static/*",
       "/favicon.ico",
       "/OralSync.png",
+      "/logo192.png",
+      "/logo512.png",
       "/manifest.json",
+      "/service-worker.js",
+      "/offline.html",
       "/robots.txt",
       "/sitemap.xml"
     ]
@@ -19,6 +23,18 @@
     },
     {
       "route": "/manifest.json",
+      "headers": {
+        "Cache-Control": "no-cache, no-store, must-revalidate"
+      }
+    },
+    {
+      "route": "/service-worker.js",
+      "headers": {
+        "Cache-Control": "no-cache, no-store, must-revalidate"
+      }
+    },
+    {
+      "route": "/offline.html",
       "headers": {
         "Cache-Control": "no-cache, no-store, must-revalidate"
       }
@@ -49,6 +65,18 @@
     },
     {
       "route": "/OralSync.png",
+      "headers": {
+        "Cache-Control": "public, max-age=604800"
+      }
+    },
+    {
+      "route": "/logo192.png",
+      "headers": {
+        "Cache-Control": "public, max-age=604800"
+      }
+    },
+    {
+      "route": "/logo512.png",
       "headers": {
         "Cache-Control": "public, max-age=604800"
       }

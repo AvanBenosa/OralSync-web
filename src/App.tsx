@@ -5,6 +5,7 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import AppRoutes from './common/routes/routes';
 import { useAuthStore } from './common/store/authStore';
+import PwaInstallBanner from './common/components/pwa-install-banner';
 
 function App() {
   const hydrateSession = useAuthStore((state) => state.hydrateSession);
@@ -20,6 +21,7 @@ function App() {
           <AppRoutes />
         </Box>
       </Box>
+      <PwaInstallBanner />
       <ToastContainer />
     </Router>
   );

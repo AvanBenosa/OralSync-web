@@ -1,6 +1,10 @@
 # Introduction
 TODO: Give a short introduction of your project. Let this section explain the objectives or the motivation behind this project.
 
+## PWA Guide
+
+For the OralSync Progressive Web App setup, install flow, and cloud-safe caching notes, see [docs/PWA-SETUP.md](docs/PWA-SETUP.md).
+
 # Getting Started
 TODO: Guide users through getting your code up and running on their own system. In this section you can talk about:
 1.	Installation process

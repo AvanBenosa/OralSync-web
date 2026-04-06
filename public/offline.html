@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#1c4d2c" />
+    <title>OralSync Offline</title>
+    <style>
+      :root {
+        color-scheme: light;
+        font-family: 'Segoe UI', Arial, sans-serif;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        background: linear-gradient(180deg, #eef7f0 0%, #dfeee4 100%);
+        color: #183b24;
+      }
+
+      .card {
+        width: min(100%, 560px);
+        padding: 28px;
+        border: 1px solid rgba(135, 169, 142, 0.28);
+        border-radius: 24px;
+        background: rgba(255, 255, 255, 0.92);
+        box-shadow: 0 24px 48px rgba(24, 59, 36, 0.12);
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        min-height: 30px;
+        padding: 0 12px;
+        border-radius: 999px;
+        background: #e6f5ea;
+        color: #215837;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+
+      h1 {
+        margin: 16px 0 12px;
+        font-size: 28px;
+        line-height: 1.2;
+      }
+
+      p {
+        margin: 0 0 12px;
+        font-size: 15px;
+        line-height: 1.7;
+        color: #4b6653;
+      }
+
+      .note {
+        margin-top: 18px;
+        padding: 14px 16px;
+        border-radius: 16px;
+        background: #f6fbf7;
+        border: 1px solid rgba(189, 213, 196, 0.72);
+      }
+
+      strong {
+        color: #1c4d2c;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="card">
+      <div class="badge">Offline Mode</div>
+      <h1>OralSync needs a connection to load live clinic data.</h1>
+      <p>
+        The app shell is installed, but patient records, appointments, billing, uploads, and other
+        live modules still come from the cloud.
+      </p>
+      <p>
+        Reconnect to the internet, then reopen OralSync to continue working with the latest data.
+      </p>
+      <div class="note">
+        <p><strong>Clinic-safe caching:</strong> OralSync only caches the app shell and static assets.</p>
+        <p>Live patient and business data are not stored offline by this PWA setup.</p>
+      </div>
+    </main>
+  </body>
+</html>
