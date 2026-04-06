@@ -1,12 +1,22 @@
 import { FunctionComponent, JSX, useEffect, useRef, useState } from 'react';
+import { Dialog } from '@mui/material';
 import { toast } from 'react-toastify';
 
-import type { PatientDentalPhotoProps, PatientDentalPhotoStateModel } from './api/types';
+import type {
+  DentalImagesTab,
+  PatientDentalPhotoProps,
+  PatientDentalPhotoStateModel,
+  PatientUploadStateModel,
+} from './api/types';
 import { HandleGetPatientDentalPhotoItems } from './api/handlers';
+import { HandleGetPatientUploadItems } from './api/uploads-handlers';
 import NotFoundPage from '../../../common/errors/page-not-found';
 import sharedStyles from '../styles.module.scss';
 import PatientDentalPhotoHeader from './index-content/photos-header';
 import PatientDentalPhotoBody from './index-content/photos-body';
+import PatientUploadsBody from './index-content/uploads-body';
+import PatientUploadForm from './index-content/upload-form';
+import PatientUploadDeleteModal from './index-content/upload-delete-modal';
 import { toastConfig } from '../../../common/api/responses';
 
 export const PatientDentalPhoto: FunctionComponent<PatientDentalPhotoProps> = (
@@ -16,6 +26,7 @@ export const PatientDentalPhoto: FunctionComponent<PatientDentalPhotoProps> = (
   const reloadTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const reloadActionRef = useRef<() => void>(() => {});
   const lastLoadedPatientIdRef = useRef<string | undefined>(undefined);
+  const [activeTab, setActiveTab] = useState<DentalImagesTab>('chart-images');
 
   const [state, setState] = useState<PatientDentalPhotoStateModel>({
     patientId,
@@ -24,9 +35,20 @@ export const PatientDentalPhoto: FunctionComponent<PatientDentalPhotoProps> = (
     load: true,
   });
 
+  const [uploadState, setUploadState] = useState<PatientUploadStateModel>({
+    patientId,
+    items: [],
+    selectedItem: undefined,
+    load: true,
+    openModal: false,
+    isUpdate: false,
+    isDelete: false,
+  });
+
   const loadPhotos = async (
     showToast: boolean = false,
-    shouldSetLoadingState: boolean = true
+    shouldSetLoadingState: boolean = true,
+    forceRefresh: boolean = false
   ): Promise<void> => {
     if (!patientId) {
       setState((prev: PatientDentalPhotoStateModel) => ({
@@ -48,6 +70,7 @@ export const PatientDentalPhoto: FunctionComponent<PatientDentalPhotoProps> = (
     }
 
     try {
+      void forceRefresh;
       await HandleGetPatientDentalPhotoItems(state, setState, patientId);
 
       if (showToast) {
@@ -63,13 +86,58 @@ export const PatientDentalPhoto: FunctionComponent<PatientDentalPhotoProps> = (
     }
   };
 
+  const loadUploads = async (
+    showToast: boolean = false,
+    shouldSetLoadingState: boolean = true,
+    forceRefresh: boolean = false
+  ): Promise<void> => {
+    if (!patientId) {
+      setUploadState((prev: PatientUploadStateModel) => ({
+        ...prev,
+        load: false,
+        items: [],
+        selectedItem: undefined,
+        notFound: true,
+      }));
+      return;
+    }
+
+    if (shouldSetLoadingState) {
+      setUploadState((prev: PatientUploadStateModel) => ({
+        ...prev,
+        load: true,
+        notFound: false,
+      }));
+    }
+
+    try {
+      await HandleGetPatientUploadItems(uploadState, setUploadState, patientId, forceRefresh);
+
+      if (showToast) {
+        toast.info('Upload list has been refreshed.', toastConfig);
+      }
+    } catch {
+      setUploadState((prev: PatientUploadStateModel) => ({
+        ...prev,
+        load: false,
+        items: [],
+        selectedItem: undefined,
+      }));
+    }
+  };
+
   const handleReload = (): void => {
     if (reloadTimeoutRef.current) {
       clearTimeout(reloadTimeoutRef.current);
     }
 
     reloadTimeoutRef.current = setTimeout(() => {
-      void loadPhotos(true, true);
+      if (activeTab === 'uploads') {
+        void loadUploads(true, true, true);
+        return;
+      }
+
+      void loadPhotos(true, true, true);
     }, 350);
   };
 
@@ -85,7 +153,7 @@ export const PatientDentalPhoto: FunctionComponent<PatientDentalPhotoProps> = (
     }
 
     lastLoadedPatientIdRef.current = patientId;
-    void loadPhotos(false, false);
+    void Promise.allSettled([loadPhotos(false, false), loadUploads(false, false)]);
 
     return () => {
       if (reloadTimeoutRef.current) {
@@ -99,11 +167,11 @@ export const PatientDentalPhoto: FunctionComponent<PatientDentalPhotoProps> = (
   useEffect(() => {
     onRegisterMobileReload?.({
       onReload: () => reloadActionRef.current(),
-      disabled: state.load,
-      title: 'Reload photos',
-      ariaLabel: 'Reload photos',
+      disabled: activeTab === 'uploads' ? uploadState.load : state.load,
+      title: activeTab === 'uploads' ? 'Reload uploads' : 'Reload photos',
+      ariaLabel: activeTab === 'uploads' ? 'Reload uploads' : 'Reload photos',
     });
-  }, [onRegisterMobileReload, state.load]);
+  }, [activeTab, onRegisterMobileReload, state.load, uploadState.load]);
 
   useEffect(() => {
     return () => {
@@ -121,22 +189,63 @@ export const PatientDentalPhoto: FunctionComponent<PatientDentalPhotoProps> = (
         <div className={sharedStyles.bodyWrapper}>
           <div className={sharedStyles.listContainer}>
             <PatientDentalPhotoHeader
-              state={state}
-              setState={setState}
+              chartState={state}
+              uploadState={uploadState}
+              activeTab={activeTab}
+              onTabChange={setActiveTab}
               onReload={handleReload}
-              patientLabel={patientLabel}
+              onAddUpload={() =>
+                setUploadState((prev) => ({
+                  ...prev,
+                  openModal: true,
+                  isUpdate: false,
+                  isDelete: false,
+                }))
+              }
             />
             <div className={sharedStyles.listItem}>
-              <PatientDentalPhotoBody
-                state={state}
-                setState={setState}
-                onReload={handleReload}
-                patientLabel={patientLabel}
-              />
+              {activeTab === 'uploads' ? (
+                <PatientUploadsBody
+                  state={uploadState}
+                  setState={setUploadState}
+                  patientLabel={patientLabel}
+                />
+              ) : (
+                <PatientDentalPhotoBody
+                  state={state}
+                  setState={setState}
+                  onReload={handleReload}
+                  patientLabel={patientLabel}
+                />
+              )}
             </div>
           </div>
         </div>
       </div>
+
+      <Dialog
+        open={uploadState.openModal}
+        onClose={() =>
+          setUploadState((prev) => ({
+            ...prev,
+            openModal: false,
+            isUpdate: false,
+            isDelete: false,
+          }))
+        }
+        fullWidth
+        maxWidth="sm"
+      >
+        {uploadState.isDelete ? (
+          <PatientUploadDeleteModal state={uploadState} setState={setUploadState} />
+        ) : (
+          <PatientUploadForm
+            state={uploadState}
+            setState={setUploadState}
+            patientLabel={patientLabel}
+          />
+        )}
+      </Dialog>
     </section>
   );
 };

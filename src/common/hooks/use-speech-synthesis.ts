@@ -21,13 +21,7 @@ const hasSpeechSynthesis = (): boolean => {
 };
 
 export const useSpeechSynthesis = (options: UseSpeechSynthesisOptions = {}) => {
-  const {
-    enabledByDefault = true,
-    lang = 'en-US',
-    rate = 1,
-    pitch = 1,
-    volume = 1,
-  } = options;
+  const { enabledByDefault = true, lang = 'en-US', rate = 0.9, pitch = 1.1, volume = 1 } = options;
   const [isSupported, setIsSupported] = useState<boolean>(() => hasSpeechSynthesis());
   const [isEnabled, setIsEnabled] = useState<boolean>(enabledByDefault && hasSpeechSynthesis());
   const [isSpeaking, setIsSpeaking] = useState(false);

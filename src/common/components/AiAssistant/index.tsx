@@ -71,6 +71,8 @@ const createAssistantMessage = (content: string): UiMessage => ({
   content,
 });
 
+const OPENING_GREETING = "Hey, I'm Ora. What can I do for you?";
+
 const AiAssistant = (props: AiAssistantProps) => {
   const { patientId, routeContext, title, contextKey } = props;
   const theme = useTheme();
@@ -89,6 +91,7 @@ const AiAssistant = (props: AiAssistantProps) => {
   const [voiceErrorMessage, setVoiceErrorMessage] = useState('');
   const [lastResponse, setLastResponse] = useState<AiAssistantResponse | null>(null);
   const endOfMessagesRef = useRef<HTMLDivElement | null>(null);
+  const hasWelcomedForOpenRef = useRef(false);
   const {
     isSupported: isSpeechSupported,
     isEnabled: isSpeechEnabled,
@@ -137,6 +140,18 @@ const AiAssistant = (props: AiAssistantProps) => {
       stopSpeaking();
     }
   }, [open, stopSpeaking]);
+
+  useEffect(() => {
+    if (open && !hasWelcomedForOpenRef.current) {
+      hasWelcomedForOpenRef.current = true;
+      speak(OPENING_GREETING);
+      return;
+    }
+
+    if (!open) {
+      hasWelcomedForOpenRef.current = false;
+    }
+  }, [open, speak]);
 
   const appendAssistantMessage = (content: string): void => {
     setMessages((previousMessages) => [...previousMessages, createAssistantMessage(content)]);

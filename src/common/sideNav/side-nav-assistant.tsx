@@ -88,6 +88,8 @@ const createUserMessage = (content: string): ChatMessage => ({
   content,
 });
 
+const OPENING_GREETING = "Hey, I'm Ora. What can I do for you?";
+
 const formatPlanLabel = (value?: string | null): string => {
   const normalized = normalizeSubscriptionType(value);
   if (!normalized) {
@@ -313,6 +315,7 @@ const SideNavAssistant = (props: SideNavAssistantProps) => {
   const location = useLocation();
   const navigate = useNavigate();
   const endOfMessagesRef = useRef<HTMLDivElement | null>(null);
+  const hasWelcomedForOpenRef = useRef(false);
   const [draft, setDraft] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [clinicProfile, setClinicProfile] = useState<ClinicProfileModel | null>(null);
@@ -397,6 +400,18 @@ const SideNavAssistant = (props: SideNavAssistantProps) => {
       stopSpeaking();
     }
   }, [open, stopSpeaking]);
+
+  useEffect(() => {
+    if (open && !hasWelcomedForOpenRef.current) {
+      hasWelcomedForOpenRef.current = true;
+      speak(OPENING_GREETING);
+      return;
+    }
+
+    if (!open) {
+      hasWelcomedForOpenRef.current = false;
+    }
+  }, [open, speak]);
 
   const appendAssistantMessage = (content: string, mode: 'static' | 'ai' = 'static'): void => {
     setMessages((previousMessages) => [...previousMessages, createAssistantMessage(content, mode)]);
