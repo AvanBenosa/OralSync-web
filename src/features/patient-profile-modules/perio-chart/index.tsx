@@ -20,7 +20,9 @@ export const PatientPerioChart: FunctionComponent<PatientPerioChartProps> = (
   const patientId = patientIdParam?.trim() || undefined;
   const reloadTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const reloadActionRef = useRef<() => void>(() => {});
+  const exportActionRef = useRef<() => Promise<void>>(async () => undefined);
   const lastLoadedPatientIdRef = useRef<string | undefined>(undefined);
+  const [isDownloadingPdf, setIsDownloadingPdf] = useState<boolean>(false);
 
   const [state, setState] = useState<PatientPerioChartStateModel>({
     patientId,
@@ -94,6 +96,18 @@ export const PatientPerioChart: FunctionComponent<PatientPerioChartProps> = (
 
   reloadActionRef.current = handleReload;
 
+  const handleDownloadPdf = async (): Promise<void> => {
+    setIsDownloadingPdf(true);
+
+    try {
+      await exportActionRef.current();
+    } catch {
+      toast.error('Unable to download the perio chart PDF.', toastConfig);
+    } finally {
+      setIsDownloadingPdf(false);
+    }
+  };
+
   useEffect(() => {
     if (lastLoadedPatientIdRef.current === patientId) {
       return () => {
@@ -140,12 +154,24 @@ export const PatientPerioChart: FunctionComponent<PatientPerioChartProps> = (
         <div className={sharedStyles.wrapper}>
           <div className={sharedStyles.bodyWrapper}>
             <div className={sharedStyles.listContainer}>
-              <PatientPerioChartHeader state={state} setState={setState} onReload={handleReload} />
+              <PatientPerioChartHeader
+                state={state}
+                setState={setState}
+                onReload={handleReload}
+                onDownloadPdf={() => {
+                  void handleDownloadPdf();
+                }}
+                isDownloadingPdf={isDownloadingPdf}
+              />
               <div className={sharedStyles.listItem}>
                 <PatientPerioChartForm
                   state={state}
                   setState={setState}
+                  patientLabel={props.patientLabel}
                   patientProfile={props.patientProfile}
+                  onRegisterExportAction={(action) => {
+                    exportActionRef.current = action || (async () => undefined);
+                  }}
                 />
               </div>
             </div>

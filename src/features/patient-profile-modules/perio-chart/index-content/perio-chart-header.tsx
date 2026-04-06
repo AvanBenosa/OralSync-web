@@ -1,15 +1,21 @@
 import { FunctionComponent, JSX } from 'react';
 import BiotechOutlinedIcon from '@mui/icons-material/BiotechOutlined';
+import PictureAsPdfRoundedIcon from '@mui/icons-material/PictureAsPdfRounded';
 import RefreshRoundedIcon from '@mui/icons-material/RefreshRounded';
 
 import { PatientPerioChartStateProps } from '../api/types';
 import styles from '../../styles.module.scss';
 import localStyles from '../style.scss.module.scss';
 
-const PatientPerioChartHeader: FunctionComponent<PatientPerioChartStateProps> = (
-  props: PatientPerioChartStateProps
+type PatientPerioChartHeaderProps = PatientPerioChartStateProps & {
+  onDownloadPdf?: () => void;
+  isDownloadingPdf?: boolean;
+};
+
+const PatientPerioChartHeader: FunctionComponent<PatientPerioChartHeaderProps> = (
+  props: PatientPerioChartHeaderProps
 ): JSX.Element => {
-  const { state, setState, onReload } = props;
+  const { state, setState, onReload, onDownloadPdf, isDownloadingPdf = false } = props;
 
   const updateZoom = (nextZoom: number): void => {
     setState((prevState: typeof state) => ({
@@ -90,6 +96,19 @@ const PatientPerioChartHeader: FunctionComponent<PatientPerioChartStateProps> = 
           </button>
         </div>
         <div className={styles.buttonContainer}>
+          <button
+            type="button"
+            className={styles.addButton}
+            onClick={(): void => {
+              onDownloadPdf?.();
+            }}
+            disabled={state.load || isDownloadingPdf}
+            title="Download perio chart summary as PDF"
+            aria-label="Download perio chart summary as PDF"
+          >
+            <PictureAsPdfRoundedIcon className={styles.addButtonIcon} />
+            {isDownloadingPdf ? 'Preparing PDF...' : 'Print Summary'}
+          </button>
           <button
             type="button"
             className={`${styles.reloadButton} ${styles.tabReloadButton}`}

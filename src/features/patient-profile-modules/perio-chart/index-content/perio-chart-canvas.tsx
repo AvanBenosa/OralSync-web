@@ -54,8 +54,10 @@ type PerioChartCanvasProps = {
   onCellValueChange?: (cell: PerioChartEditableCell, value: string) => void;
   onBooleanCellToggle?: (cell: PerioChartEditableCell) => void;
   zoom?: number;
+  minZoom?: number;
   view?: 'full' | 'upper' | 'lower';
   showLegend?: boolean;
+  showHint?: boolean;
   interactive?: boolean;
   editable?: boolean;
 };
@@ -933,8 +935,10 @@ const PerioChartCanvas: FunctionComponent<PerioChartCanvasProps> = (
     onCellValueChange,
     onBooleanCellToggle,
     zoom = 1,
+    minZoom = MIN_ZOOM,
     view = 'upper',
     showLegend = true,
+    showHint = true,
     interactive = true,
     editable = false,
   } = props;
@@ -1003,7 +1007,7 @@ const PerioChartCanvas: FunctionComponent<PerioChartCanvasProps> = (
   const chartHeight =
     archHeights.reduce((totalHeight, archHeight) => totalHeight + archHeight, SECTION_PADDING) +
     (visibleArches.length - 1) * ARCH_GAP;
-  const effectiveZoom = Math.max(MIN_ZOOM, zoom);
+  const effectiveZoom = Math.max(minZoom, zoom);
   const activeEditorKey = activeEditor ? getCellKey(activeEditor) : undefined;
   const activeEditorValue = activeEditor
     ? getCellDisplayValue(toothMap.get(activeEditor.toothId)?.item, activeEditor)
@@ -1068,7 +1072,7 @@ const PerioChartCanvas: FunctionComponent<PerioChartCanvasProps> = (
         </div>
       ) : null}
       <div className={localStyles.konvaScrollArea}>
-        <div className={localStyles.konvaHint}>{hintText}</div>
+        {showHint ? <div className={localStyles.konvaHint}>{hintText}</div> : null}
         <div
           className={localStyles.konvaStageWrap}
           style={{

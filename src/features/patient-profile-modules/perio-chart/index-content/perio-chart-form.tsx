@@ -14,6 +14,7 @@ import { Formik } from 'formik';
 import { isAxiosError } from 'axios';
 
 import localStyles from '../style.scss.module.scss';
+import { downloadElementAsPdf } from '../../../../common/utils/downloadElementAsPdf';
 import {
   createEmptyPerioBooleanSites,
   createEmptyPerioNumericSites,
@@ -27,9 +28,14 @@ import {
   PatientPerioChartStateProps,
 } from '../api/types';
 import PerioChartCanvas, { PerioChartEditableCell } from './perio-chart-canvas';
+import PatientPerioChartReportPreview, {
+  buildPerioChartPdfFileName,
+} from './perio-chart-report-preview';
 import { CreatePatientPerioChartItem, UpdatePatientPerioChartItem } from '../api/api';
 
-type PatientPerioChartFormProps = PatientPerioChartStateProps;
+type PatientPerioChartFormProps = PatientPerioChartStateProps & {
+  onRegisterExportAction?: (action?: () => Promise<void>) => void;
+};
 
 type PatientPerioChartFormValues = {
   id: string;
@@ -66,6 +72,11 @@ const parseNumericSiteValue = (value: string): number | null => {
   const parsed = Number(trimmed);
   return Number.isFinite(parsed) ? parsed : null;
 };
+
+const waitForNextFrame = async (): Promise<void> =>
+  new Promise((resolve) => {
+    window.requestAnimationFrame(() => resolve());
+  });
 
 const MOBILITY_OPTIONS = [
   { value: '', label: 'Not charted' },
@@ -273,7 +284,7 @@ const mergeSavedValues = (
 const PatientPerioChartForm: FunctionComponent<PatientPerioChartFormProps> = (
   props: PatientPerioChartFormProps
 ): JSX.Element => {
-  const { state, setState, patientProfile } = props;
+  const { state, setState, patientProfile, patientLabel, onRegisterExportAction } = props;
   const chartKind = getDentalChartKind(patientProfile);
   const autosaveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const autosaveResetRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -282,6 +293,8 @@ const PatientPerioChartForm: FunctionComponent<PatientPerioChartFormProps> = (
   const setValuesRef = useRef<
     ((values: PatientPerioChartFormValues, shouldValidate?: boolean) => void) | null
   >(null);
+  const pdfReportRef = useRef<HTMLDivElement | null>(null);
+  const exportActionRef = useRef<() => Promise<void>>(async () => undefined);
   const saveInFlightRef = useRef(false);
   const lastSavedFingerprintRef = useRef('');
   const isMountedRef = useRef(true);
@@ -496,6 +509,14 @@ const PatientPerioChartForm: FunctionComponent<PatientPerioChartFormProps> = (
   }, [state.selectedItem?.id, state.selectedToothId]);
 
   useEffect(() => {
+    onRegisterExportAction?.(() => exportActionRef.current());
+
+    return () => {
+      onRegisterExportAction?.(undefined);
+    };
+  }, [onRegisterExportAction]);
+
+  useEffect(() => {
     return () => {
       isMountedRef.current = false;
       setValuesRef.current = null;
@@ -547,14 +568,28 @@ const PatientPerioChartForm: FunctionComponent<PatientPerioChartFormProps> = (
           getToothNumberFromToothId(values.toothId, chartKind),
           chartKind
         );
-        const selectedToothLabel = values.toothId ? resolvedToothLabel : 'No tooth selected';
-        const mobilitySummaryValue = values.mobility.trim() || '--';
-        const furcationSummaryValue = values.furcation.trim() || '--';
-        const commentSummaryValue = values.notes.trim() ? 'Saved' : 'None';
-        const hasPendingAutosave =
-          Boolean(autosaveTimeoutRef.current) ||
-          Boolean(queuedSaveValuesRef.current) ||
-          saveInFlightRef.current;
+          const selectedToothLabel = values.toothId ? resolvedToothLabel : 'No tooth selected';
+          const mobilitySummaryValue = values.mobility.trim() || '--';
+          const furcationSummaryValue = values.furcation.trim() || '--';
+          const commentSummaryValue = values.notes.trim() ? 'Saved' : 'None';
+          const exportValues =
+            commentModalToothId && commentModalToothId === values.toothId
+              ? {
+                  ...values,
+                  notes: commentDraft,
+                }
+              : values;
+          const exportDraftPayload = buildPayloadFromValues(exportValues, chartKind, state.patientId);
+          const exportPreviewItems =
+            exportDraftPayload.toothNumber &&
+            (exportValues.id.trim() || hasMeaningfulPerioValues(exportValues))
+              ? mergePreviewItems(state.items, exportDraftPayload)
+              : state.items;
+          const pdfFileName = buildPerioChartPdfFileName(patientProfile, patientLabel);
+          const hasPendingAutosave =
+            Boolean(autosaveTimeoutRef.current) ||
+            Boolean(queuedSaveValuesRef.current) ||
+            saveInFlightRef.current;
 
         const handleCanvasToothSelect = (toothId: string): void => {
           void (async () => {
@@ -637,18 +672,40 @@ const PatientPerioChartForm: FunctionComponent<PatientPerioChartFormProps> = (
           })();
         };
 
-        const handleMobilityChange = (nextMobility: string): void => {
-          const nextValues = {
-            ...values,
-            mobility: nextMobility,
+          const handleMobilityChange = (nextMobility: string): void => {
+            const nextValues = {
+              ...values,
+              mobility: nextMobility,
           };
 
           setValues(nextValues, false);
-          scheduleAutosave(nextValues);
-        };
+            scheduleAutosave(nextValues);
+          };
 
-        const handleCommentSave = (): void => {
-          void (async () => {
+          const handleExportPdf = async (): Promise<void> => {
+            if (hasPendingAutosave) {
+              try {
+                await flushAutosave(values);
+              } catch {
+                // Keep exporting the current on-screen draft even if autosave is unavailable.
+              }
+            }
+
+            await waitForNextFrame();
+            await waitForNextFrame();
+
+            await downloadElementAsPdf(pdfReportRef.current, {
+              fileName: pdfFileName,
+              backgroundColor: '#ffffff',
+              margin: 8,
+              scale: 2,
+            });
+          };
+
+          exportActionRef.current = handleExportPdf;
+
+          const handleCommentSave = (): void => {
+            void (async () => {
             if (!commentModalToothId) {
               return;
             }
@@ -862,9 +919,9 @@ const PatientPerioChartForm: FunctionComponent<PatientPerioChartFormProps> = (
               </div>
             </Box>
 
-            <Dialog
-              open={Boolean(commentModalToothId)}
-              onClose={handleCloseCommentModal}
+              <Dialog
+                open={Boolean(commentModalToothId)}
+                onClose={handleCloseCommentModal}
               fullWidth
               maxWidth="sm"
             >
@@ -902,12 +959,20 @@ const PatientPerioChartForm: FunctionComponent<PatientPerioChartFormProps> = (
                   disabled={commentModalSaving}
                 >
                   Save Comment
-                </Button>
-              </DialogActions>
-            </Dialog>
-          </>
-        );
-      }}
+                  </Button>
+                </DialogActions>
+              </Dialog>
+
+              <PatientPerioChartReportPreview
+                items={exportPreviewItems}
+                chartKind={chartKind}
+                patientProfile={patientProfile}
+                patientLabel={patientLabel}
+                reportRef={pdfReportRef}
+              />
+            </>
+          );
+        }}
     </Formik>
   );
 };

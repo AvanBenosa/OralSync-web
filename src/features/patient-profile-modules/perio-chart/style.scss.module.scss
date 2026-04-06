@@ -556,6 +556,214 @@
   gap: 4px;
 }
 
+.pdfReportMount {
+  position: fixed;
+  top: 0;
+  left: -10000px;
+  width: 1180px;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.pdfReport {
+  width: 1180px;
+  padding: 32px;
+  box-sizing: border-box;
+  background: #ffffff;
+  color: #19324a;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.pdfHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  align-items: flex-start;
+  padding-bottom: 18px;
+  border-bottom: 1px solid rgba(180, 198, 214, 0.72);
+}
+
+.pdfEyebrow {
+  margin: 0 0 8px;
+  color: #2c6ea8;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.pdfTitle {
+  margin: 0;
+  color: #173b59;
+  font-size: 28px;
+  font-weight: 800;
+}
+
+.pdfSubtitle {
+  margin: 8px 0 0;
+  max-width: 560px;
+  color: #58718a;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.pdfMetaGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(160px, 1fr));
+  gap: 10px;
+  min-width: 360px;
+}
+
+.pdfMetaCard {
+  padding: 12px 14px;
+  border: 1px solid rgba(203, 217, 229, 0.92);
+  border-radius: 14px;
+  background: linear-gradient(180deg, #f8fbfe 0%, #eef5fb 100%);
+}
+
+.pdfMetaLabel {
+  display: block;
+  margin-bottom: 6px;
+  color: #6f879e;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.pdfMetaValue {
+  color: #183750;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.pdfSummaryGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.pdfSummaryCard {
+  padding: 16px 18px;
+  border: 1px solid rgba(203, 217, 229, 0.92);
+  border-radius: 16px;
+  background: linear-gradient(180deg, #ffffff 0%, #f5f9fc 100%);
+}
+
+.pdfSummaryLabel {
+  display: block;
+  color: #6b8298;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.pdfSummaryValue {
+  display: block;
+  margin-top: 8px;
+  color: #163a58;
+  font-size: 26px;
+  font-weight: 800;
+}
+
+.pdfSection {
+  margin-top: 22px;
+}
+
+.pdfSectionHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.pdfSectionTitle {
+  margin: 0;
+  color: #173b59;
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.pdfSectionMeta {
+  color: #6f879e;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.pdfChartShell {
+  padding: 14px;
+  border: 1px solid rgba(203, 217, 229, 0.92);
+  border-radius: 18px;
+  background: linear-gradient(180deg, #ffffff 0%, #f7fafc 100%);
+
+  .konvaScrollArea {
+    overflow: hidden;
+    padding: 8px;
+  }
+
+  .konvaStageWrap {
+    margin: 0 auto;
+  }
+}
+
+.pdfTableWrap {
+  overflow: hidden;
+  border: 1px solid rgba(203, 217, 229, 0.92);
+  border-radius: 18px;
+}
+
+.pdfTable {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+
+  th,
+  td {
+    padding: 10px 12px;
+    border-bottom: 1px solid rgba(225, 232, 238, 0.96);
+    text-align: left;
+    vertical-align: top;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  th {
+    background: linear-gradient(180deg, #f7fbfe 0%, #eef4f8 100%);
+    color: #3e617f;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  tbody tr:nth-child(even) {
+    background: rgba(246, 250, 253, 0.72);
+  }
+
+  tbody tr:last-child td {
+    border-bottom: 0;
+  }
+}
+
+.pdfNotesCell {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.pdfEmptyState {
+  margin: 0;
+  padding: 18px;
+  border: 1px dashed rgba(193, 208, 221, 0.96);
+  border-radius: 16px;
+  background: rgba(247, 250, 253, 0.78);
+  color: #60778d;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
 @media (max-width: 960px) {
   .circlePageLayout,
   .metricGrid {
