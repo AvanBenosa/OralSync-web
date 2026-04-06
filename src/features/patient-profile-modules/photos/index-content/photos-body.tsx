@@ -84,10 +84,10 @@ const PatientDentalPhotoBody: FunctionComponent<PatientDentalPhotoStateProps> = 
   return (
     <div className={localStyles.photoLayout}>
       <section className={localStyles.photoPanel}>
-        <div className={localStyles.panelHeader}>
+        {/* <div className={localStyles.panelHeader}>
           <h4 className={localStyles.panelTitle}>Image Table List</h4>
           <p className={localStyles.panelText}>Select a tooth image to preview it.</p>
-        </div>
+        </div> */}
         <div className={localStyles.tableWrap}>
           <TableContainer component={Paper} className={sharedStyles.tableSurface}>
             <Table stickyHeader>
@@ -132,9 +132,7 @@ const PatientDentalPhotoBody: FunctionComponent<PatientDentalPhotoStateProps> = 
                             <span className={localStyles.fileName}>
                               {item.originalFileName || item.fileName || '--'}
                             </span>
-                            <span className={localStyles.fileMeta}>
-                              #{item.displayOrder || 1}
-                            </span>
+                            <span className={localStyles.fileMeta}>#{item.displayOrder || 1}</span>
                           </div>
                         </TableCell>
                         <TableCell className={sharedStyles.tableBodyCell}>

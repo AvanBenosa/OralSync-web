@@ -2,6 +2,20 @@ export type PublicClinicRegistrationContextModel = {
   clinicId: string;
   clinicName: string;
   bannerImagePath?: string;
+  address?: string;
+  emailAddress?: string;
+  contactNumber?: string;
+  openingTime?: string;
+  closingTime?: string;
+  lunchStartTime?: string;
+  lunchEndTime?: string;
+  isMondayOpen?: boolean;
+  isTuesdayOpen?: boolean;
+  isWednesdayOpen?: boolean;
+  isThursdayOpen?: boolean;
+  isFridayOpen?: boolean;
+  isSaturdayOpen?: boolean;
+  isSundayOpen?: boolean;
   isLocked: boolean;
 };
 

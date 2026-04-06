@@ -10,6 +10,7 @@ import PatientModule from '../../features/patient';
 import PatientProfileModule from '../../features/patient-profile';
 import AppointmentModule from '../../features/appointment/appointment-request';
 import InventoryModule from '../../features/inventory';
+import DentalLabCasesModule from '../../features/dental-lab-cases';
 import FinanceOverview from '../../features/finance-overview';
 import InvoiceGeneratorModule from '../../features/invoice-generator';
 import SettingsModule from '../../features/settings';
@@ -56,6 +57,10 @@ const AppRoutes = () => {
                 <InventoryModule clinicId={user?.clinicId ?? undefined} />
               )
             }
+          />
+          <Route
+            path="/dental-lab-cases"
+            element={<DentalLabCasesModule clinicId={user?.clinicId ?? undefined} />}
           />
           <Route
             path="/finance-overview"
