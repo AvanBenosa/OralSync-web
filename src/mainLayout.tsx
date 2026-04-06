@@ -1,6 +1,7 @@
 import React from 'react';
-import { useLocation, useNavigate, useOutlet } from 'react-router-dom';
+import { matchPath, useLocation, useNavigate, useOutlet } from 'react-router-dom';
 import Box from '@mui/material/Box';
+import { useMediaQuery, useTheme } from '@mui/material';
 import SideNav from './common/sideNav/sideNav';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
@@ -17,12 +18,15 @@ import DataPrivacyConsentDialog from './features/login/data-privacy-consent-dial
 import ContractPolicyDialog from './features/login/contract-policy-dialog';
 import BetaTestingDialog from './features/login/beta-testing-dialog';
 import PostLoginBootScreen, { usePostLoginBoot } from './common/loading/post-login-boot';
+import AiAssistant from './common/components/AiAssistant';
 // import RegisterBootstrapModal from './features/register';
 
 const MainLayout = () => {
   const outlet = useOutlet();
   const location = useLocation();
   const navigate = useNavigate();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
   const user = useAuthStore((state) => state.user);
   const clinicId = user?.clinicId;
@@ -51,6 +55,45 @@ const MainLayout = () => {
     () => Boolean(isLoggedIn && clinicId),
     [clinicId, isLoggedIn]
   );
+  const assistantContext = useMemo(() => {
+    const patientMatch = matchPath('/patient-profile/:patientId', location.pathname);
+    const patientRouteTab = new URLSearchParams(location.search).get('tab') || 'progress-notes';
+    const routeLabelMap: Record<string, string> = {
+      '/dashboard': 'Dashboard',
+      '/patient': 'Patients',
+      '/appointment': 'Appointments',
+      '/inventory': 'Inventories',
+      '/finance-overview': 'Billing and Finance',
+      '/invoice-generator': 'Invoice Generator',
+      '/settings': 'Settings',
+    };
+
+    if (patientMatch?.params.patientId) {
+      const patientTabLabel = patientRouteTab
+        .split('-')
+        .filter(Boolean)
+        .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
+        .join(' ');
+
+      return {
+        contextKey: `patient:${patientMatch.params.patientId}:${patientRouteTab}`,
+        patientId: patientMatch.params.patientId,
+        routeContext: `Patient profile / ${patientTabLabel}`,
+        title: 'Patient AI Assistant',
+      };
+    }
+
+    const matchedStaticRoute = Object.entries(routeLabelMap).find(([path]) =>
+      location.pathname.startsWith(path)
+    );
+
+    return {
+      contextKey: matchedStaticRoute?.[0] || 'general',
+      patientId: undefined,
+      routeContext: matchedStaticRoute?.[1] || 'Clinic workspace',
+      title: 'OralSync AI Assistant',
+    };
+  }, [location.pathname, location.search]);
 
   useEffect(() => {
     if (!isLoggedIn || !isLocked) {
@@ -315,6 +358,14 @@ const MainLayout = () => {
           {outlet}
         </Box>
       </Box>
+      {isMobile ? (
+        <AiAssistant
+          contextKey={assistantContext.contextKey}
+          patientId={assistantContext.patientId}
+          routeContext={assistantContext.routeContext}
+          title={assistantContext.title}
+        />
+      ) : null}
       <DataPrivacyConsentDialog
         open={showDataPrivacyDialog}
         clinicName={user?.clinicName}

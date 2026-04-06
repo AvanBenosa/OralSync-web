@@ -31,6 +31,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 import { isBasicSubscription } from '../utils/subscription';
+import SideNavAssistant from './side-nav-assistant';
 const drawerWidth = 240;
 const collapsedDrawerWidth = 72;
 const navPalette = {
@@ -442,6 +443,10 @@ const SideNav = () => {
         </Box>
 
         <Box p={2}>
+          <Box sx={{ mb: drawerOpen ? 1.4 : 0.25 }}>
+            <SideNavAssistant drawerOpen={drawerOpen} />
+          </Box>
+
           {drawerOpen ? (
             <Box
               sx={{
@@ -459,7 +464,7 @@ const SideNav = () => {
                   letterSpacing: '0.02em',
                 }}
               >
-                OralSync v1.0.0 (Beta) | © 2026
+                OralSync v1.0.0 (Beta) | (c) 2026
               </Typography>
               <Typography
                 sx={{
