@@ -25,6 +25,8 @@
   min-height: 0;
 }
 
+// ── Header shell ──────────────────────────────────────────────────────────────
+
 .listHeader {
   position: relative;
   display: flex;
@@ -47,6 +49,8 @@
   background: linear-gradient(135deg, rgba(59, 117, 172, 0.06), transparent 42%);
 }
 
+// ── Left section: icon + title ────────────────────────────────────────────────
+
 .headerInfo {
   position: relative;
   z-index: 1;
@@ -54,6 +58,7 @@
   align-items: center;
   gap: 12px;
   min-width: 0;
+  flex: 0 0 auto;
 }
 
 .headerIcon {
@@ -108,29 +113,38 @@
   text-transform: uppercase;
 }
 
+// ── Right section: search + action controls ───────────────────────────────────
+
 .headerActions {
   position: relative;
   z-index: 1;
   display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  flex: 1 1 0;
-  min-width: 0;
-}
-
-.searchForm {
-  display: flex;
   align-items: center;
   gap: 10px;
-  padding: 6px;
-  border-radius: 16px;
-  background: transparent;
-  box-shadow: none;
-  width: 100%;
+  flex: 1 1 0;
   min-width: 0;
   justify-content: flex-end;
-  flex-wrap: wrap;
 }
+
+// Row 1: search input + icon buttons — desktop: single inline row
+.searchRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1 1 auto;
+  min-width: 0;
+  justify-content: flex-end;
+}
+
+// Row 2: pill buttons — desktop: inline after searchRow
+.actionRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
+// ── Search input ──────────────────────────────────────────────────────────────
 
 .searchInput {
   width: min(280px, 100%);
@@ -154,6 +168,8 @@
     box-shadow: 0 0 0 4px rgba(75, 130, 186, 0.12);
   }
 }
+
+// ── Icon buttons (reload, download) ──────────────────────────────────────────
 
 .reloadButton {
   width: 36px;
@@ -188,33 +204,15 @@
   font-size: 18px !important;
 }
 
-.headerActionControls {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 8px;
-  flex: 0 1 auto;
-  min-width: 0;
-}
-
-.buttonContainer {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  width: auto;
-  gap: 8px;
-  flex: 1 1 auto;
-  min-width: 0;
-}
+// ── Pill action buttons ───────────────────────────────────────────────────────
 
 .actionPillButton {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  min-width: 176px;
-  height: 40px;
-  padding: 0 18px;
+  gap: 8px;
+  height: 36px;
+  padding: 0 16px;
   border: 1px solid transparent;
   border-radius: 14px;
   cursor: pointer;
@@ -222,6 +220,7 @@
   font-size: 14px;
   font-weight: 700;
   letter-spacing: -0.01em;
+  white-space: nowrap;
   transition: transform 120ms ease, box-shadow 120ms ease, filter 120ms ease,
     border-color 120ms ease;
 
@@ -233,6 +232,48 @@
     transform: translateY(0);
     filter: saturate(0.96);
   }
+}
+
+.importButton {
+  border-color: #284c8f;
+  background: linear-gradient(180deg, #2d58a6 0%, #1f4385 100%);
+  box-shadow: 0 10px 20px rgba(39, 78, 152, 0.2);
+
+  &:hover {
+    box-shadow: 0 14px 28px rgba(40, 86, 160, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  }
+}
+
+.addPatientButton {
+  border-color: #f18f91;
+  background: linear-gradient(180deg, #ff9f92 0%, #ff7c71 100%);
+  box-shadow: 0 10px 20px rgba(238, 125, 110, 0.22);
+
+  &:hover {
+    box-shadow: 0 14px 28px rgba(255, 124, 111, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.24);
+  }
+}
+
+.pillActionIcon {
+  font-size: 18px !important;
+  color: #ffffff;
+}
+
+// ── Legacy classes kept for table rows ───────────────────────────────────────
+
+.headerActionControls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.buttonContainer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .tableButtonContainer {
@@ -282,32 +323,7 @@
   }
 }
 
-.importButton {
-  border-color: #284c8f;
-  background: linear-gradient(180deg, #2d58a6 0%, #1f4385 100%);
-  box-shadow: 0 10px 20px rgba(39, 78, 152, 0.2);
-
-  &:hover {
-    box-shadow: 0 14px 28px rgba(40, 86, 160, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.2);
-  }
-}
-
-.addPatientButton {
-  border-color: #f18f91;
-  background: linear-gradient(180deg, #ff9f92 0%, #ff7c71 100%);
-  box-shadow: 0 10px 20px rgba(238, 125, 110, 0.22);
-
-  &:hover {
-    box-shadow: 0 14px 28px rgba(255, 124, 111, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.24);
-  }
-}
-
 .actionIcon {
-  font-size: 18px !important;
-  color: #ffffff;
-}
-
-.pillActionIcon {
   font-size: 18px !important;
   color: #ffffff;
 }
@@ -339,6 +355,8 @@
   font-size: 18px !important;
   color: #b23b57;
 }
+
+// ── Table / list body ─────────────────────────────────────────────────────────
 
 .listItem {
   position: relative;
@@ -532,10 +550,15 @@
   text-align: center;
 }
 
+// ── Tablet (≤1280px): wrap into 2 rows ───────────────────────────────────────
+// Row 1 full-width: title+badge
+// Row 2 full-width: search input | icon buttons | pill buttons
+
 @media (max-width: 1280px) {
   .listHeader {
     flex-wrap: wrap;
     align-items: stretch;
+    gap: 12px;
   }
 
   .headerInfo {
@@ -543,43 +566,34 @@
   }
 
   .headerActions {
-    width: 100%;
     flex: 1 1 100%;
-  }
-
-  .searchForm {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    justify-content: stretch;
-    padding: 6px;
-  }
-
-  .searchInput {
-    width: 100%;
-    min-width: 0;
-    max-width: none;
-  }
-
-  .headerActionControls {
-    width: 100%;
-    justify-content: stretch;
-  }
-
-  .buttonContainer {
-    width: auto;
-    flex: 1 1 auto;
-    min-width: 0;
     justify-content: flex-start;
   }
 
-  .actionPillButton {
-    width: 100%;
-    min-width: 0;
+  .searchRow {
     flex: 1 1 auto;
+    justify-content: flex-start;
+  }
+
+  .searchInput {
+    flex: 1 1 auto;
+    width: auto;
+    max-width: 360px;
+  }
+
+  .actionRow {
+    flex: 0 0 auto;
+  }
+
+  .actionPillButton {
+    white-space: nowrap;
   }
 }
+
+// ── Mobile (≤768px): stack into 3 clear rows ──────────────────────────────────
+// Row 1: icon + title/badge        (headerInfo — unchanged)
+// Row 2: search input + icon btns  (searchRow)
+// Row 3: Upload | Add Patients     (actionRow — full width, 2 equal buttons)
 
 @media (max-width: 768px) {
   .wrapper {
@@ -595,84 +609,105 @@
   .listHeader {
     flex-direction: column;
     align-items: stretch;
-    gap: 12px;
+    gap: 10px;
     padding: 14px;
     border-radius: 18px;
   }
 
   .headerInfo {
-    align-items: flex-start;
-    gap: 12px;
+    flex: unset;
+    align-items: center;
+    gap: 10px;
   }
 
   .headerIcon {
     width: 40px;
     height: 40px;
-    flex-basis: 40px;
-    border-radius: 14px;
+    flex: 0 0 40px;
+    border-radius: 12px;
   }
 
   .headerIconSvg {
-    font-size: 21px !important;
+    font-size: 20px !important;
   }
 
   .headerTitle {
-    font-size: 18px;
+    font-size: 17px;
   }
 
   .headerTitleRow {
     gap: 8px;
+    flex-wrap: wrap;
   }
 
+  // Right side becomes a column: searchRow on top, actionRow below
   .headerActions {
-    width: 100%;
-  }
-
-  .searchForm {
-    width: 100%;
-    display: flex;
+    flex: unset;
     flex-direction: column;
     align-items: stretch;
-    justify-content: stretch;
-    padding: 6px;
-    border-radius: 16px;
-  }
-
-  .headerActionControls {
+    gap: 8px;
     width: 100%;
-    justify-content: stretch;
+    justify-content: flex-start;
   }
 
-  .buttonContainer {
-    gap: 6px;
-    width: auto;
-    flex: 1 1 auto;
+  // Row 2: search input stretches, icon buttons stay fixed width
+  .searchRow {
+    flex: unset;
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    justify-content: flex-start;
   }
 
   .searchInput {
-    width: 100%;
+    flex: 1 1 auto;
+    width: auto;
+    max-width: none;
     height: 40px;
     min-width: 0;
   }
 
-  .buttonItem {
+  .inlineReloadButton {
+    flex: 0 0 40px;
     width: 40px;
-    min-width: 40px;
+    height: 40px;
+  }
+
+  .reloadButton {
+    width: 40px;
     height: 40px;
     border-radius: 12px;
   }
 
-  .actionPillButton {
-    min-width: 0;
+  // Row 3: two pill buttons share full width equally
+  .actionRow {
+    flex: unset;
     width: 100%;
-    flex: 1 1 auto;
-    height: 40px;
-    padding: 0 16px;
-    font-size: 13px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
   }
 
+  .actionPillButton {
+    flex: 1 1 0;        // equal half-width each
+    min-width: 0;
+    height: 42px;
+    padding: 0 12px;
+    font-size: 13px;
+    border-radius: 12px;
+    justify-content: center;
+  }
+
+  .pillActionIcon {
+    font-size: 17px !important;
+  }
+
+  // Table area
   .listItem {
-    max-height: calc(100vh - 190px);
+    max-height: calc(100vh - 220px);
     padding: 10px;
     border-radius: 18px;
   }
@@ -683,7 +718,6 @@
 
   .tableSurface {
     border-radius: 16px !important;
-    overflow-x: hidden;
   }
 
   .tableHeaderCell,
@@ -713,62 +747,59 @@
   }
 }
 
+// ── Small mobile (≤420px) ─────────────────────────────────────────────────────
+
 @media (max-width: 420px) {
   .wrapper {
     padding: 68px 10px 72px;
   }
 
   .listHeader {
-    padding: 14px;
-  }
-
-  .headerInfo {
-    display: grid;
-    grid-template-columns: 40px minmax(0, 1fr);
-    align-items: start;
+    padding: 12px;
+    gap: 8px;
   }
 
   .headerTitle {
-    font-size: 16px;
+    font-size: 15px;
   }
 
   .headerBadge {
-    min-height: 24px;
-    padding: 0 10px;
-    font-size: 10px;
-  }
-
-  .searchForm {
-    gap: 6px;
-  }
-
-  .headerActionControls {
-    gap: 6px;
+    min-height: 22px;
+    padding: 0 8px;
+    font-size: 9px;
   }
 
   .searchInput {
     height: 38px;
-    padding: 0 12px;
     font-size: 13px;
+    padding: 0 10px;
   }
 
-  .buttonContainer {
-    gap: 5px;
-  }
-
-  .buttonItem {
+  .reloadButton {
     width: 38px;
-    min-width: 38px;
+    height: 38px;
+  }
+
+  .inlineReloadButton {
+    flex: 0 0 38px;
+    width: 38px;
     height: 38px;
   }
 
   .actionPillButton {
-    width: 100%;
-    flex-basis: auto;
-    font-size: 13px;
+    height: 38px;
+    font-size: 12px;
+    padding: 0 10px;
+    gap: 5px;
+    border-radius: 10px;
+  }
+
+  .pillActionIcon {
+    font-size: 16px !important;
   }
 
   .listItem {
+    max-height: calc(100vh - 230px);
     padding: 8px;
   }
 

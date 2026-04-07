@@ -16,6 +16,7 @@ const PatientHeader: FunctionComponent<PatientStateProps> = (
 
   return (
     <div className={styles.listHeader}>
+      {/* ── Left: icon + title ────────────────────────────────────────── */}
       <div className={styles.headerInfo}>
         <div className={styles.headerIcon} aria-hidden="true">
           <PeopleIcon className={styles.headerIconSvg} />
@@ -29,8 +30,12 @@ const PatientHeader: FunctionComponent<PatientStateProps> = (
           </div>
         </div>
       </div>
+
+      {/* ── Right: search + controls ──────────────────────────────────── */}
       <div className={styles.headerActions}>
-        <div className={styles.searchForm}>
+
+        {/* Row 1: search input + icon buttons (reload, download) */}
+        <div className={styles.searchRow}>
           <input
             className={styles.searchInput}
             type="text"
@@ -44,71 +49,68 @@ const PatientHeader: FunctionComponent<PatientStateProps> = (
               })
             }
           />
-          <div className={styles.headerActionControls}>
-            <button
-              type="button"
-              className={`${styles.reloadButton} ${styles.inlineReloadButton}`}
-              onClick={(): void => {
-                onReload?.();
-              }}
-              disabled={state.load}
-              title="Reload patients"
-              aria-label="Reload patients"
-            >
-              <RefreshRoundedIcon className={styles.reloadIcon} />
-            </button>
-            <button
-              type="button"
-              className={`${styles.reloadButton} ${styles.inlineReloadButton}`}
-              onClick={(): void => {
-                downloadPatientImportTemplate();
-              }}
-              disabled={state.load}
-              title="Download patient import template"
-              aria-label="Download patient import template"
-            >
-              <DownloadOutlinedIcon className={styles.reloadIcon} />
-            </button>
-            <div className={styles.buttonContainer}>
-              <button
-                title="Import or export patient xlsx"
-                type="button"
-                className={`${styles.actionPillButton} ${styles.importButton}`}
-                aria-label="Upload"
-                onClick={(): void => {
-                  setState({
-                    ...state,
-                    openModal: true,
-                    upload: true,
-                    isDelete: false,
-                    isUpdate: false,
-                  });
-                }}
-              >
-                <FileUploadOutlinedIcon className={styles.pillActionIcon} />
-                <span>Upload</span>
-              </button>
-              <button
-                title="Add patients"
-                type="button"
-                className={`${styles.actionPillButton} ${styles.addPatientButton}`}
-                aria-label="Add"
-                onClick={(): void => {
-                  setState({
-                    ...state,
-                    openModal: true,
-                    upload: false,
-                    isDelete: false,
-                    isUpdate: false,
-                  });
-                }}
-              >
-                <AddIcon className={styles.pillActionIcon} />
-                <span>Add Patients</span>
-              </button>
-            </div>
-          </div>
+          <button
+            type="button"
+            className={`${styles.reloadButton} ${styles.inlineReloadButton}`}
+            onClick={(): void => { onReload?.(); }}
+            disabled={state.load}
+            title="Reload patients"
+            aria-label="Reload patients"
+          >
+            <RefreshRoundedIcon className={styles.reloadIcon} />
+          </button>
+          <button
+            type="button"
+            className={`${styles.reloadButton} ${styles.inlineReloadButton}`}
+            onClick={(): void => { downloadPatientImportTemplate(); }}
+            disabled={state.load}
+            title="Download patient import template"
+            aria-label="Download patient import template"
+          >
+            <DownloadOutlinedIcon className={styles.reloadIcon} />
+          </button>
         </div>
+
+        {/* Row 2: pill action buttons (Upload, Add Patients) */}
+        <div className={styles.actionRow}>
+          <button
+            title="Import or export patient xlsx"
+            type="button"
+            className={`${styles.actionPillButton} ${styles.importButton}`}
+            aria-label="Upload"
+            onClick={(): void => {
+              setState({
+                ...state,
+                openModal: true,
+                upload: true,
+                isDelete: false,
+                isUpdate: false,
+              });
+            }}
+          >
+            <FileUploadOutlinedIcon className={styles.pillActionIcon} />
+            <span>Upload</span>
+          </button>
+          <button
+            title="Add patients"
+            type="button"
+            className={`${styles.actionPillButton} ${styles.addPatientButton}`}
+            aria-label="Add"
+            onClick={(): void => {
+              setState({
+                ...state,
+                openModal: true,
+                upload: false,
+                isDelete: false,
+                isUpdate: false,
+              });
+            }}
+          >
+            <AddIcon className={styles.pillActionIcon} />
+            <span>Add Patients</span>
+          </button>
+        </div>
+
       </div>
     </div>
   );

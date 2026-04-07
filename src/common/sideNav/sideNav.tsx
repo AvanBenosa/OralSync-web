@@ -89,7 +89,7 @@ const SideNav = () => {
     : menuItems;
 
   const activeItem = visibleMenuItems.find((item) => item.path === location.pathname);
-  const clinicName = user?.clinicName?.trim() || 'DMD Web';
+  const clinicName = user?.clinicName?.trim() || 'OralSync';
   const userDisplayName = user?.name?.trim() || username || user?.email || '';
   const clinicInitials = getInitials(clinicName);
   const roleLabel = formatRoleLabel(user?.roleLabel);
@@ -128,7 +128,7 @@ const SideNav = () => {
             sx={{ display: 'flex', justifyContent: 'space-between', minHeight: '56px !important' }}
           >
             <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-              {activeItem?.label ?? 'DMD Web'}
+              {activeItem?.label ?? 'OralSync'}
             </Typography>
             <IconButton onClick={openLogoutDialog} color="inherit" aria-label="Logout">
               <LogoutRoundedIcon />
