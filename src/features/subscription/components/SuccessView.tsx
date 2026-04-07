@@ -10,10 +10,15 @@ import {
 
 type Props = {
   state: SubscriptionStateModel;
-  onDone: () => void;
+  onDone: () => void | Promise<void>;
+  doneLabel?: string;
 };
 
-export const SuccessView: FunctionComponent<Props> = ({ state, onDone }): JSX.Element => {
+export const SuccessView: FunctionComponent<Props> = ({
+  state,
+  onDone,
+  doneLabel = 'Go to Dashboard',
+}): JSX.Element => {
   const { transaction } = state;
 
   return (
@@ -96,8 +101,8 @@ export const SuccessView: FunctionComponent<Props> = ({ state, onDone }): JSX.El
         )}
       </Box>
 
-      <Button variant="contained" size="large" onClick={onDone}>
-        Go to Dashboard
+      <Button variant="contained" size="large" onClick={() => void onDone()}>
+        {doneLabel}
       </Button>
     </Box>
   );

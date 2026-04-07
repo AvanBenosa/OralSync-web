@@ -1,4 +1,9 @@
-import { createPaymentLink, getPaymentStatus } from './api';
+import {
+  createPaymentLink,
+  getPaymentStatus,
+  isLocalPaymentSimulationEnabled,
+  simulateLocalPayment,
+} from './api';
 import type { PaymentTransactionModel, SubscriptionMonths, SubscriptionStateModel } from './types';
 import { SubscriptionPlan } from './types';
 
@@ -42,6 +47,46 @@ export const handlePollPaymentStatus = async (
       };
     });
   } catch {
-    // Silent — polling continues
+    // Silent polling fallback keeps the user on the same screen.
+  }
+};
+
+export const handleStartPaymentStatusCheck = async (
+  transaction: PaymentTransactionModel,
+  setState: Function
+): Promise<void> => {
+  const shouldSimulateLocalPayment =
+    Boolean(transaction.payMongoLinkId) && isLocalPaymentSimulationEnabled();
+
+  setState((prev: SubscriptionStateModel) => ({
+    ...prev,
+    step: 'polling',
+    pollCount: 0,
+    isSubmitting: shouldSimulateLocalPayment,
+  }));
+
+  if (!shouldSimulateLocalPayment || !transaction.payMongoLinkId) {
+    return;
+  }
+
+  try {
+    const updated = await simulateLocalPayment(transaction.payMongoLinkId);
+    setState((prev: SubscriptionStateModel) => {
+      const isPaid = updated.status === 'Paid';
+      const isExpired = updated.status === 'Expired' || updated.status === 'Failed';
+
+      return {
+        ...prev,
+        transaction: updated,
+        pollCount: prev.pollCount + 1,
+        step: isPaid ? 'success' : isExpired ? 'plans' : 'polling',
+        isSubmitting: false,
+      };
+    });
+  } catch {
+    setState((prev: SubscriptionStateModel) => ({
+      ...prev,
+      isSubmitting: false,
+    }));
   }
 };

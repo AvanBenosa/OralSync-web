@@ -19,7 +19,6 @@ import {
   getPrice,
   MONTHS_LABEL,
   PLAN_FEATURES,
-  PRICING_TABLE,
   SUBSCRIPTION_MONTHS_OPTIONS,
   SubscriptionMonths,
   SubscriptionPlan,

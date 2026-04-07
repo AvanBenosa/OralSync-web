@@ -7,7 +7,8 @@ import { PlanSelector } from './components/PlanSelector';
 import { PollingView } from './components/PollingView';
 import { SuccessView } from './components/SuccessView';
 import type { SubscriptionStateModel } from './api/types';
-import { SubscriptionMonths, SubscriptionPlan } from './api/types';
+import { SubscriptionMonths } from './api/types';
+import { syncPaidTransactionToUser } from './api/session';
 
 export type SubscriptionModuleProps = {
   clinicId?: string;
@@ -39,31 +40,8 @@ const SubscriptionModule: FunctionComponent<SubscriptionModuleProps> = (): JSX.E
     pollCount: 0,
   });
 
-  const handleDone = () => {
-    // Push the new plan + new validityDate into authStore immediately.
-    // This makes getSubscriptionDaysRemaining() re-evaluate on the dashboard
-    // so the subscription warning banner disappears right away.
-    if (user && state.transaction) {
-      const { subscriptionType, subscriptionMonths, paidAt } = state.transaction;
-
-      // Calculate the new validity date from the paid date + subscriptionMonths.
-      // Mirror the backend logic: extend from existing validity if still future,
-      // otherwise extend from paidAt.
-      let baseDate = new Date(paidAt ?? Date.now());
-      const currentValidity = user.validityDate ? new Date(user.validityDate) : null;
-      if (currentValidity && currentValidity > baseDate) {
-        baseDate = currentValidity;
-      }
-      baseDate.setMonth(baseDate.getMonth() + (subscriptionMonths ?? 1));
-      const newValidityDate = baseDate.toISOString();
-
-      updateUser({
-        ...user,
-        subscriptionType: (subscriptionType as string) ?? user.subscriptionType,
-        validityDate: newValidityDate,
-        isLocked: false,
-      });
-    }
+  const handleDone = async () => {
+    updateUser(await syncPaidTransactionToUser(user, state.transaction));
     navigate('/dashboard');
   };
 

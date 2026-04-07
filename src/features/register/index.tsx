@@ -30,6 +30,7 @@ import {
   RegisterUserRole,
 } from './api/types';
 import { registerValidationSchema } from './api/validation';
+import FormValidationFocus from './form-validation-focus';
 
 type RegisterBootstrapModalProps = {
   open: boolean;
@@ -58,6 +59,24 @@ const createInitialValues = (): RegisterFormValues => ({
   password: '',
   confirmPassword: '',
 });
+
+const REGISTER_FIELD_ORDER: Array<keyof RegisterFormValues> = [
+  'clinicName',
+  'clinicEmailAddress',
+  'clinicContactNumber',
+  'clinicAddress',
+  'userName',
+  'email',
+  'firstName',
+  'middleName',
+  'lastName',
+  'contactNumber',
+  'religion',
+  'address',
+  'bio',
+  'password',
+  'confirmPassword',
+];
 
 const RegisterBootstrapModal: FunctionComponent<RegisterBootstrapModalProps> = (
   props: RegisterBootstrapModalProps
@@ -131,6 +150,12 @@ const RegisterBootstrapModal: FunctionComponent<RegisterBootstrapModalProps> = (
 
           return (
             <>
+              <FormValidationFocus
+                errors={errors}
+                submitCount={submitCount}
+                isSubmitting={isSubmitting}
+                fieldOrder={REGISTER_FIELD_ORDER}
+              />
               <DialogTitle sx={{ pb: 1, fontWeight: 800 }}>Complete Registration</DialogTitle>
               <DialogContent dividers sx={{ px: { xs: 2, sm: 3 }, py: 2 }}>
                 <Typography sx={{ color: '#50677d', mb: 2 }}>

@@ -30,6 +30,7 @@ import {
   type PublicClinicRegistrationFormValues,
 } from '../register/api/types';
 import { publicClinicRegistrationValidationSchema } from '../register/api/validation';
+import FormValidationFocus from '../register/form-validation-focus';
 
 type ClinicRegistrationFormProps = {
   onSuccess: (response: AuthResponse) => void | Promise<void>;
@@ -73,6 +74,25 @@ const createInitialValues = (): PublicClinicRegistrationFormValues => ({
   password: '',
   confirmPassword: '',
 });
+
+const PUBLIC_REGISTRATION_FIELD_ORDER: Array<keyof PublicClinicRegistrationFormValues> = [
+  'email',
+  'verificationCode',
+  'clinicName',
+  'clinicEmailAddress',
+  'clinicContactNumber',
+  'clinicAddress',
+  'userName',
+  'contactNumber',
+  'firstName',
+  'middleName',
+  'lastName',
+  'address',
+  'religion',
+  'bio',
+  'password',
+  'confirmPassword',
+];
 
 const ClinicRegistrationForm: FunctionComponent<ClinicRegistrationFormProps> = ({
   onSuccess,
@@ -169,6 +189,12 @@ const ClinicRegistrationForm: FunctionComponent<ClinicRegistrationFormProps> = (
             onSubmit={handleSubmit}
             sx={{ display: 'flex', flexDirection: 'column', gap: 2.25 }}
           >
+            <FormValidationFocus
+              errors={errors}
+              submitCount={submitCount}
+              isSubmitting={isSubmitting}
+              fieldOrder={PUBLIC_REGISTRATION_FIELD_ORDER}
+            />
             {status ? <Alert severity="error">{status}</Alert> : null}
             {verificationError ? <Alert severity="error">{verificationError}</Alert> : null}
             {verificationMessage ? <Alert severity="success">{verificationMessage}</Alert> : null}

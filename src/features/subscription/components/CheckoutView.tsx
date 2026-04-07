@@ -7,10 +7,9 @@ import {
   formatCurrency,
   MONTHS_LABEL,
   SubscriptionMonths,
-  SubscriptionPlan,
   SubscriptionStateModel,
 } from '../api/types';
-import { handleCreatePaymentLink } from '../api/handlers';
+import { handleCreatePaymentLink, handleStartPaymentStatusCheck } from '../api/handlers';
 
 type Props = {
   state: SubscriptionStateModel;
@@ -24,8 +23,9 @@ export const CheckoutView: FunctionComponent<Props> = ({ state, setState }): JSX
   const amount = transaction?.amount ?? 0;
   const expiresAt = transaction?.expiresAt;
 
-  const handleStartPolling = () => {
-    setState((prev: SubscriptionStateModel) => ({ ...prev, step: 'polling', pollCount: 0 }));
+  const handleStartPolling = async () => {
+    if (!transaction) return;
+    await handleStartPaymentStatusCheck(transaction, setState);
   };
 
   const handleBack = () => {
@@ -50,7 +50,6 @@ export const CheckoutView: FunctionComponent<Props> = ({ state, setState }): JSX
         Scan the QR code with your GCash app or open the checkout link.
       </Typography>
 
-      {/* Order summary */}
       <Box
         sx={{
           border: '1px solid',
@@ -87,7 +86,6 @@ export const CheckoutView: FunctionComponent<Props> = ({ state, setState }): JSX
         </Stack>
       </Box>
 
-      {/* QR code area */}
       {!hasLink ? (
         <Box textAlign="center" py={4}>
           <QrCodeRoundedIcon sx={{ fontSize: 64, color: 'text.disabled', mb: 2 }} />
@@ -130,7 +128,7 @@ export const CheckoutView: FunctionComponent<Props> = ({ state, setState }): JSX
           </Box>
 
           <Typography variant="caption" display="block" color="text.secondary" mb={1}>
-            Reference No: <strong>{transaction?.payMongoReferenceNumber || '—'}</strong>
+            Reference No: <strong>{transaction?.payMongoReferenceNumber || '-'}</strong>
           </Typography>
 
           {expiresAt && (
@@ -149,8 +147,13 @@ export const CheckoutView: FunctionComponent<Props> = ({ state, setState }): JSX
             >
               Open Checkout Page
             </Button>
-            <Button variant="contained" color="success" onClick={handleStartPolling}>
-              I've Paid — Check Status
+            <Button
+              variant="contained"
+              color="success"
+              onClick={() => void handleStartPolling()}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? 'Checking...' : "I've Paid - Check Status"}
             </Button>
           </Stack>
 
@@ -163,7 +166,7 @@ export const CheckoutView: FunctionComponent<Props> = ({ state, setState }): JSX
 
       <Box mt={3}>
         <Button variant="text" onClick={handleBack} disabled={isSubmitting}>
-          ← Back to Plans
+          {'<- Back to Plans'}
         </Button>
       </Box>
     </Box>
