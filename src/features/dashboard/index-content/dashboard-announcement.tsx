@@ -2,6 +2,8 @@ import { FunctionComponent, JSX, useEffect, useState } from 'react';
 import AutoStoriesRoundedIcon from '@mui/icons-material/AutoStoriesRounded';
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import WarningAmberRoundedIcon from '@mui/icons-material/WarningAmberRounded';
+import AutorenewRoundedIcon from '@mui/icons-material/AutorenewRounded';
+import { useNavigate } from 'react-router-dom';
 
 import styles from '../style.scss.module.scss';
 import {
@@ -50,6 +52,7 @@ const getSubscriptionAnnouncementMessage = (
 };
 
 const DashBoardAnnouncement: FunctionComponent = (): JSX.Element | null => {
+  const navigate = useNavigate();
   const validityDate = useAuthStore((store) => store.user?.validityDate);
   const daysRemaining = getSubscriptionDaysRemaining(validityDate);
   const isSubscriptionWarningActive =
@@ -128,6 +131,10 @@ const DashBoardAnnouncement: FunctionComponent = (): JSX.Element | null => {
       ? 'Fetching a fresh Bible verse for today.'
       : devotional?.message ?? fallbackDevotional.message;
 
+  const handleRenewSubscription = (): void => {
+    navigate('/subscription');
+  };
+
   return (
     <section className={styles.announcementBanner} aria-live="polite">
       <div className={styles.announcementAccent} aria-hidden="true" />
@@ -143,9 +150,17 @@ const DashBoardAnnouncement: FunctionComponent = (): JSX.Element | null => {
           <div className={styles.announcementEyebrow}>{announcementEyebrow}</div>
           <h2 className={styles.announcementTitle}>{announcementTitle}</h2>
           <p className={styles.announcementMessage}>{announcementMessage}</p>
-          {/* <div className={styles.announcementMeta}>
-            Source: {isLoading ? 'Connecting...' : devotional?.source ?? fallbackDevotional.source}
-          </div> */}
+          {isSubscriptionWarningActive && (
+            <button
+              type="button"
+              className={styles.announcementRenewButton}
+              onClick={handleRenewSubscription}
+              aria-label="Renew your clinic subscription"
+            >
+              <AutorenewRoundedIcon fontSize="small" />
+              Renew Subscription
+            </button>
+          )}
         </div>
       </div>
       {!isSubscriptionWarningActive ? (

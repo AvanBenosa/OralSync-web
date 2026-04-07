@@ -1191,6 +1191,27 @@
   line-height: 1.7 !important;
 }
 
+.subscriptionPlanPrice {
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+  margin: 2px 0 4px;
+}
+
+.subscriptionPlanPriceAmount {
+  color: #163b62;
+  font-size: 26px;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.subscriptionPlanPricePer {
+  color: #7a93a8;
+  font-size: 13px;
+  font-weight: 600;
+}
+
 .subscriptionPlanMetrics {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));

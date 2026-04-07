@@ -26,6 +26,7 @@ type SubscriptionPlan = {
   label: string;
   tagline: string;
   summary: string;
+  price: number;           // monthly base price in PHP
   patientLimit: string;
   storageLimit: string;
   userLimit: string;
@@ -146,6 +147,7 @@ const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
     label: 'Basic',
     tagline: 'Starter clinic plan',
     summary: 'Best for solo or startup clinics handling a lighter daily patient load.',
+    price: 450,
     patientLimit: '500 patients',
     storageLimit: '500 photos/files',
     userLimit: '2 users',
@@ -178,6 +180,7 @@ const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
     label: 'Standard',
     tagline: 'Balanced everyday plan',
     summary: 'Built for growing clinics that want reminders, inventory, and larger storage.',
+    price: 800,
     patientLimit: '1000 patients',
     storageLimit: '1000 photos/files',
     userLimit: '5 users',
@@ -348,6 +351,14 @@ const Subscriptions: FunctionComponent<SubscriptionsProps> = (
                   </div>
 
                   <Typography className={styles.subscriptionPlanSummary}>{plan.summary}</Typography>
+
+                  {/* Price */}
+                  <div className={styles.subscriptionPlanPrice}>
+                    <span className={styles.subscriptionPlanPriceAmount}>
+                      ₱{plan.price.toLocaleString('en-PH')}
+                    </span>
+                    <span className={styles.subscriptionPlanPricePer}>&nbsp;/ month</span>
+                  </div>
 
                   <div className={styles.subscriptionPlanMetrics}>
                     <div className={styles.subscriptionPlanMetric}>

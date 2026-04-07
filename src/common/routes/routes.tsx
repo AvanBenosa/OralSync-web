@@ -14,6 +14,7 @@ import DentalLabCasesModule from '../../features/dental-lab-cases';
 import FinanceOverview from '../../features/finance-overview';
 import InvoiceGeneratorModule from '../../features/invoice-generator';
 import SettingsModule from '../../features/settings';
+import SubscriptionModule from '../../features/subscription';
 import AdminDashboard from '../../features/admin-portal/dashboard';
 import ClinicLockModule from '../../features/admin-portal/clinic-locks';
 import PublicRegistrationPage from '../../features/public-registration';
@@ -73,6 +74,10 @@ const AppRoutes = () => {
           <Route
             path="/settings"
             element={<SettingsModule clinicId={user?.clinicId ?? undefined} />}
+          />
+          <Route
+            path="/subscription"
+            element={<SubscriptionModule clinicId={user?.clinicId ?? undefined} />}
           />
           <Route
             path="/patient-profile/:patientId"

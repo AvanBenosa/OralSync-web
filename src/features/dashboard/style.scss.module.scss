@@ -1,4 +1,5 @@
 @import '../../common/styles/variables.scss';
+@import '../../common/styles/animations.scss';
 
 .wrapper {
   width: 100%;
@@ -103,6 +104,62 @@
   color: rgba(214, 229, 243, 0.82);
   font-size: 12px;
   font-weight: 700;
+}
+
+.announcementRenewButton {
+  // ── Layout ─────────────────────────────────────────────────────────────
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  margin-top: 16px;
+  padding: 0 22px;
+  min-height: 44px;
+  border-radius: 14px;
+  cursor: pointer;
+
+  // ── Alert amber/orange colour ───────────────────────────────────────────
+  border: 2px solid rgba(255, 172, 0, 0.9);
+  background: linear-gradient(135deg, #ff9500 0%, #ff6a00 100%);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+
+  // ── Pulse glow ring ─────────────────────────────────────────────────────
+  animation:
+    pulse-glow 2s ease-in-out infinite,
+    urgent-shake 4s ease-in-out 1.5s infinite;
+
+  // ── Icon spin on load ───────────────────────────────────────────────────
+  svg {
+    font-size: 19px !important;
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
+    animation: rotate 3s linear 2s infinite;
+  }
+
+  // ── Hover — lift + intensify glow ───────────────────────────────────────
+  &:hover {
+    background: linear-gradient(135deg, #ffaa00 0%, #ff7a00 100%);
+    border-color: #ffcc00;
+    transform: translateY(-2px) scale(1.03);
+    box-shadow:
+      0 0 0 3px rgba(255, 180, 0, 0.4),
+      0 10px 28px rgba(220, 100, 0, 0.5);
+    animation-play-state: paused; // stop shake on hover so it doesn't fight the lift
+  }
+
+  // ── Active press ────────────────────────────────────────────────────────
+  &:active {
+    transform: translateY(0) scale(0.98);
+    box-shadow: 0 4px 10px rgba(200, 80, 0, 0.4);
+  }
+
+  // ── Focus ring for a11y ─────────────────────────────────────────────────
+  &:focus-visible {
+    outline: 3px solid #ffdd55;
+    outline-offset: 3px;
+  }
 }
 
 .announcementCloseButton {
@@ -1430,6 +1487,12 @@
   .announcementMeta {
     margin-top: 10px;
     font-size: 11px;
+  }
+
+  .announcementRenewButton {
+    padding: 0 16px;
+    min-height: 40px;
+    font-size: 12px;
   }
 
   .listHeader {
