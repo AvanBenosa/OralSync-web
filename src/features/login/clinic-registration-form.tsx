@@ -704,7 +704,7 @@ const ClinicRegistrationForm: FunctionComponent<ClinicRegistrationFormProps> = (
                 },
               }}
             >
-              {isSubmitting ? <CircularProgress size={20} color="inherit" /> : 'Create Clinic'}
+              {isSubmitting ? <CircularProgress size={20} color="inherit" /> : 'Create Account'}
             </Button>
           </Box>
         );
