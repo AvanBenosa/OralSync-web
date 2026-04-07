@@ -5,15 +5,30 @@ type ServiceWorkerRegisterOptions = {
 
 const isProduction = process.env.NODE_ENV === 'production';
 
-const buildServiceWorkerUrl = (): string => {
-  const publicUrl = process.env.PUBLIC_URL || '';
-  return `${publicUrl}/service-worker.js`.replace(/([^:]\/)\/+/g, '$1');
+const normalizeUrl = (value: string): string => value.replace(/([^:]\/)\/+/g, '$1');
+
+const buildServiceWorkerUrls = (): string[] => {
+  const publicUrl = (process.env.PUBLIC_URL || '').replace(/\/+$/, '');
+  const urls = [normalizeUrl(`${publicUrl}/service-worker.js`)];
+
+  if (publicUrl) {
+    urls.push('/service-worker.js');
+  }
+
+  return urls.filter((url, index) => urls.indexOf(url) === index);
 };
 
 const registerValidServiceWorker = (
-  serviceWorkerUrl: string,
-  options?: ServiceWorkerRegisterOptions
+  serviceWorkerUrls: string[],
+  options?: ServiceWorkerRegisterOptions,
+  attemptIndex = 0
 ): void => {
+  const serviceWorkerUrl = serviceWorkerUrls[attemptIndex];
+
+  if (!serviceWorkerUrl) {
+    return;
+  }
+
   navigator.serviceWorker
     .register(serviceWorkerUrl)
     .then((registration) => {
@@ -41,6 +56,11 @@ const registerValidServiceWorker = (
       };
     })
     .catch((error) => {
+      if (attemptIndex + 1 < serviceWorkerUrls.length) {
+        registerValidServiceWorker(serviceWorkerUrls, options, attemptIndex + 1);
+        return;
+      }
+
       console.error('Service worker registration failed:', error);
     });
 };
@@ -51,7 +71,7 @@ export const registerServiceWorker = (options?: ServiceWorkerRegisterOptions): v
   }
 
   window.addEventListener('load', () => {
-    registerValidServiceWorker(buildServiceWorkerUrl(), options);
+    registerValidServiceWorker(buildServiceWorkerUrls(), options);
   });
 };
 

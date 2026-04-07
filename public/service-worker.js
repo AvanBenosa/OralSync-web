@@ -1,19 +1,48 @@
-const APP_SHELL_CACHE = 'oralsync-app-shell-v1';
-const STATIC_ASSET_CACHE = 'oralsync-static-assets-v1';
-const OFFLINE_URL = '/offline.html';
-const INDEX_URL = '/index.html';
-const APP_SHELL_ASSETS = [
-  '/',
-  INDEX_URL,
-  OFFLINE_URL,
-  '/manifest.json',
-  '/favicon.ico',
-  '/logo192.png',
-  '/logo512.png',
-  '/OralSync.png',
+const CACHE_VERSION = 'v2';
+const APP_SHELL_CACHE = `oralsync-app-shell-${CACHE_VERSION}`;
+const STATIC_ASSET_CACHE = `oralsync-static-assets-${CACHE_VERSION}`;
+
+const getBasePath = () => {
+  const scopeUrl = new URL(self.registration.scope);
+  return scopeUrl.pathname.replace(/\/$/, '');
+};
+
+const toAppUrl = (path = '/') => {
+  const basePath = getBasePath();
+
+  if (path === '/') {
+    return basePath ? `${basePath}/` : '/';
+  }
+
+  return `${basePath}${path.startsWith('/') ? path : `/${path}`}` || '/';
+};
+
+const getIndexUrl = () => toAppUrl('/index.html');
+const getOfflineUrl = () => toAppUrl('/offline.html');
+
+const getAppShellAssets = () => [
+  toAppUrl('/'),
+  getIndexUrl(),
+  getOfflineUrl(),
+  toAppUrl('/manifest.json'),
+  toAppUrl('/favicon.ico'),
+  toAppUrl('/logo192.png'),
+  toAppUrl('/logo512.png'),
+  toAppUrl('/OralSync.png'),
 ];
 
 const isSameOrigin = (url) => url.origin === self.location.origin;
+
+const getScopedPathname = (pathname) => {
+  const basePath = getBasePath();
+
+  if (!basePath || !pathname.startsWith(basePath)) {
+    return pathname;
+  }
+
+  const scopedPath = pathname.slice(basePath.length);
+  return scopedPath || '/';
+};
 
 const isApiOrProtectedRequest = (pathname) =>
   pathname.startsWith('/api/') ||
@@ -51,19 +80,22 @@ const staleWhileRevalidate = async (request) => {
 };
 
 const networkFirstNavigation = async (request) => {
+  const indexUrl = getIndexUrl();
+  const offlineUrl = getOfflineUrl();
+
   try {
     const response = await fetch(request);
-    await putInCache(APP_SHELL_CACHE, INDEX_URL, response.clone());
+    await putInCache(APP_SHELL_CACHE, indexUrl, response.clone());
     return response;
   } catch (error) {
     const cache = await caches.open(APP_SHELL_CACHE);
-    const cachedIndex = await cache.match(INDEX_URL);
+    const cachedIndex = await cache.match(indexUrl);
 
     if (cachedIndex) {
       return cachedIndex;
     }
 
-    const offlineResponse = await cache.match(OFFLINE_URL);
+    const offlineResponse = await cache.match(offlineUrl);
     if (offlineResponse) {
       return offlineResponse;
     }
@@ -76,7 +108,7 @@ self.addEventListener('install', (event) => {
   event.waitUntil(
     caches
       .open(APP_SHELL_CACHE)
-      .then((cache) => cache.addAll(APP_SHELL_ASSETS))
+      .then((cache) => cache.addAll(getAppShellAssets()))
       .then(() => self.skipWaiting())
   );
 });
@@ -112,8 +144,9 @@ self.addEventListener('fetch', (event) => {
   }
 
   const url = new URL(event.request.url);
+  const pathname = getScopedPathname(url.pathname);
 
-  if (!isSameOrigin(url) || isApiOrProtectedRequest(url.pathname)) {
+  if (!isSameOrigin(url) || isApiOrProtectedRequest(pathname)) {
     return;
   }
 
@@ -122,7 +155,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  if (isStaticAssetRequest(url.pathname)) {
+  if (isStaticAssetRequest(pathname)) {
     event.respondWith(staleWhileRevalidate(event.request));
   }
 });
