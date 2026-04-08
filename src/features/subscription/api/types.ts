@@ -1,9 +1,6 @@
-// ── Enums ─────────────────────────────────────────────────────────────────────
-
 export enum SubscriptionPlan {
   Basic = 'Basic',
   Standard = 'Standard',
-  // Premium is disabled — not yet available
 }
 
 export enum PaymentStatus {
@@ -13,19 +10,34 @@ export enum PaymentStatus {
   Expired = 'Expired',
 }
 
-// ── Label / pricing maps ──────────────────────────────────────────────────────
+export enum PaymentChannel {
+  PayMongo = 'PayMongo',
+  Manual = 'Manual',
+}
+
+export enum ManualPaymentMethod {
+  GCash = 'GCash',
+  BankTransfer = 'Bank Transfer',
+}
 
 export const SUBSCRIPTION_PLAN_LABELS: Record<SubscriptionPlan, string> = {
   [SubscriptionPlan.Basic]: 'Basic',
   [SubscriptionPlan.Standard]: 'Standard',
 };
 
+export const PAYMENT_CHANNEL_LABELS: Record<PaymentChannel, string> = {
+  [PaymentChannel.PayMongo]: 'PayMongo',
+  [PaymentChannel.Manual]: 'Manual Payment',
+};
+
+export const MANUAL_PAYMENT_METHOD_LABELS: Record<ManualPaymentMethod, string> = {
+  [ManualPaymentMethod.GCash]: 'GCash',
+  [ManualPaymentMethod.BankTransfer]: 'Bank Transfer',
+};
+
 export const SUBSCRIPTION_MONTHS_OPTIONS = [1, 3, 6, 12] as const;
 export type SubscriptionMonths = (typeof SUBSCRIPTION_MONTHS_OPTIONS)[number];
 
-// Pricing in PHP — must match backend PricingTable in CreatePaymentLink/Command.cs
-// Basic:    ₱450 / month
-// Standard: ₱800 / month
 export const PRICING_TABLE: Record<SubscriptionPlan, Record<SubscriptionMonths, number>> = {
   [SubscriptionPlan.Basic]: { 1: 450, 3: 1200, 6: 2400, 12: 4500 },
   [SubscriptionPlan.Standard]: { 1: 800, 3: 2100, 6: 3900, 12: 7200 },
@@ -38,7 +50,6 @@ export const MONTHS_LABEL: Record<SubscriptionMonths, string> = {
   12: '12 Months',
 };
 
-// Features must stay in sync with subscriptions.tsx SUBSCRIPTION_PLANS array
 export const PLAN_FEATURES: Record<SubscriptionPlan, string[]> = {
   [SubscriptionPlan.Basic]: [
     'Up to 2 users',
@@ -58,46 +69,59 @@ export const PLAN_FEATURES: Record<SubscriptionPlan, string[]> = {
   ],
 };
 
-// ── API models ────────────────────────────────────────────────────────────────
-
 export type PaymentTransactionModel = {
   id?: string;
   clinicProfileId?: string;
+  paymentChannel?: PaymentChannel | string;
+  paymentMethod?: string;
   payMongoLinkId?: string;
   payMongoReferenceNumber?: string;
   checkoutUrl?: string;
+  referenceNumber?: string;
+  senderName?: string;
+  proofImageUrl?: string;
   amount?: number;
   subscriptionType?: SubscriptionPlan;
   subscriptionMonths?: number;
   status?: PaymentStatus | string;
   paidAt?: string | null;
+  submittedAt?: string | null;
   expiresAt?: string | null;
+  verifiedAt?: string | null;
+  verifiedBy?: string | null;
+  rejectionReason?: string | null;
   createdAt?: string;
 };
 
-// ── State models ──────────────────────────────────────────────────────────────
+export type ManualPaymentFormModel = {
+  paymentMethod: ManualPaymentMethod | '';
+  senderName: string;
+  referenceNumber: string;
+  proofImageUrl: string;
+  proofFileName: string;
+};
 
 export type SubscriptionProps = {
   clinicId?: string;
 };
 
 export type SubscriptionStateModel = {
-  // Step control: 'plans' | 'checkout' | 'polling' | 'success'
   step: 'plans' | 'checkout' | 'polling' | 'success';
-  // Both Basic and Standard are selectable paid plans
   selectedPlan: SubscriptionPlan | null;
   selectedMonths: SubscriptionMonths;
+  paymentChannel: PaymentChannel;
+  manualPayment: ManualPaymentFormModel;
   transaction: PaymentTransactionModel | null;
   isSubmitting: boolean;
+  isUploadingProof: boolean;
   pollCount: number;
+  errorMessage?: string | null;
 };
 
 export type SubscriptionStateProps = {
   state: SubscriptionStateModel;
   setState: Function;
 };
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
 
 export const formatCurrency = (amount: number): string =>
   new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(amount);

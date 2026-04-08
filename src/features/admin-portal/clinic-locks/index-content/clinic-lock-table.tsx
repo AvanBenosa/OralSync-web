@@ -1,6 +1,7 @@
 import { FunctionComponent, JSX } from 'react';
 import EditRoundedIcon from '@mui/icons-material/EditRounded';
 import HistoryRoundedIcon from '@mui/icons-material/HistoryRounded';
+import ReceiptLongRoundedIcon from '@mui/icons-material/ReceiptLongRounded';
 import {
   Box,
   Grid,
@@ -115,7 +116,7 @@ const ClinicLockTable: FunctionComponent<ClinicLockStateProps> = (
                 { width: '58%' },
                 { width: '52%' },
                 { width: '46%' },
-                { kind: 'actions', align: 'right', itemCount: 2 },
+                { kind: 'actions', align: 'right', itemCount: 3 },
               ]}
             />
           </TableBody>
@@ -183,6 +184,28 @@ const ClinicLockTable: FunctionComponent<ClinicLockStateProps> = (
                     }}
                   >
                     <HistoryRoundedIcon sx={{ fontSize: 18, color: '#24507a' }} />
+                  </IconButton>
+                  <IconButton
+                    size="small"
+                    onClick={() => {
+                      setState((prevState: typeof state) => ({
+                        ...prevState,
+                        selectedItem: item,
+                        isUpdate: false,
+                        isHistory: false,
+                        isManualPayments: true,
+                        openModal: true,
+                      }));
+                    }}
+                    disabled={!item.id}
+                    sx={{
+                      width: 34,
+                      height: 34,
+                      border: '1px solid rgba(22,50,79,0.1)',
+                      backgroundColor: '#ffffff',
+                    }}
+                  >
+                    <ReceiptLongRoundedIcon sx={{ fontSize: 18, color: '#24507a' }} />
                   </IconButton>
                   <IconButton
                     size="small"
@@ -340,6 +363,27 @@ const ClinicLockTable: FunctionComponent<ClinicLockStateProps> = (
                     }}
                   >
                     <HistoryRoundedIcon sx={{ fontSize: 18, color: '#24507a' }} />
+                  </IconButton>
+                  <IconButton
+                    onClick={() => {
+                      setState((prevState: typeof state) => ({
+                        ...prevState,
+                        selectedItem: item,
+                        isUpdate: false,
+                        isHistory: false,
+                        isManualPayments: true,
+                        openModal: true,
+                      }));
+                    }}
+                    disabled={!item.id}
+                    sx={{
+                      width: 36,
+                      height: 36,
+                      border: '1px solid rgba(22,50,79,0.1)',
+                      backgroundColor: '#ffffff',
+                    }}
+                  >
+                    <ReceiptLongRoundedIcon sx={{ fontSize: 18, color: '#24507a' }} />
                   </IconButton>
                   <IconButton
                     onClick={() => {

@@ -7,6 +7,7 @@ export type ClinicLockStateModel = {
   openModal: boolean;
   isUpdate: boolean;
   isHistory: boolean;
+  isManualPayments: boolean;
   selectedItem?: AdminClinicModel;
 };
 

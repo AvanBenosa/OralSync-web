@@ -1,8 +1,24 @@
 import type { AuthUser } from '../../../common/services/auth-api';
-import type { PaymentTransactionModel } from './types';
 import { GetCurrentClinicProfile } from '../../settings/clinic-profile/api/api';
+import type { PaymentTransactionModel } from './types';
 
-export const applyPaidTransactionToUser = (
+const resolveTransactionTimestamp = (
+  transaction: PaymentTransactionModel | null | undefined
+): string | number => {
+  if (!transaction) {
+    return Date.now();
+  }
+
+  return (
+    transaction.paidAt ??
+    transaction.verifiedAt ??
+    transaction.submittedAt ??
+    transaction.createdAt ??
+    Date.now()
+  );
+};
+
+export const applySubscriptionTransactionToUser = (
   user: AuthUser | null | undefined,
   transaction: PaymentTransactionModel | null | undefined
 ): AuthUser | null => {
@@ -14,8 +30,8 @@ export const applyPaidTransactionToUser = (
     return user;
   }
 
-  const { subscriptionType, subscriptionMonths, paidAt } = transaction;
-  const paymentTimestamp = new Date(paidAt ?? Date.now());
+  const { subscriptionType, subscriptionMonths } = transaction;
+  const paymentTimestamp = new Date(resolveTransactionTimestamp(transaction));
   const wasLockedBeforePayment = Boolean(user.isLocked);
   const currentValidity = user.validityDate ? new Date(user.validityDate) : null;
 
@@ -38,11 +54,11 @@ export const applyPaidTransactionToUser = (
   };
 };
 
-export const syncPaidTransactionToUser = async (
+export const syncSubscriptionTransactionToUser = async (
   user: AuthUser | null | undefined,
   transaction: PaymentTransactionModel | null | undefined
 ): Promise<AuthUser | null> => {
-  const optimisticUser = applyPaidTransactionToUser(user, transaction);
+  const optimisticUser = applySubscriptionTransactionToUser(user, transaction);
 
   if (!optimisticUser) {
     return null;
@@ -61,3 +77,6 @@ export const syncPaidTransactionToUser = async (
     return optimisticUser;
   }
 };
+
+export const applyPaidTransactionToUser = applySubscriptionTransactionToUser;
+export const syncPaidTransactionToUser = syncSubscriptionTransactionToUser;

@@ -81,6 +81,30 @@ export type AdminClinicSubscriptionHistoryDeleteRequest = {
   clinicId: string;
 };
 
+export type AdminClinicManualPaymentModel = {
+  id?: string;
+  clinicId?: string;
+  amount?: number;
+  paymentMethod?: string;
+  referenceNumber?: string;
+  senderName?: string;
+  proofImageUrl?: string;
+  status?: string;
+  submittedAt?: string | Date;
+  verifiedAt?: string | Date | null;
+  verifiedBy?: string;
+  rejectionReason?: string;
+  subscriptionType?: string;
+  subscriptionMonths?: number;
+};
+
+export type AdminClinicManualPaymentStatusRequest = {
+  id: string;
+  clinicId: string;
+  status: string;
+  rejectionReason?: string;
+};
+
 export type AdminUserModel = {
   id?: string;
   userName?: string;

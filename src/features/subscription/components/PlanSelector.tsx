@@ -82,7 +82,7 @@ export const PlanSelector: FunctionComponent<Props> = ({
         Subscription Plans
       </Typography>
       <Typography variant="body2" color="text.secondary" mb={3}>
-        Choose a plan and billing period. Pay securely via GCash.
+        Choose a plan and billing period, then continue with PayMongo or manual payment.
       </Typography>
 
       {/* Billing period toggle */}

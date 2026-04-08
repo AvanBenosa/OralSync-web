@@ -21,7 +21,11 @@ import { PollingView } from '../subscription/components/PollingView';
 import { SuccessView } from '../subscription/components/SuccessView';
 import { syncPaidTransactionToUser } from '../subscription/api/session';
 import type { SubscriptionStateModel } from '../subscription/api/types';
-import { SubscriptionMonths } from '../subscription/api/types';
+import {
+  ManualPaymentMethod,
+  PaymentChannel,
+  SubscriptionMonths,
+} from '../subscription/api/types';
 
 type ClinicLockedDialogProps = {
   open: boolean;
@@ -35,9 +39,19 @@ const createInitialPaymentState = (): SubscriptionStateModel => ({
   step: 'plans',
   selectedPlan: null,
   selectedMonths: 1 as SubscriptionMonths,
+  paymentChannel: PaymentChannel.PayMongo,
+  manualPayment: {
+    paymentMethod: ManualPaymentMethod.GCash,
+    senderName: '',
+    referenceNumber: '',
+    proofImageUrl: '',
+    proofFileName: '',
+  },
   transaction: null,
   isSubmitting: false,
+  isUploadingProof: false,
   pollCount: 0,
+  errorMessage: null,
 });
 
 const stepFromState = (step: SubscriptionStateModel['step']): number => {
@@ -118,7 +132,8 @@ const ClinicLockedDialog: FunctionComponent<ClinicLockedDialogProps> = ({
                 payment is settled.
               </Typography>
               <Alert severity="warning" sx={{ mb: 1.5 }}>
-                Once payment is confirmed, this clinic will be unlocked automatically.
+                Pay via PayMongo for instant confirmation, or submit a manual payment proof to
+                unlock access right away while verification is pending.
               </Alert>
               <Typography variant="body2" sx={{ color: 'text.secondary' }}>
                 You can settle the subscription here and resume using the system right away.
@@ -128,8 +143,8 @@ const ClinicLockedDialog: FunctionComponent<ClinicLockedDialogProps> = ({
         ) : (
           <Box>
             <Alert severity="info" sx={{ mb: 3 }}>
-              Complete the subscription payment below. A successful payment will automatically
-              reactivate this clinic.
+              Complete the subscription payment below. PayMongo confirms automatically, while
+              manual payment submission restores access immediately and stays pending for review.
             </Alert>
 
             <Stepper activeStep={stepFromState(paymentState.step)} alternativeLabel sx={{ mb: 4 }}>

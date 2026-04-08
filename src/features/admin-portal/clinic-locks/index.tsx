@@ -8,6 +8,7 @@ import type { ClinicLockStateModel } from './api/types';
 import { HandleGetClinicLockItems } from './api/handlers';
 import ClinicLockHeader from './index-content/clinic-lock-header';
 import ClinicLockTable from './index-content/clinic-lock-table';
+import ManualPaymentRecordsModule from './manual-payment-records';
 import ClinicLockModal from './modal/modal';
 import SubscriptionHistoryModule from './subscription-history';
 
@@ -19,6 +20,7 @@ const ClinicLockModule: FunctionComponent = (): JSX.Element => {
     openModal: false,
     isUpdate: false,
     isHistory: false,
+    isManualPayments: false,
   });
   const lastLoadedRef = useRef(false);
   const reloadTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -105,15 +107,21 @@ const ClinicLockModule: FunctionComponent = (): JSX.Element => {
               ...prevState,
               isUpdate: false,
               isHistory: false,
+              isManualPayments: false,
               selectedItem: undefined,
             }));
           },
         }}
         fullWidth
-        maxWidth={state.isHistory ? 'lg' : 'sm'}
+        maxWidth={state.isHistory || state.isManualPayments ? 'lg' : 'sm'}
       >
         {state.isHistory ? (
           <SubscriptionHistoryModule
+            clinic={state.selectedItem || null}
+            onClose={handleCloseDialog}
+          />
+        ) : state.isManualPayments ? (
+          <ManualPaymentRecordsModule
             clinic={state.selectedItem || null}
             onClose={handleCloseDialog}
           />
