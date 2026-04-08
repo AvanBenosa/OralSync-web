@@ -29,8 +29,17 @@ const registerValidServiceWorker = (
     return;
   }
 
+  const serviceWorkerScope = (() => {
+    try {
+      const resolvedUrl = new URL(serviceWorkerUrl, window.location.origin);
+      return resolvedUrl.pathname.replace(/\/service-worker\.js$/, '/') || '/';
+    } catch {
+      return '/';
+    }
+  })();
+
   navigator.serviceWorker
-    .register(serviceWorkerUrl)
+    .register(serviceWorkerUrl, { scope: serviceWorkerScope })
     .then((registration) => {
       registration.onupdatefound = () => {
         const installingWorker = registration.installing;
@@ -88,4 +97,3 @@ export const unregisterServiceWorker = (): void => {
       // Ignore unregister failures because the app can continue safely.
     });
 };
-

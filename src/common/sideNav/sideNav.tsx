@@ -1,9 +1,14 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
+  Alert,
   AppBar,
   Box,
   Button,
+  CircularProgress,
   Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   Divider,
   Drawer,
   IconButton,
@@ -11,6 +16,8 @@ import {
   ListItemButton,
   ListItemIcon,
   ListItemText,
+  MenuItem,
+  TextField,
   Toolbar,
   Tooltip,
   Typography,
@@ -33,6 +40,9 @@ import { useAuthStore } from '../store/authStore';
 import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 import { isBasicSubscription } from '../utils/subscription';
 import SideNavAssistant from './side-nav-assistant';
+import { GetCurrentClinicProfile } from '../../features/settings/clinic-profile/api/api';
+import { ClinicProfileModel } from '../../features/settings/clinic-profile/api/types';
+import { sendClinicFeedback } from '../services/clinic-feedback-api';
 const drawerWidth = 240;
 const collapsedDrawerWidth = 72;
 const navPalette = {
@@ -73,6 +83,16 @@ const formatRoleLabel = (value?: string): string =>
     .map((item) => item.charAt(0).toUpperCase() + item.slice(1))
     .join(' ') || '';
 
+const FEEDBACK_TYPE_OPTIONS = [
+  'Feature Suggestion',
+  'Bug Report',
+  'General Feedback',
+  'Billing Concern',
+  'Other',
+];
+
+const isValidEmail = (value: string): boolean => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+
 const SideNav = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -84,6 +104,16 @@ const SideNav = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [drawerOpen, setDrawerOpen] = useState(true);
   const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
+  const [feedbackDialogOpen, setFeedbackDialogOpen] = useState(false);
+  const [clinicProfile, setClinicProfile] = useState<ClinicProfileModel | null>(null);
+  const [isSendingFeedback, setIsSendingFeedback] = useState(false);
+  const [feedbackError, setFeedbackError] = useState('');
+  const [feedbackForm, setFeedbackForm] = useState({
+    category: FEEDBACK_TYPE_OPTIONS[0],
+    subject: '',
+    message: '',
+    replyToEmail: '',
+  });
   const visibleMenuItems = isBasicSubscription(user?.subscriptionType)
     ? menuItems.filter((item) => item.path !== '/inventory')
     : menuItems;
@@ -93,6 +123,59 @@ const SideNav = () => {
   const userDisplayName = user?.name?.trim() || username || user?.email || '';
   const clinicInitials = getInitials(clinicName);
   const roleLabel = formatRoleLabel(user?.roleLabel);
+  const clinicEmailAddress = clinicProfile?.emailAddress?.trim() || '';
+  const hasValidClinicReplyEmail = isValidEmail(clinicEmailAddress);
+  const effectiveReplyToEmail =
+    (hasValidClinicReplyEmail ? clinicEmailAddress : '') ||
+    feedbackForm.replyToEmail.trim() ||
+    user?.email?.trim() ||
+    '';
+
+  useEffect(() => {
+    let isMounted = true;
+
+    if (!user?.clinicId) {
+      setClinicProfile(null);
+      setFeedbackForm((prev) => ({
+        ...prev,
+        replyToEmail: prev.replyToEmail || user?.email?.trim() || '',
+      }));
+
+      return () => {
+        isMounted = false;
+      };
+    }
+
+    void GetCurrentClinicProfile(user.clinicId)
+      .then((profile) => {
+        if (!isMounted) {
+          return;
+        }
+
+        setClinicProfile(profile);
+        setFeedbackForm((prev) => ({
+          ...prev,
+          replyToEmail:
+            prev.replyToEmail || profile.emailAddress?.trim() || user?.email?.trim() || '',
+        }));
+      })
+      .catch(() => {
+        if (!isMounted) {
+          return;
+        }
+
+        setClinicProfile(null);
+        setFeedbackForm((prev) => ({
+          ...prev,
+          replyToEmail: prev.replyToEmail || user?.email?.trim() || '',
+        }));
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [user?.clinicId, user?.email]);
+
   const handleNavigate = (path: string) => {
     navigate(path);
   };
@@ -110,6 +193,243 @@ const SideNav = () => {
   const closeLogoutDialog = () => {
     setLogoutDialogOpen(false);
   };
+
+  const openFeedbackDialog = () => {
+    setFeedbackError('');
+    setFeedbackDialogOpen(true);
+    setFeedbackForm((prev) => ({
+      ...prev,
+      replyToEmail:
+        prev.replyToEmail || clinicProfile?.emailAddress?.trim() || user?.email?.trim() || '',
+    }));
+  };
+
+  const closeFeedbackDialog = () => {
+    if (isSendingFeedback) {
+      return;
+    }
+
+    setFeedbackDialogOpen(false);
+    setFeedbackError('');
+  };
+
+  const handleFeedbackFieldChange =
+    (field: 'category' | 'subject' | 'message' | 'replyToEmail') =>
+    (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      const nextValue = String(event.target.value ?? '');
+
+      setFeedbackError('');
+      setFeedbackForm((prev) => ({
+        ...prev,
+        [field]: nextValue,
+      }));
+    };
+
+  const handleSendFeedback = async (): Promise<void> => {
+    const normalizedSubject = feedbackForm.subject.trim();
+    const normalizedMessage = feedbackForm.message.trim();
+    const normalizedReplyToEmail = effectiveReplyToEmail.trim();
+
+    if (!normalizedReplyToEmail) {
+      setFeedbackError('Add a clinic email in Clinic Profile or enter a contact email first.');
+      return;
+    }
+
+    if (!isValidEmail(normalizedReplyToEmail)) {
+      setFeedbackError('Enter a valid reply-to email address.');
+      return;
+    }
+
+    if (!normalizedSubject) {
+      setFeedbackError('Feedback subject is required.');
+      return;
+    }
+
+    if (!normalizedMessage) {
+      setFeedbackError('Please enter your suggestion or feedback message.');
+      return;
+    }
+
+    setIsSendingFeedback(true);
+    setFeedbackError('');
+
+    try {
+      await sendClinicFeedback({
+        category: feedbackForm.category,
+        subject: normalizedSubject,
+        message: normalizedMessage,
+        replyToEmail: normalizedReplyToEmail,
+      });
+
+      setFeedbackDialogOpen(false);
+      setFeedbackForm({
+        category: FEEDBACK_TYPE_OPTIONS[0],
+        subject: '',
+        message: '',
+        replyToEmail: hasValidClinicReplyEmail ? '' : user?.email?.trim() || '',
+      });
+    } catch {
+      // API helper already shows the server error toast; keep the modal open for corrections.
+    } finally {
+      setIsSendingFeedback(false);
+    }
+  };
+
+  const feedbackDialog = (
+    <Dialog
+      open={feedbackDialogOpen}
+      onClose={closeFeedbackDialog}
+      fullWidth
+      maxWidth="sm"
+      PaperProps={{
+        sx: {
+          borderRadius: '18px',
+          overflow: 'hidden',
+        },
+      }}
+    >
+      <DialogTitle
+        sx={{
+          pb: 1.25,
+          fontSize: '1.1rem',
+          fontWeight: 800,
+          color: '#17344f',
+        }}
+      >
+        About OralSync
+      </DialogTitle>
+      <DialogContent dividers sx={{ px: { xs: 2, sm: 3 }, py: 2.5 }}>
+        <Box sx={{ display: 'grid', gap: 1.75 }}>
+          <Box
+            sx={{
+              p: 2,
+              borderRadius: '16px',
+              border: '1px solid #d8e6f2',
+              background:
+                'linear-gradient(180deg, rgba(46,111,64,0.08) 0%, rgba(104,186,127,0.04) 100%)',
+            }}
+          >
+            <Typography sx={{ fontSize: '0.95rem', fontWeight: 800, color: '#17344f' }}>
+              OralSync Description
+            </Typography>
+            <Typography sx={{ mt: 0.8, fontSize: '0.9rem', lineHeight: 1.7, color: '#46637a' }}>
+              OralSync is a cloud-based dental clinic management system built to keep patient
+              records, appointments, billing, inventory, lab cases, and clinic operations in one
+              connected workspace.
+            </Typography>
+          </Box>
+
+          <Alert severity="info" sx={{ alignItems: 'center' }}>
+            Send feature suggestions, report issues, or share workflow feedback directly with the
+            OralSync team. We send the message using the OralSync mailbox and use your clinic email
+            as the reply address when it is available.
+          </Alert>
+
+          <TextField
+            label="Clinic"
+            value={clinicProfile?.clinicName?.trim() || clinicName}
+            fullWidth
+            disabled
+          />
+
+          <TextField
+            label="Clinic Email On File"
+            value={clinicEmailAddress || 'No clinic email saved in Clinic Profile yet'}
+            fullWidth
+            disabled
+          />
+
+          {!hasValidClinicReplyEmail ? (
+            <TextField
+              label="Reply-To Email"
+              placeholder="Enter the email address we should reply to"
+              value={feedbackForm.replyToEmail}
+              onChange={handleFeedbackFieldChange('replyToEmail')}
+              fullWidth
+              required
+              type="email"
+              helperText="This will be used as the reply address because no valid clinic email is saved yet."
+            />
+          ) : null}
+
+          <TextField
+            select
+            label="Feedback Type"
+            value={feedbackForm.category}
+            onChange={handleFeedbackFieldChange('category')}
+            fullWidth
+          >
+            {FEEDBACK_TYPE_OPTIONS.map((option) => (
+              <MenuItem key={option} value={option}>
+                {option}
+              </MenuItem>
+            ))}
+          </TextField>
+
+          <TextField
+            label="Subject"
+            placeholder="Example: Add treatment reminders in patient dashboard"
+            value={feedbackForm.subject}
+            onChange={handleFeedbackFieldChange('subject')}
+            fullWidth
+            required
+          />
+
+          <TextField
+            label="Feature Suggestion / Feedback"
+            placeholder="Tell us what you need, what problem you ran into, or what will help your clinic workflow."
+            value={feedbackForm.message}
+            onChange={handleFeedbackFieldChange('message')}
+            fullWidth
+            required
+            multiline
+            minRows={5}
+          />
+
+          <Alert severity="success" sx={{ alignItems: 'center' }}>
+            Replies from the OralSync team will go to{' '}
+            <strong>{effectiveReplyToEmail || 'the email you provide above'}</strong>.
+          </Alert>
+
+          {feedbackError ? <Alert severity="error">{feedbackError}</Alert> : null}
+        </Box>
+      </DialogContent>
+      <DialogActions sx={{ px: { xs: 2, sm: 3 }, py: 2 }}>
+        <Button
+          onClick={closeFeedbackDialog}
+          disabled={isSendingFeedback}
+          color="inherit"
+          sx={{ textTransform: 'none', fontWeight: 600 }}
+        >
+          Cancel
+        </Button>
+        <Button
+          onClick={handleSendFeedback}
+          variant="contained"
+          disabled={isSendingFeedback}
+          sx={{
+            minWidth: 146,
+            textTransform: 'none',
+            fontWeight: 700,
+            borderRadius: '10px',
+            boxShadow: 'none',
+            '&:hover': {
+              boxShadow: 'none',
+            },
+          }}
+        >
+          {isSendingFeedback ? (
+            <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 1 }}>
+              <CircularProgress size={16} color="inherit" />
+              Sending...
+            </Box>
+          ) : (
+            'Send To OralSync'
+          )}
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
 
   if (isMobile) {
     return (
@@ -223,6 +543,8 @@ const SideNav = () => {
             </Button>
           </Box>
         </Dialog>
+
+        {feedbackDialog}
 
         <Box sx={{ pt: 7, pb: 7 }} />
       </>
@@ -459,11 +781,27 @@ const SideNav = () => {
               }}
             >
               <Typography
+                component="button"
+                type="button"
+                onClick={openFeedbackDialog}
                 sx={{
                   fontSize: '0.68rem',
                   fontWeight: 700,
                   lineHeight: 1.25,
                   letterSpacing: '0.02em',
+                  width: '100%',
+                  px: 1,
+                  py: 0.7,
+                  border: '1px solid rgba(207,255,220,0.12)',
+                  borderRadius: '12px',
+                  background: 'rgba(207,255,220,0.05)',
+                  color: 'rgba(207,255,220,0.76)',
+                  cursor: 'pointer',
+                  transition: 'all 140ms ease',
+                  '&:hover': {
+                    background: 'rgba(207,255,220,0.1)',
+                    color: '#ffffff',
+                  },
                 }}
               >
                 OralSync v1.0.0 (Beta) | (c) 2026
@@ -476,7 +814,7 @@ const SideNav = () => {
                   lineHeight: 1.2,
                 }}
               >
-                {/* © 2026 ABSoftware Solutions */}
+                About OralSync and send feature suggestions
               </Typography>
             </Box>
           ) : null}
@@ -593,6 +931,8 @@ const SideNav = () => {
           </Tooltip>
         </Box>
       </Box>
+
+      {feedbackDialog}
 
       <Dialog open={logoutDialogOpen} onClose={closeLogoutDialog} fullWidth maxWidth="xs">
         <Box sx={{ px: { xs: 2.5, sm: 3 }, pt: 2.5, pb: 1.5 }}>

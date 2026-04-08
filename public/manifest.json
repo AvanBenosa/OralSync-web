@@ -2,7 +2,7 @@
   "short_name": "OralSync",
   "name": "OralSync Dental Clinic Management",
   "description": "Cloud-based dental clinic workflow, patient records, billing, and chart management.",
-  "id": "/",
+  "id": "./",
   "icons": [
     {
       "src": "favicon.ico",
@@ -28,8 +28,8 @@
       "purpose": "any"
     }
   ],
-  "start_url": "/",
-  "scope": "/",
+  "start_url": "./",
+  "scope": "./",
   "display": "standalone",
   "orientation": "portrait-primary",
   "theme_color": "#1c4d2c",
