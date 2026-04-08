@@ -29,7 +29,7 @@ export const SuccessView: FunctionComponent<Props> = ({
 
   const title = isPendingManualPayment ? 'Manual Payment Submitted' : 'Payment Successful!';
   const description = isPendingManualPayment
-    ? 'Your proof of payment is pending review, but your clinic can continue using OralSync already.'
+    ? 'Your proof of payment is pending review. Your selected plan and new validity date will be applied once the payment is marked as paid.'
     : 'Your subscription has been activated. Thank you for choosing OralSync.';
   const referenceNumber =
     transaction?.referenceNumber || transaction?.payMongoReferenceNumber || '-';

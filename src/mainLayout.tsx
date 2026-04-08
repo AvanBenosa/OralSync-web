@@ -13,12 +13,14 @@ import {
 } from './common/services/auth-api';
 import { toastSuccess } from './common/api/responses';
 import { useAuthStore } from './common/store/authStore';
+import { isPendingClinicStatus } from './common/utils/subscription';
 import ClinicLockedDialog from './features/login/clinic-locked-dialog';
 import DataPrivacyConsentDialog from './features/login/data-privacy-consent-dialog';
 import ContractPolicyDialog from './features/login/contract-policy-dialog';
 import BetaTestingDialog from './features/login/beta-testing-dialog';
 import PostLoginBootScreen, { usePostLoginBoot } from './common/loading/post-login-boot';
 import AiAssistant from './common/components/AiAssistant';
+import { GetCurrentClinicProfile } from './features/settings/clinic-profile/api/api';
 // import RegisterBootstrapModal from './features/register';
 
 const MainLayout = () => {
@@ -31,6 +33,7 @@ const MainLayout = () => {
   const user = useAuthStore((state) => state.user);
   const clinicId = user?.clinicId;
   const clinicName = user?.clinicName;
+  const clinicStatus = user?.status;
   const isDataPrivacyAccepted = user?.isDataPrivacyAccepted;
   const isContractPolicyAccepted = user?.isContractPolicyAccepted;
   const forBetaTestingAccepted = user?.forBetaTestingAccepted;
@@ -129,15 +132,34 @@ const MainLayout = () => {
     const syncClinicStatus = async (): Promise<void> => {
       try {
         const response = await getClinicDataPrivacyStatus();
+        let clinicProfile = null;
+
+        try {
+          clinicProfile = await GetCurrentClinicProfile(clinicId, true);
+        } catch {
+          clinicProfile = null;
+        }
+
         const currentUser = useAuthStore.getState().user;
 
         updateUser(
           currentUser
             ? {
                 ...currentUser,
-                clinicName: response.clinicName || currentUser.clinicName,
+                clinicName:
+                  response.clinicName ||
+                  clinicProfile?.clinicName ||
+                  currentUser.clinicName,
                 isDataPrivacyAccepted: response.isDataPrivacyAccepted,
+                isContractPolicyAccepted:
+                  response.isContractPolicyAccepted ?? currentUser.isContractPolicyAccepted,
+                forBetaTestingAccepted:
+                  response.forBetaTestingAccepted ?? currentUser.forBetaTestingAccepted,
                 isLocked: response.isLocked,
+                subscriptionType:
+                  clinicProfile?.subscriptionType || currentUser.subscriptionType,
+                validityDate: clinicProfile?.validityDate || currentUser.validityDate,
+                status: clinicProfile?.status || currentUser.status,
               }
             : currentUser
         );
@@ -148,9 +170,11 @@ const MainLayout = () => {
 
     void syncClinicStatus();
 
+    const clinicSyncIntervalMs = isPendingClinicStatus(clinicStatus) ? 60000 : 1800000;
+
     lockStatusIntervalRef.current = setInterval(() => {
       void syncClinicStatus();
-    }, 1800000); //check every 30mins
+    }, clinicSyncIntervalMs);
 
     return () => {
       if (lockStatusIntervalRef.current) {
@@ -158,7 +182,7 @@ const MainLayout = () => {
         lockStatusIntervalRef.current = null;
       }
     };
-  }, [shouldCheckDataPrivacy, updateUser]);
+  }, [clinicId, clinicStatus, shouldCheckDataPrivacy, updateUser]);
 
   useEffect(() => {
     if (!shouldCheckDataPrivacy) {

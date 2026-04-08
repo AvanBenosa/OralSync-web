@@ -29,7 +29,6 @@ import {
 } from '../api/types';
 import {
   handleCreateManualPayment,
-  handleCreatePaymentLink,
   handleStartPaymentStatusCheck,
   handleUploadManualPaymentProof,
 } from '../api/handlers';
@@ -71,14 +70,6 @@ export const CheckoutView: FunctionComponent<Props> = ({ state, setState }): JSX
       transaction: null,
       errorMessage: null,
     }));
-  };
-
-  const handleGenerateLink = async () => {
-    if (!selectedPlan) {
-      return;
-    }
-
-    await handleCreatePaymentLink(selectedPlan, selectedMonths, setState);
   };
 
   const handleChannelChange = (
@@ -306,7 +297,7 @@ export const CheckoutView: FunctionComponent<Props> = ({ state, setState }): JSX
         <Box>
           <Alert severity="info" sx={{ mb: 3 }}>
             Send the amount to your agreed manual payment account, then upload the proof here. Once
-            submitted, your clinic can continue using OralSync while verification is pending.
+            submitted, the payment will stay pending until an admin validates it.
           </Alert>
 
           <Stack spacing={2.5}>
@@ -395,8 +386,8 @@ export const CheckoutView: FunctionComponent<Props> = ({ state, setState }): JSX
                 <Box>
                   <Typography variant="subtitle2">What happens after submission</Typography>
                   <Typography variant="body2" color="text.secondary">
-                    Your transaction status starts as pending, but your selected plan is applied
-                    right away so you can continue working in the system.
+                    Your transaction status will be set to pending. Your selected plan and new
+                    validity date will only be applied after the payment status is updated to Paid.
                   </Typography>
                 </Box>
               </Stack>

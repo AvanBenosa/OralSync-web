@@ -160,6 +160,22 @@
     outline: 3px solid #ffdd55;
     outline-offset: 3px;
   }
+
+  &:disabled {
+    cursor: not-allowed;
+    border-color: rgba(200, 217, 229, 0.85);
+    background: linear-gradient(135deg, rgba(227, 236, 244, 0.95), rgba(204, 218, 230, 0.95));
+    color: #355b80;
+    text-shadow: none;
+    box-shadow: none;
+    opacity: 0.92;
+    animation: none;
+  }
+
+  &:disabled svg {
+    animation: none;
+    filter: none;
+  }
 }
 
 .announcementCloseButton {

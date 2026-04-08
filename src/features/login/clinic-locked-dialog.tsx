@@ -24,6 +24,7 @@ import type { SubscriptionStateModel } from '../subscription/api/types';
 import {
   ManualPaymentMethod,
   PaymentChannel,
+  PaymentStatus,
   SubscriptionMonths,
 } from '../subscription/api/types';
 
@@ -74,6 +75,9 @@ const ClinicLockedDialog: FunctionComponent<ClinicLockedDialogProps> = ({
   const updateUser = useAuthStore((state) => state.updateUser);
   const [showPaymentFlow, setShowPaymentFlow] = useState(false);
   const [paymentState, setPaymentState] = useState<SubscriptionStateModel>(createInitialPaymentState);
+  const isPendingManualPayment =
+    paymentState.transaction?.paymentChannel === PaymentChannel.Manual &&
+    paymentState.transaction?.status === PaymentStatus.Pending;
 
   useEffect(() => {
     if (!open) {
@@ -132,11 +136,12 @@ const ClinicLockedDialog: FunctionComponent<ClinicLockedDialogProps> = ({
                 payment is settled.
               </Typography>
               <Alert severity="warning" sx={{ mb: 1.5 }}>
-                Pay via PayMongo for instant confirmation, or submit a manual payment proof to
-                unlock access right away while verification is pending.
+                Pay via PayMongo for instant confirmation, or submit a manual payment proof for
+                admin review. Manual payments stay pending until the status is marked as paid.
               </Alert>
               <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                You can settle the subscription here and resume using the system right away.
+                You can settle the subscription here. Access resumes once a payment is confirmed as
+                paid.
               </Typography>
             </Box>
           </Box>
@@ -144,7 +149,7 @@ const ClinicLockedDialog: FunctionComponent<ClinicLockedDialogProps> = ({
           <Box>
             <Alert severity="info" sx={{ mb: 3 }}>
               Complete the subscription payment below. PayMongo confirms automatically, while
-              manual payment submission restores access immediately and stays pending for review.
+              manual payment stays pending until an admin validates it as paid.
             </Alert>
 
             <Stepper activeStep={stepFromState(paymentState.step)} alternativeLabel sx={{ mb: 4 }}>
@@ -175,7 +180,7 @@ const ClinicLockedDialog: FunctionComponent<ClinicLockedDialogProps> = ({
               <SuccessView
                 state={paymentState}
                 onDone={handlePaymentSuccess}
-                doneLabel="Continue to Workspace"
+                doneLabel={isPendingManualPayment ? 'Back to Lock Notice' : 'Continue to Workspace'}
               />
             )}
           </Box>

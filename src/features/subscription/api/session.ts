@@ -1,6 +1,6 @@
 import type { AuthUser } from '../../../common/services/auth-api';
 import { GetCurrentClinicProfile } from '../../settings/clinic-profile/api/api';
-import type { PaymentTransactionModel } from './types';
+import { PaymentStatus, type PaymentTransactionModel } from './types';
 
 const resolveTransactionTimestamp = (
   transaction: PaymentTransactionModel | null | undefined
@@ -18,6 +18,9 @@ const resolveTransactionTimestamp = (
   );
 };
 
+const isPaidTransaction = (transaction: PaymentTransactionModel | null | undefined): boolean =>
+  String(transaction?.status ?? '').trim().toLowerCase() === PaymentStatus.Paid.toLowerCase();
+
 export const applySubscriptionTransactionToUser = (
   user: AuthUser | null | undefined,
   transaction: PaymentTransactionModel | null | undefined
@@ -27,6 +30,10 @@ export const applySubscriptionTransactionToUser = (
   }
 
   if (!transaction) {
+    return user;
+  }
+
+  if (!isPaidTransaction(transaction)) {
     return user;
   }
 
@@ -50,6 +57,7 @@ export const applySubscriptionTransactionToUser = (
     ...user,
     subscriptionType: (subscriptionType as string) ?? user.subscriptionType,
     validityDate: baseDate.toISOString(),
+    status: 'Active',
     isLocked: false,
   };
 };
@@ -71,7 +79,7 @@ export const syncSubscriptionTransactionToUser = async (
       ...optimisticUser,
       subscriptionType: clinicProfile.subscriptionType || optimisticUser.subscriptionType,
       validityDate: clinicProfile.validityDate || optimisticUser.validityDate,
-      isLocked: false,
+      status: clinicProfile.status || optimisticUser.status,
     };
   } catch {
     return optimisticUser;

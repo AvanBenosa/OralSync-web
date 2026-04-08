@@ -3,6 +3,7 @@ import AutoStoriesRoundedIcon from '@mui/icons-material/AutoStoriesRounded';
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import WarningAmberRoundedIcon from '@mui/icons-material/WarningAmberRounded';
 import AutorenewRoundedIcon from '@mui/icons-material/AutorenewRounded';
+import HourglassTopRoundedIcon from '@mui/icons-material/HourglassTopRounded';
 import { useNavigate } from 'react-router-dom';
 
 import styles from '../style.scss.module.scss';
@@ -18,6 +19,7 @@ import { useAuthStore } from '../../../common/store/authStore';
 import {
   formatSubscriptionValidityDate,
   getSubscriptionDaysRemaining,
+  isPendingClinicStatus,
 } from '../../../common/utils/subscription';
 
 const fallbackDevotional: DailyDevotionalModel = {
@@ -53,12 +55,16 @@ const getSubscriptionAnnouncementMessage = (
 
 const DashBoardAnnouncement: FunctionComponent = (): JSX.Element | null => {
   const navigate = useNavigate();
+  const clinicStatus = useAuthStore((store) => store.user?.status);
   const validityDate = useAuthStore((store) => store.user?.validityDate);
   const daysRemaining = getSubscriptionDaysRemaining(validityDate);
+  const isPaymentValidationPending = isPendingClinicStatus(clinicStatus);
   const isSubscriptionWarningActive =
     daysRemaining !== null &&
     daysRemaining >= 0 &&
     daysRemaining <= SUBSCRIPTION_WARNING_WINDOW_DAYS;
+  const isPriorityAnnouncementActive =
+    isPaymentValidationPending || isSubscriptionWarningActive;
   const formattedValidityDate = formatSubscriptionValidityDate(validityDate);
   const [isDismissed, setIsDismissed] = useState<boolean>(
     () => window.sessionStorage.getItem(DEVOTIONAL_HIDDEN_KEY) === 'true'
@@ -69,7 +75,7 @@ const DashBoardAnnouncement: FunctionComponent = (): JSX.Element | null => {
   const [isLoading, setIsLoading] = useState<boolean>(() => getCachedDailyDevotional() === null);
 
   useEffect(() => {
-    if (isSubscriptionWarningActive) {
+    if (isPriorityAnnouncementActive) {
       return;
     }
 
@@ -111,22 +117,28 @@ const DashBoardAnnouncement: FunctionComponent = (): JSX.Element | null => {
     return () => {
       abortController.abort();
     };
-  }, [isSubscriptionWarningActive]);
+  }, [isPriorityAnnouncementActive]);
 
-  if (!isSubscriptionWarningActive && isDismissed) {
+  if (!isPriorityAnnouncementActive && isDismissed) {
     return null;
   }
 
-  const announcementEyebrow = isSubscriptionWarningActive
-    ? 'Subscription Reminder'
+  const announcementEyebrow = isPaymentValidationPending
+    ? 'Payment Validation'
+    : isSubscriptionWarningActive
+      ? 'Subscription Reminder'
     : 'Daily Devotional';
-  const announcementTitle = isSubscriptionWarningActive
-    ? getSubscriptionAnnouncementTitle(daysRemaining)
+  const announcementTitle = isPaymentValidationPending
+    ? 'Manual payment is under review'
+    : isSubscriptionWarningActive
+      ? getSubscriptionAnnouncementTitle(daysRemaining)
     : isLoading
       ? "Loading today's verse..."
       : devotional?.reference ?? fallbackDevotional.reference;
-  const announcementMessage = isSubscriptionWarningActive
-    ? getSubscriptionAnnouncementMessage(daysRemaining, formattedValidityDate)
+  const announcementMessage = isPaymentValidationPending
+    ? 'We received your manual payment. Your selected plan and updated validity date will be applied once the payment is marked as paid in the admin portal.'
+    : isSubscriptionWarningActive
+      ? getSubscriptionAnnouncementMessage(daysRemaining, formattedValidityDate)
     : isLoading
       ? 'Fetching a fresh Bible verse for today.'
       : devotional?.message ?? fallbackDevotional.message;
@@ -140,7 +152,9 @@ const DashBoardAnnouncement: FunctionComponent = (): JSX.Element | null => {
       <div className={styles.announcementAccent} aria-hidden="true" />
       <div className={styles.announcementContent}>
         <div className={styles.announcementIcon}>
-          {isSubscriptionWarningActive ? (
+          {isPaymentValidationPending ? (
+            <HourglassTopRoundedIcon className={styles.announcementIconSvg} />
+          ) : isSubscriptionWarningActive ? (
             <WarningAmberRoundedIcon className={styles.announcementIconSvg} />
           ) : (
             <AutoStoriesRoundedIcon className={styles.announcementIconSvg} />
@@ -150,20 +164,29 @@ const DashBoardAnnouncement: FunctionComponent = (): JSX.Element | null => {
           <div className={styles.announcementEyebrow}>{announcementEyebrow}</div>
           <h2 className={styles.announcementTitle}>{announcementTitle}</h2>
           <p className={styles.announcementMessage}>{announcementMessage}</p>
-          {isSubscriptionWarningActive && (
+          {isPriorityAnnouncementActive && (
             <button
               type="button"
               className={styles.announcementRenewButton}
-              onClick={handleRenewSubscription}
-              aria-label="Renew your clinic subscription"
+              onClick={isPaymentValidationPending ? undefined : handleRenewSubscription}
+              disabled={isPaymentValidationPending}
+              aria-label={
+                isPaymentValidationPending
+                  ? 'Your manual payment is being validated'
+                  : 'Renew your clinic subscription'
+              }
             >
-              <AutorenewRoundedIcon fontSize="small" />
-              Renew Subscription
+              {isPaymentValidationPending ? (
+                <HourglassTopRoundedIcon fontSize="small" />
+              ) : (
+                <AutorenewRoundedIcon fontSize="small" />
+              )}
+              {isPaymentValidationPending ? 'Validating Your Payment' : 'Renew Subscription'}
             </button>
           )}
         </div>
       </div>
-      {!isSubscriptionWarningActive ? (
+      {!isPriorityAnnouncementActive ? (
         <button
           type="button"
           className={styles.announcementCloseButton}
