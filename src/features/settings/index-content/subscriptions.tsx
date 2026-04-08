@@ -1,6 +1,7 @@
 import CalendarMonthRoundedIcon from '@mui/icons-material/CalendarMonthRounded';
-import HistoryRoundedIcon from '@mui/icons-material/HistoryRounded';
+import CreditCardRoundedIcon from '@mui/icons-material/CreditCardRounded';
 import GroupsRoundedIcon from '@mui/icons-material/GroupsRounded';
+import HistoryRoundedIcon from '@mui/icons-material/HistoryRounded';
 import Inventory2RoundedIcon from '@mui/icons-material/Inventory2Rounded';
 import MarkEmailReadRoundedIcon from '@mui/icons-material/MarkEmailReadRounded';
 import OpenInNewRoundedIcon from '@mui/icons-material/OpenInNewRounded';
@@ -9,6 +10,7 @@ import SmsRoundedIcon from '@mui/icons-material/SmsRounded';
 import WorkspacePremiumRoundedIcon from '@mui/icons-material/WorkspacePremiumRounded';
 import {
   Alert,
+  Box,
   Button,
   Chip,
   CircularProgress,
@@ -18,6 +20,9 @@ import {
   DialogTitle,
   Paper,
   Stack,
+  Step,
+  StepLabel,
+  Stepper,
   Table,
   TableBody,
   TableCell,
@@ -26,18 +31,38 @@ import {
   TableRow,
   Typography,
 } from '@mui/material';
-import { FunctionComponent, JSX, useState } from 'react';
-import { getManualPaymentTransactions } from '../../subscription/api/api';
-import { formatCurrency, type PaymentTransactionModel } from '../../subscription/api/types';
+import { FunctionComponent, JSX, useEffect, useState } from 'react';
+import { useAuthStore } from '../../../common/store/authStore';
 import {
   loadProtectedAssetObjectUrl,
   resolveProtectedApiAssetUrl,
 } from '../../../common/services/api-client';
+import { isPendingClinicStatus } from '../../../common/utils/subscription';
+import {
+  getManualPaymentStatus,
+  getManualPaymentTransactions,
+} from '../../subscription/api/api';
+import { syncSubscriptionTransactionToUser } from '../../subscription/api/session';
+import {
+  formatCurrency,
+  MONTHS_LABEL,
+  ManualPaymentMethod,
+  PaymentChannel,
+  PaymentStatus,
+  type PaymentTransactionModel,
+  type SubscriptionMonths,
+  type SubscriptionStateModel,
+} from '../../subscription/api/types';
+import { CheckoutView } from '../../subscription/components/CheckoutView';
+import { PlanSelector } from '../../subscription/components/PlanSelector';
+import { PollingView } from '../../subscription/components/PollingView';
+import { SuccessView } from '../../subscription/components/SuccessView';
 import { ClinicProfileStateModel } from '../clinic-profile/api/types';
 import styles from '../style.scss.module.scss';
 
 type SubscriptionsProps = {
   state: ClinicProfileStateModel;
+  onReload?: () => Promise<void> | void;
 };
 
 type SubscriptionPlanId = 'basic' | 'standard' | 'pro';
@@ -52,13 +77,73 @@ type SubscriptionPlan = {
   label: string;
   tagline: string;
   summary: string;
-  price: number;           // monthly base price in PHP
+  price: number;
   patientLimit: string;
   storageLimit: string;
   userLimit: string;
   features: SubscriptionFeature[];
   accentClassName: string;
 };
+
+const PAYMENT_STEPS = ['Choose Plan', 'Payment', 'Confirm', 'Done'];
+
+const createInitialPaymentState = (): SubscriptionStateModel => ({
+  step: 'plans',
+  selectedPlan: null,
+  selectedMonths: 1 as SubscriptionMonths,
+  paymentChannel: PaymentChannel.PayMongo,
+  manualPayment: {
+    paymentMethod: ManualPaymentMethod.GCash,
+    senderName: '',
+    referenceNumber: '',
+    proofImageUrl: '',
+    proofFileName: '',
+  },
+  transaction: null,
+  isSubmitting: false,
+  isUploadingProof: false,
+  pollCount: 0,
+  errorMessage: null,
+});
+
+const stepFromState = (step: SubscriptionStateModel['step']): number => {
+  const map: Record<SubscriptionStateModel['step'], number> = {
+    plans: 0,
+    checkout: 1,
+    polling: 2,
+    success: 3,
+  };
+
+  return map[step];
+};
+
+const resolveSubscriptionMonths = (value?: number | null): SubscriptionMonths =>
+  value === 3 || value === 6 || value === 12 ? value : 1;
+
+const buildPendingPaymentState = (
+  transaction: PaymentTransactionModel
+): SubscriptionStateModel => ({
+  ...createInitialPaymentState(),
+  step: 'success',
+  selectedMonths: resolveSubscriptionMonths(transaction.subscriptionMonths),
+  paymentChannel:
+    String(transaction.paymentChannel ?? '')
+      .trim()
+      .toLowerCase() === PaymentChannel.Manual.toLowerCase()
+      ? PaymentChannel.Manual
+      : PaymentChannel.PayMongo,
+  transaction,
+});
+
+const isPendingManualTransaction = (
+  transaction?: PaymentTransactionModel | null
+): transaction is PaymentTransactionModel =>
+  String(transaction?.paymentChannel ?? '')
+    .trim()
+    .toLowerCase() === PaymentChannel.Manual.toLowerCase() &&
+  String(transaction?.status ?? '')
+    .trim()
+    .toLowerCase() === PaymentStatus.Pending.toLowerCase();
 
 const formatCount = (value?: number): string => {
   const normalizedValue = Number.isFinite(value) ? Math.max(0, Math.trunc(value ?? 0)) : 0;
@@ -210,26 +295,11 @@ const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
     userLimit: '2 users',
     accentClassName: styles.subscriptionPlanCardBasic,
     features: [
-      {
-        icon: <GroupsRoundedIcon />,
-        label: 'Patient records up to 1,000',
-      },
-      {
-        icon: <PhotoLibraryRoundedIcon />,
-        label: 'Store up to 500 patient photos/files',
-      },
-      {
-        icon: <SmsRoundedIcon />,
-        label: 'No SMS reminders included',
-      },
-      {
-        icon: <MarkEmailReadRoundedIcon />,
-        label: 'No email notifications included',
-      },
-      {
-        icon: <Inventory2RoundedIcon />,
-        label: 'Inventory module not included',
-      },
+      { icon: <GroupsRoundedIcon />, label: 'Patient records up to 1,000' },
+      { icon: <PhotoLibraryRoundedIcon />, label: 'Store up to 500 patient photos/files' },
+      { icon: <SmsRoundedIcon />, label: 'No SMS reminders included' },
+      { icon: <MarkEmailReadRoundedIcon />, label: 'No email notifications included' },
+      { icon: <Inventory2RoundedIcon />, label: 'Inventory module not included' },
     ],
   },
   {
@@ -243,74 +313,107 @@ const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
     userLimit: '5 users',
     accentClassName: styles.subscriptionPlanCardStandard,
     features: [
-      {
-        icon: <GroupsRoundedIcon />,
-        label: 'Patient records up to 1,000',
-      },
-      {
-        icon: <PhotoLibraryRoundedIcon />,
-        label: 'Store up to 1,000 patient photos/files',
-      },
-      {
-        icon: <SmsRoundedIcon />,
-        label: 'SMS reminders with monthly usage limits',
-      },
-      {
-        icon: <MarkEmailReadRoundedIcon />,
-        label: 'Email notifications included',
-      },
-      {
-        icon: <Inventory2RoundedIcon />,
-        label: 'Inventory module included',
-      },
+      { icon: <GroupsRoundedIcon />, label: 'Patient records up to 1,000' },
+      { icon: <PhotoLibraryRoundedIcon />, label: 'Store up to 1,000 patient photos/files' },
+      { icon: <SmsRoundedIcon />, label: 'SMS reminders with monthly usage limits' },
+      { icon: <MarkEmailReadRoundedIcon />, label: 'Email notifications included' },
+      { icon: <Inventory2RoundedIcon />, label: 'Inventory module included' },
     ],
   },
-  // {
-  //   id: 'pro',
-  //   label: 'Pro',
-  //   tagline: 'Advanced clinic operations',
-  //   summary: 'Designed for busy clinics that need automation, scale, and wider staff access.',
-  //   patientLimit: '20,000 patients',
-  //   storageLimit: '10,000 photos/files',
-  //   userLimit: 'Unlimited users',
-  //   accentClassName: styles.subscriptionPlanCardPro,
-  //   features: [
-  //     {
-  //       icon: <GroupsRoundedIcon />,
-  //       label: 'Patient records up to 20,000',
-  //     },
-  //     {
-  //       icon: <PhotoLibraryRoundedIcon />,
-  //       label: 'Store up to 10,000 patient photos/files',
-  //     },
-  //     {
-  //       icon: <SmsRoundedIcon />,
-  //       label: 'Full SMS reminders and higher usage capacity',
-  //     },
-  //     {
-  //       icon: <MarkEmailReadRoundedIcon />,
-  //       label: 'Full email notification support',
-  //     },
-  //     {
-  //       icon: <Inventory2RoundedIcon />,
-  //       label: 'Inventory module and advanced workflow support',
-  //     },
-  //   ],
-  // },
 ];
 
 const Subscriptions: FunctionComponent<SubscriptionsProps> = (
   props: SubscriptionsProps
 ): JSX.Element => {
-  const { state } = props;
+  const { state, onReload } = props;
+  const user = useAuthStore((store) => store.user);
+  const updateUser = useAuthStore((store) => store.updateUser);
   const [isManualHistoryOpen, setIsManualHistoryOpen] = useState(false);
   const [manualPaymentItems, setManualPaymentItems] = useState<PaymentTransactionModel[]>([]);
   const [manualPaymentsLoad, setManualPaymentsLoad] = useState(false);
   const [manualPaymentsError, setManualPaymentsError] = useState('');
+  const [isUpgradeDialogOpen, setIsUpgradeDialogOpen] = useState(false);
+  const [isCheckingSubmittedUpgrade, setIsCheckingSubmittedUpgrade] = useState(false);
+  const [latestPendingManualPayment, setLatestPendingManualPayment] =
+    useState<PaymentTransactionModel | null>(null);
+  const [paymentState, setPaymentState] =
+    useState<SubscriptionStateModel>(createInitialPaymentState);
+
   const currentPlanId = normalizeSubscriptionType(state.item?.subscriptionType);
   const currentPlan =
     SUBSCRIPTION_PLANS.find((plan) => plan.id === currentPlanId) || SUBSCRIPTION_PLANS[0];
   const subscriptionStatus = getSubscriptionStatus(state.item?.validityDate);
+  const clinicHasPendingStatus = isPendingClinicStatus(state.item?.status);
+  const hasPendingUpgrade = clinicHasPendingStatus || Boolean(latestPendingManualPayment);
+  const dialogHasPendingManualPayment = isPendingManualTransaction(paymentState.transaction);
+  const pendingUpgradePlanLabel = latestPendingManualPayment?.subscriptionType || 'selected plan';
+  const pendingUpgradeMonths = resolveSubscriptionMonths(
+    latestPendingManualPayment?.subscriptionMonths
+  );
+  const pendingUpgradeReference =
+    latestPendingManualPayment?.referenceNumber ||
+    latestPendingManualPayment?.payMongoReferenceNumber ||
+    '';
+
+  useEffect(() => {
+    let isActive = true;
+
+    if (!clinicHasPendingStatus) {
+      setLatestPendingManualPayment(null);
+      return () => {
+        isActive = false;
+      };
+    }
+
+    const loadLatestPendingPayment = async (): Promise<void> => {
+      try {
+        const latestTransaction = await getManualPaymentStatus();
+
+        if (!isActive) {
+          return;
+        }
+
+        setLatestPendingManualPayment(
+          isPendingManualTransaction(latestTransaction) ? latestTransaction : null
+        );
+      } catch {
+        if (isActive) {
+          setLatestPendingManualPayment(null);
+        }
+      }
+    };
+
+    void loadLatestPendingPayment();
+
+    return () => {
+      isActive = false;
+    };
+  }, [clinicHasPendingStatus]);
+
+  useEffect(() => {
+    if (!clinicHasPendingStatus) {
+      return;
+    }
+
+    const intervalId = window.setInterval(() => {
+      void (async () => {
+        await onReload?.();
+
+        try {
+          const latestTransaction = await getManualPaymentStatus();
+          setLatestPendingManualPayment(
+            isPendingManualTransaction(latestTransaction) ? latestTransaction : null
+          );
+        } catch {
+          setLatestPendingManualPayment(null);
+        }
+      })();
+    }, 60000);
+
+    return () => {
+      window.clearInterval(intervalId);
+    };
+  }, [clinicHasPendingStatus, onReload]);
 
   const loadManualPaymentItems = async (): Promise<void> => {
     setManualPaymentsLoad(true);
@@ -356,6 +459,76 @@ const Subscriptions: FunctionComponent<SubscriptionsProps> = (
     }
   };
 
+  const handleCloseUpgradeDialog = (): void => {
+    if (paymentState.isSubmitting || paymentState.isUploadingProof) {
+      return;
+    }
+
+    setIsUpgradeDialogOpen(false);
+    setPaymentState(createInitialPaymentState());
+  };
+
+  const handleOpenUpgradeDialog = async (): Promise<void> => {
+    setIsCheckingSubmittedUpgrade(true);
+
+    try {
+      if (latestPendingManualPayment) {
+        setPaymentState(buildPendingPaymentState(latestPendingManualPayment));
+        setIsUpgradeDialogOpen(true);
+        return;
+      }
+
+      if (clinicHasPendingStatus) {
+        try {
+          const latestTransaction = await getManualPaymentStatus();
+
+          if (isPendingManualTransaction(latestTransaction)) {
+            setLatestPendingManualPayment(latestTransaction);
+            setPaymentState(buildPendingPaymentState(latestTransaction));
+            setIsUpgradeDialogOpen(true);
+            return;
+          }
+        } catch {
+          // Fall back to a new upgrade flow when the latest pending submission cannot be loaded.
+        }
+      }
+
+      setPaymentState(createInitialPaymentState());
+      setIsUpgradeDialogOpen(true);
+    } finally {
+      setIsCheckingSubmittedUpgrade(false);
+    }
+  };
+
+  const handleUpgradeDone = async (): Promise<void> => {
+    const transaction = paymentState.transaction;
+
+    updateUser(await syncSubscriptionTransactionToUser(user, transaction));
+
+    if (isPendingManualTransaction(transaction)) {
+      setLatestPendingManualPayment(transaction);
+    } else {
+      setLatestPendingManualPayment(null);
+    }
+
+    await onReload?.();
+
+    setIsUpgradeDialogOpen(false);
+    setPaymentState(createInitialPaymentState());
+  };
+
+  const pendingUpgradeInfo = (
+    <Box>
+      <Typography variant="body2" sx={{ mb: 0.75 }}>
+        Your clinic stays active while this manual upgrade payment is under review.
+      </Typography>
+      <Typography variant="body2">
+        Once the payment is marked as paid, the selected subscription type and the extended
+        validity date will be applied automatically.
+      </Typography>
+    </Box>
+  );
+
   return (
     <div>
       <div className={styles.subscriptionHeaderRow}>
@@ -366,19 +539,36 @@ const Subscriptions: FunctionComponent<SubscriptionsProps> = (
           <div className={styles.tabPanelText}>
             <h2 className={styles.tabPanelTitle}>Clinic Subscription</h2>
             <p className={styles.tabPanelDescription}>
-              Review the active plan, compare subscription tiers, and see what your clinic workspace
-              currently includes.
+              Review the active plan, compare subscription tiers, and submit a renewal or upgrade
+              payment without locking the clinic while manual review is in progress.
             </p>
           </div>
         </div>
-        <Button
-          variant="contained"
-          startIcon={<HistoryRoundedIcon />}
-          className={styles.moduleActionButton}
-          onClick={() => void handleOpenManualHistory()}
-        >
-          Manual Payment History
-        </Button>
+
+        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
+          <Button
+            variant="contained"
+            startIcon={<CreditCardRoundedIcon />}
+            className={styles.moduleActionButton}
+            onClick={() => void handleOpenUpgradeDialog()}
+            disabled={isCheckingSubmittedUpgrade || (state.load && !state.item)}
+          >
+            {isCheckingSubmittedUpgrade
+              ? 'Checking Payment...'
+              : hasPendingUpgrade
+                ? 'View Pending Upgrade'
+                : 'Upgrade Subscription'}
+          </Button>
+
+          <Button
+            variant="contained"
+            startIcon={<HistoryRoundedIcon />}
+            className={styles.moduleActionButton}
+            onClick={() => void handleOpenManualHistory()}
+          >
+            Manual Payment History
+          </Button>
+        </Stack>
       </div>
 
       {state.load && !state.item ? (
@@ -387,6 +577,40 @@ const Subscriptions: FunctionComponent<SubscriptionsProps> = (
         </div>
       ) : (
         <div className={styles.subscriptionSurface}>
+          {hasPendingUpgrade ? (
+            <Alert
+              severity="info"
+              action={
+                <Button
+                  color="inherit"
+                  size="small"
+                  onClick={() => void handleOpenUpgradeDialog()}
+                  disabled={isCheckingSubmittedUpgrade}
+                >
+                  View Details
+                </Button>
+              }
+            >
+              <Typography variant="subtitle2" sx={{ fontWeight: 800, mb: 0.25 }}>
+                Upgrade payment pending review
+              </Typography>
+              <Typography variant="body2">
+                {latestPendingManualPayment
+                  ? `Your ${pendingUpgradePlanLabel} payment for ${
+                      MONTHS_LABEL[pendingUpgradeMonths]
+                    } is awaiting admin confirmation.`
+                  : 'Your submitted manual upgrade payment is awaiting admin confirmation.'}{' '}
+                Your clinic remains active while validation is in progress. Once marked as paid,
+                the selected plan and updated validity date will be applied automatically.
+              </Typography>
+              {pendingUpgradeReference ? (
+                <Typography variant="body2" sx={{ mt: 0.5, fontWeight: 700 }}>
+                  Reference: {pendingUpgradeReference}
+                </Typography>
+              ) : null}
+            </Alert>
+          ) : null}
+
           <section className={styles.subscriptionHeroCard}>
             <div className={styles.subscriptionHeroContent}>
               <Typography className={styles.subscriptionHeroEyebrow}>
@@ -467,10 +691,9 @@ const Subscriptions: FunctionComponent<SubscriptionsProps> = (
 
                   <Typography className={styles.subscriptionPlanSummary}>{plan.summary}</Typography>
 
-                  {/* Price */}
                   <div className={styles.subscriptionPlanPrice}>
                     <span className={styles.subscriptionPlanPriceAmount}>
-                      ₱{plan.price.toLocaleString('en-PH')}
+                      {formatCurrency(plan.price)}
                     </span>
                     <span className={styles.subscriptionPlanPricePer}>&nbsp;/ month</span>
                   </div>
@@ -521,13 +744,78 @@ const Subscriptions: FunctionComponent<SubscriptionsProps> = (
                 Validity and plan changes
               </Typography>
               <Typography className={styles.subscriptionInfoBannerText}>
-                Subscription renewals, upgrades, and access changes are managed from the admin
-                portal. This tab is for plan visibility and clinic-side review.
+                Submit a new upgrade payment here at any time. Once a payment is confirmed as paid,
+                OralSync updates the clinic validity date and switches the subscription type to the
+                plan you selected.
               </Typography>
             </div>
           </section>
         </div>
       )}
+
+      <Dialog
+        open={isUpgradeDialogOpen}
+        onClose={handleCloseUpgradeDialog}
+        fullWidth
+        maxWidth="md"
+      >
+        <DialogTitle sx={{ fontWeight: 800, color: '#183b56' }}>
+          {dialogHasPendingManualPayment ? 'Pending Subscription Upgrade' : 'Upgrade Subscription'}
+        </DialogTitle>
+        <DialogContent dividers sx={{ px: { xs: 2.5, sm: 3 }, py: 2.5 }}>
+          <Alert severity="info" sx={{ mb: 3 }}>
+            {dialogHasPendingManualPayment
+              ? 'Your clinic stays active while this upgrade payment is pending review. Once marked as paid, the selected plan and updated validity date will apply automatically.'
+              : 'Choose the plan you want to apply next. PayMongo confirms automatically, while manual payment stays pending until an admin marks it as paid.'}
+          </Alert>
+
+          <Stepper activeStep={stepFromState(paymentState.step)} alternativeLabel sx={{ mb: 4 }}>
+            {PAYMENT_STEPS.map((label) => (
+              <Step key={label}>
+                <StepLabel>{label}</StepLabel>
+              </Step>
+            ))}
+          </Stepper>
+
+          {paymentState.step === 'plans' && (
+            <PlanSelector
+              state={paymentState}
+              setState={setPaymentState}
+              currentPlan={state.item?.subscriptionType}
+            />
+          )}
+
+          {paymentState.step === 'checkout' && (
+            <CheckoutView state={paymentState} setState={setPaymentState} />
+          )}
+
+          {paymentState.step === 'polling' && (
+            <PollingView state={paymentState} setState={setPaymentState} />
+          )}
+
+          {paymentState.step === 'success' && (
+            <SuccessView
+              state={paymentState}
+              onDone={handleUpgradeDone}
+              doneLabel={
+                dialogHasPendingManualPayment ? 'Back to Subscription' : 'Refresh Subscription'
+              }
+              pendingManualPaymentInfo={pendingUpgradeInfo}
+            />
+          )}
+        </DialogContent>
+        {paymentState.step !== 'success' ? (
+          <DialogActions sx={{ px: 3, py: 2 }}>
+            <Button
+              onClick={handleCloseUpgradeDialog}
+              color="inherit"
+              disabled={paymentState.isSubmitting || paymentState.isUploadingProof}
+            >
+              Close
+            </Button>
+          </DialogActions>
+        ) : null}
+      </Dialog>
 
       <Dialog
         open={isManualHistoryOpen}
@@ -584,7 +872,12 @@ const Subscriptions: FunctionComponent<SubscriptionsProps> = (
                 ) : manualPaymentItems.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={6} align="center" sx={{ py: 8 }}>
-                      <Typography variant="subtitle1" fontWeight={700} color="text.primary" mb={0.75}>
+                      <Typography
+                        variant="subtitle1"
+                        fontWeight={700}
+                        color="text.primary"
+                        mb={0.75}
+                      >
                         No manual payment records yet
                       </Typography>
                       <Typography variant="body2" color="text.secondary">

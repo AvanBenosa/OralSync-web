@@ -359,7 +359,9 @@ const SettingsModule: FunctionComponent<SettingsProps> = (props: SettingsProps):
             ) : null}
             {activeTab === 'data-mapping' ? <DataConverter /> : null}
             {activeTab === 'export-data' ? <ExportData /> : null}
-            {activeTab === 'subscriptions' ? <Subscriptions state={state} /> : null}
+            {activeTab === 'subscriptions' ? (
+              <Subscriptions state={state} onReload={() => loadClinicProfile(false)} />
+            ) : null}
           </section>
         </div>
       </div>
