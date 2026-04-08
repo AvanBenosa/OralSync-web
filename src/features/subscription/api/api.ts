@@ -8,6 +8,7 @@ const STATUS_ENDPOINT = '/api/dmd/payments/status';
 const SIMULATE_PAID_ENDPOINT = '/api/dmd/payments/simulate-paid';
 const CREATE_MANUAL_PAYMENT_ENDPOINT = '/api/dmd/payments/create-manual-payment';
 const MANUAL_PAYMENT_STATUS_ENDPOINT = '/api/dmd/payments/manual-payment-status';
+const MANUAL_PAYMENT_TRANSACTIONS_ENDPOINT = '/api/dmd/payments/manual-payment-transactions';
 const UPLOAD_MANUAL_PAYMENT_PROOF_ENDPOINT = '/api/dmd/payments/upload-manual-payment-proof';
 const LOCAL_HOSTS = new Set(['localhost', '127.0.0.1']);
 
@@ -79,6 +80,20 @@ export const getManualPaymentStatus = async (): Promise<PaymentTransactionModel>
   try {
     const response = await apiClient.get<PaymentTransactionModel>(MANUAL_PAYMENT_STATUS_ENDPOINT);
     return SuccessResponse(response, ResponseMethod.Fetch, undefined, false) as PaymentTransactionModel;
+  } catch (error) {
+    if (isAxiosError(error)) {
+      await ExceptionResponse(error);
+    }
+    throw error;
+  }
+};
+
+export const getManualPaymentTransactions = async (): Promise<PaymentTransactionModel[]> => {
+  try {
+    const response = await apiClient.get<PaymentTransactionModel[]>(
+      MANUAL_PAYMENT_TRANSACTIONS_ENDPOINT
+    );
+    return SuccessResponse(response, ResponseMethod.Fetch, undefined, false) as PaymentTransactionModel[];
   } catch (error) {
     if (isAxiosError(error)) {
       await ExceptionResponse(error);

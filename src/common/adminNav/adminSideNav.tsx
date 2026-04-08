@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   AppBar,
+  Badge,
   Box,
   Button,
   Dialog,
@@ -19,12 +20,14 @@ import {
 } from '@mui/material';
 import DashboardCustomizeRoundedIcon from '@mui/icons-material/DashboardCustomizeRounded';
 import LockPersonRoundedIcon from '@mui/icons-material/LockPersonRounded';
+import ReceiptLongRoundedIcon from '@mui/icons-material/ReceiptLongRounded';
 import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded';
 import WarningAmberRoundedIcon from '@mui/icons-material/WarningAmberRounded';
 import PersonRoundedIcon from '@mui/icons-material/PersonRounded';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
+import { getAdminManualPaymentRequests } from '../../features/admin-portal/api/api';
 
 const drawerWidth = 250;
 const collapsedDrawerWidth = 72;
@@ -32,6 +35,7 @@ const collapsedDrawerWidth = 72;
 const menuItems = [
   { label: 'Dashboard', icon: <DashboardCustomizeRoundedIcon />, path: '/admin/dashboard' },
   { label: 'Clinic Locks', icon: <LockPersonRoundedIcon />, path: '/admin/clinic-locks' },
+  { label: 'Payment Request', icon: <ReceiptLongRoundedIcon />, path: '/admin/payment-requests' },
 ];
 
 const getInitials = (value: string): string =>
@@ -61,6 +65,8 @@ const AdminSideNav = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [drawerOpen, setDrawerOpen] = useState(true);
   const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
+  const [pendingRequestCount, setPendingRequestCount] = useState(0);
+  const pendingReloadTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const activeItem = menuItems.find((item) => location.pathname.startsWith(item.path));
   const portalName = user?.clinicName?.trim() || 'Admin Portal';
@@ -74,10 +80,51 @@ const AdminSideNav = () => {
     navigate('/logout-success', { replace: true });
   };
 
+  const loadPendingRequestCount = async (forceRefresh: boolean = false): Promise<void> => {
+    try {
+      const items = await getAdminManualPaymentRequests({ status: 'Pending' }, forceRefresh);
+      setPendingRequestCount(items.length);
+    } catch {
+      // Keep nav badge silent if the count endpoint is temporarily unavailable.
+    }
+  };
+
+  useEffect(() => {
+    void loadPendingRequestCount(false);
+
+    if (pendingReloadTimeoutRef.current) {
+      clearInterval(pendingReloadTimeoutRef.current);
+    }
+
+    pendingReloadTimeoutRef.current = setInterval(() => {
+      void loadPendingRequestCount(true);
+    }, 30000);
+
+    return () => {
+      if (pendingReloadTimeoutRef.current) {
+        clearInterval(pendingReloadTimeoutRef.current);
+      }
+    };
+  }, [location.pathname]);
+
   const navigationItems = (
     <>
       {menuItems.map((item) => {
         const active = location.pathname.startsWith(item.path);
+        const isPaymentRequestItem = item.path === '/admin/payment-requests';
+        const showPendingBadge = isPaymentRequestItem && pendingRequestCount > 0;
+        const iconNode = showPendingBadge ? (
+          <Badge
+            badgeContent={pendingRequestCount > 99 ? '99+' : pendingRequestCount}
+            color="error"
+            overlap="circular"
+            anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+          >
+            {item.icon}
+          </Badge>
+        ) : (
+          item.icon
+        );
 
         return (
           <Tooltip title={!drawerOpen ? item.label : ''} placement="right" key={item.path}>
@@ -91,9 +138,24 @@ const AdminSideNav = () => {
               }}
             >
               <ListItemIcon sx={{ color: '#fff', minWidth: 0, mr: drawerOpen ? 3 : 'auto' }}>
-                {item.icon}
+                {iconNode}
               </ListItemIcon>
-              {drawerOpen ? <ListItemText primary={item.label} /> : null}
+              {drawerOpen ? (
+                <ListItemText
+                  primary={item.label}
+                  secondary={
+                    showPendingBadge ? `${pendingRequestCount} pending` : undefined
+                  }
+                  secondaryTypographyProps={{
+                    sx: {
+                      color: 'rgba(255,255,255,0.72)',
+                      fontSize: '0.72rem',
+                      fontWeight: 700,
+                      lineHeight: 1.2,
+                    },
+                  }}
+                />
+              ) : null}
             </ListItemButton>
           </Tooltip>
         );
@@ -118,6 +180,20 @@ const AdminSideNav = () => {
           <Toolbar sx={{ display: 'flex', justifyContent: 'space-around', minHeight: '56px !important' }}>
             {menuItems.map((item) => {
               const active = location.pathname.startsWith(item.path);
+              const isPaymentRequestItem = item.path === '/admin/payment-requests';
+              const showPendingBadge = isPaymentRequestItem && pendingRequestCount > 0;
+              const iconNode = showPendingBadge ? (
+                <Badge
+                  badgeContent={pendingRequestCount > 99 ? '99+' : pendingRequestCount}
+                  color="error"
+                  overlap="circular"
+                  anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+                >
+                  {item.icon}
+                </Badge>
+              ) : (
+                item.icon
+              );
 
               return (
                 <IconButton
@@ -125,7 +201,7 @@ const AdminSideNav = () => {
                   onClick={() => navigate(item.path)}
                   sx={{ color: active ? '#ffe082' : 'white' }}
                 >
-                  {item.icon}
+                  {iconNode}
                 </IconButton>
               );
             })}

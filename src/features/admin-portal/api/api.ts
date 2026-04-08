@@ -4,6 +4,7 @@ import { ExceptionResponse } from '../../../common/api/responses';
 import {
   AdminClinicLockRequest,
   AdminClinicManualPaymentModel,
+  AdminManualPaymentRequestsFilter,
   AdminClinicManualPaymentStatusRequest,
   AdminClinicModel,
   AdminClinicSubscriptionHistoryDeleteRequest,
@@ -34,6 +35,9 @@ const ADMIN_DELETE_CLINIC_SUBSCRIPTION_HISTORY_ENDPOINT =
 const ADMIN_CLINIC_MANUAL_PAYMENTS_ENDPOINT =
   process.env.REACT_APP_ADMIN_CLINIC_MANUAL_PAYMENTS_ENDPOINT ||
   '/api/dmd/admin/get-clinic-manual-payments';
+const ADMIN_MANUAL_PAYMENT_REQUESTS_ENDPOINT =
+  process.env.REACT_APP_ADMIN_MANUAL_PAYMENT_REQUESTS_ENDPOINT ||
+  '/api/dmd/admin/get-manual-payment-requests';
 const ADMIN_UPDATE_CLINIC_MANUAL_PAYMENT_STATUS_ENDPOINT =
   process.env.REACT_APP_ADMIN_UPDATE_CLINIC_MANUAL_PAYMENT_STATUS_ENDPOINT ||
   '/api/dmd/admin/put-clinic-manual-payment-status';
@@ -77,6 +81,14 @@ const clearAdminClinicSubscriptionHistoryCache = (): void => {
 const clearAdminClinicManualPaymentsCache = (): void => {
   Array.from(adminResponseCache.keys())
     .filter((key) => key.startsWith('admin-clinic-manual-payments:'))
+    .forEach((key) => {
+      adminResponseCache.delete(key);
+    });
+};
+
+const clearAdminManualPaymentRequestsCache = (): void => {
+  Array.from(adminResponseCache.keys())
+    .filter((key) => key.startsWith('admin-manual-payment-requests:'))
     .forEach((key) => {
       adminResponseCache.delete(key);
     });
@@ -367,6 +379,56 @@ export const getAdminClinicManualPayments = async (
   return request;
 };
 
+export const getAdminManualPaymentRequests = async (
+  filter: AdminManualPaymentRequestsFilter = {},
+  forceRefresh: boolean = false
+): Promise<AdminClinicManualPaymentModel[]> => {
+  const clinicKey = filter.clinicId?.trim() || 'all';
+  const statusKey = filter.status?.trim() || 'all';
+  const requestKey = `admin-manual-payment-requests:${clinicKey}:${statusKey}`;
+
+  if (forceRefresh) {
+    adminResponseCache.delete(requestKey);
+  }
+
+  const cachedValue = getCachedValue<AdminClinicManualPaymentModel[]>(requestKey);
+  if (cachedValue) {
+    return cachedValue;
+  }
+
+  const activeRequest = adminRequestCache.get(requestKey);
+  if (activeRequest) {
+    return activeRequest as Promise<AdminClinicManualPaymentModel[]>;
+  }
+
+  const request = (async (): Promise<AdminClinicManualPaymentModel[]> => {
+    try {
+      const response = await apiClient.get<AdminClinicManualPaymentModel[]>(
+        ADMIN_MANUAL_PAYMENT_REQUESTS_ENDPOINT,
+        {
+          params: {
+            ...(filter.clinicId?.trim() ? { ClinicId: filter.clinicId.trim() } : {}),
+            ...(filter.status?.trim() ? { Status: filter.status.trim() } : {}),
+          },
+        }
+      );
+      const items = response.data || [];
+      setCachedValue(requestKey, items);
+      return items;
+    } catch (error) {
+      if (isAxiosError(error)) {
+        await ExceptionResponse(error);
+      }
+      throw error;
+    } finally {
+      adminRequestCache.delete(requestKey);
+    }
+  })();
+
+  adminRequestCache.set(requestKey, request);
+  return request;
+};
+
 export const updateAdminClinicManualPaymentStatus = async (
   request: AdminClinicManualPaymentStatusRequest
 ): Promise<AdminClinicManualPaymentModel> => {
@@ -376,6 +438,7 @@ export const updateAdminClinicManualPaymentStatus = async (
       request
     );
     clearAdminClinicManualPaymentsCache();
+    clearAdminManualPaymentRequestsCache();
     clearAdminClinicSubscriptionHistoryCache();
     adminResponseCache.delete('admin-clinics');
     return response.data;

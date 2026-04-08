@@ -1025,6 +1025,14 @@
   margin-top: 20px;
 }
 
+.subscriptionHeaderRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
 .subscriptionHeroCard {
   display: flex;
   align-items: stretch;
@@ -1526,6 +1534,11 @@
   .subscriptionHeroCard {
     flex-direction: column;
     padding: 18px;
+  }
+
+  .subscriptionHeaderRow {
+    flex-direction: column;
+    align-items: stretch;
   }
 
   .subscriptionHeroMetrics {

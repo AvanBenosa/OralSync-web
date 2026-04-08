@@ -84,6 +84,7 @@ export type AdminClinicSubscriptionHistoryDeleteRequest = {
 export type AdminClinicManualPaymentModel = {
   id?: string;
   clinicId?: string;
+  clinicName?: string;
   amount?: number;
   paymentMethod?: string;
   referenceNumber?: string;
@@ -103,6 +104,11 @@ export type AdminClinicManualPaymentStatusRequest = {
   clinicId: string;
   status: string;
   rejectionReason?: string;
+};
+
+export type AdminManualPaymentRequestsFilter = {
+  clinicId?: string;
+  status?: string;
 };
 
 export type AdminUserModel = {

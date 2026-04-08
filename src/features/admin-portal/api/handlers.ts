@@ -3,6 +3,7 @@ import {
   deleteAdminClinicSubscriptionHistory,
   getAdminClinicSubscriptionHistories,
   getAdminClinics,
+  getAdminManualPaymentRequests,
   getAdminUsers,
   updateAdminClinicSubscriptionHistory,
   updateClinicLockStatus,
@@ -10,6 +11,8 @@ import {
 import {
   AdminClinicLockRequest,
   AdminClinicModel,
+  AdminClinicManualPaymentModel,
+  AdminManualPaymentRequestsFilter,
   AdminClinicSubscriptionHistoryDeleteRequest,
   AdminClinicSubscriptionHistoryModel,
   AdminClinicSubscriptionHistoryRequest,
@@ -48,6 +51,11 @@ export const handleGetAdminClinics = async (
   }));
   return items;
 };
+
+export const handleGetAdminManualPaymentRequests = async (
+  filter: AdminManualPaymentRequestsFilter = {},
+  forceRefresh: boolean = false
+): Promise<AdminClinicManualPaymentModel[]> => getAdminManualPaymentRequests(filter, forceRefresh);
 
 export const handleGetAdminUsers = async (
   setState: Function,
