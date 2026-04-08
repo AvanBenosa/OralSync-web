@@ -1011,6 +1011,129 @@
   }
 }
 
+.exportHeaderRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.exportSurface {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin-top: 20px;
+}
+
+.exportHeroCard {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 22px;
+  border: 1px solid rgba(194, 208, 220, 0.92);
+  border-radius: 20px;
+  background: linear-gradient(135deg, rgba(236, 246, 255, 0.98), rgba(249, 252, 255, 0.98));
+  box-shadow: 0 16px 32px rgba(24, 50, 79, 0.08);
+}
+
+.exportHeroContent {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+  flex: 1;
+}
+
+.exportHeroEyebrow {
+  color: #4b6e90 !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.14em !important;
+  text-transform: uppercase;
+}
+
+.exportHeroTitle {
+  color: #163b62 !important;
+  font-size: 30px !important;
+  font-weight: 900 !important;
+  line-height: 1.1 !important;
+}
+
+.exportHeroText {
+  max-width: 680px;
+  color: #5f7891 !important;
+  font-size: 14px !important;
+  line-height: 1.7 !important;
+}
+
+.exportHeroMetrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  width: min(460px, 100%);
+}
+
+.exportHeroMetric {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px;
+  border: 1px solid rgba(198, 212, 225, 0.94);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.88);
+}
+
+.exportHeroMetricLabel {
+  color: #607a93;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.exportHeroMetricValue {
+  color: #163b62;
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.exportHeroMetricMeta {
+  color: #68829a;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.exportTableWrap {
+  min-height: 360px;
+  border: 1px solid rgba(206, 218, 229, 0.95);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.92);
+  overflow: hidden;
+
+  :global(.MuiTableContainer-root) {
+    max-height: 620px;
+    overflow: auto;
+    border-radius: 0;
+    background: transparent;
+  }
+
+  :global(.MuiTableCell-head) {
+    background: rgba(240, 246, 251, 0.98);
+    color: #1f4467;
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+
+  :global(.MuiTableRow-hover:hover) {
+    background: rgba(244, 249, 253, 0.98);
+  }
+}
+
 .subscriptionLoadingState {
   min-height: 260px;
   display: flex;
@@ -1531,6 +1654,21 @@
     max-height: none;
   }
 
+  .exportHeaderRow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .exportHeroCard {
+    flex-direction: column;
+    padding: 18px;
+  }
+
+  .exportHeroMetrics {
+    grid-template-columns: 1fr;
+    width: 100%;
+  }
+
   .subscriptionHeroCard {
     flex-direction: column;
     padding: 18px;
@@ -1641,6 +1779,10 @@
   .userListMeta,
   .userListEmail {
     font-size: 12px !important;
+  }
+
+  .exportHeroTitle {
+    font-size: 26px !important;
   }
 
   .subscriptionHeroTitle {

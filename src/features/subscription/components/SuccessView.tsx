@@ -1,5 +1,5 @@
-import { FunctionComponent, JSX } from 'react';
-import { Box, Button, Chip, Divider, Stack, Typography } from '@mui/material';
+import { FunctionComponent, JSX, ReactNode } from 'react';
+import { Alert, Box, Button, Chip, Divider, Stack, Typography } from '@mui/material';
 import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
 import HourglassTopRoundedIcon from '@mui/icons-material/HourglassTopRounded';
 import {
@@ -15,21 +15,22 @@ type Props = {
   state: SubscriptionStateModel;
   onDone: () => void | Promise<void>;
   doneLabel?: string;
+  pendingManualPaymentInfo?: ReactNode;
 };
 
 export const SuccessView: FunctionComponent<Props> = ({
   state,
   onDone,
   doneLabel = 'Go to Dashboard',
+  pendingManualPaymentInfo,
 }): JSX.Element => {
   const { transaction } = state;
   const isManualPayment = transaction?.paymentChannel === PaymentChannel.Manual;
-  const isPendingManualPayment =
-    isManualPayment && transaction?.status === PaymentStatus.Pending;
+  const isPendingManualPayment = isManualPayment && transaction?.status === PaymentStatus.Pending;
 
   const title = isPendingManualPayment ? 'Manual Payment Submitted' : 'Payment Successful!';
   const description = isPendingManualPayment
-    ? 'Your proof of payment is pending review. Your selected plan and new validity date will be applied once the payment is marked as paid.'
+    ? 'Your proof of payment is pending review. Please wait while we validate it. Your selected plan and new validity date will be applied once the payment is marked as paid.'
     : 'Your subscription has been activated. Thank you for choosing OralSync.';
   const referenceNumber =
     transaction?.referenceNumber || transaction?.payMongoReferenceNumber || '-';
@@ -49,6 +50,12 @@ export const SuccessView: FunctionComponent<Props> = ({
       <Typography variant="body2" color="text.secondary" mb={4}>
         {description}
       </Typography>
+
+      {isPendingManualPayment && pendingManualPaymentInfo ? (
+        <Alert severity="info" sx={{ mb: 4, maxWidth: 460, mx: 'auto', textAlign: 'left' }}>
+          {pendingManualPaymentInfo}
+        </Alert>
+      ) : null}
 
       <Box
         sx={{

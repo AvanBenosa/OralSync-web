@@ -1,6 +1,7 @@
 import { FunctionComponent, JSX, useEffect, useMemo, useRef, useState } from 'react';
 import BusinessRoundedIcon from '@mui/icons-material/BusinessRounded';
 import ConstructionRoundedIcon from '@mui/icons-material/ConstructionRounded';
+import FileDownloadRoundedIcon from '@mui/icons-material/FileDownloadRounded';
 import MapRoundedIcon from '@mui/icons-material/MapRounded';
 import PersonAddAlt1RoundedIcon from '@mui/icons-material/PersonAddAlt1Rounded';
 import WorkspacePremiumRoundedIcon from '@mui/icons-material/WorkspacePremiumRounded';
@@ -20,6 +21,7 @@ import BuildUp from './index-content/build-up';
 import ClinicProfileForm from './index-content/clinic-profile-form';
 import CreateUserManagement from './index-content/create-user-management';
 import DataConverter from './index-content/data-converter';
+import ExportData from './index-content/export-data';
 import SettingsHeader from './index-content/settings-header';
 import Subscriptions from './index-content/subscriptions';
 import styles from './style.scss.module.scss';
@@ -30,6 +32,7 @@ type SettingsTabId =
   | 'create-user'
   | 'build-up'
   | 'data-mapping'
+  | 'export-data'
   | 'subscriptions';
 
 const SettingsModule: FunctionComponent<SettingsProps> = (props: SettingsProps): JSX.Element => {
@@ -110,6 +113,14 @@ const SettingsModule: FunctionComponent<SettingsProps> = (props: SettingsProps):
         title: 'Data Mapping',
         description:
           'Use this tab for clinic build up details, setup options, and operational configuration items.',
+      },
+      {
+        id: 'export-data' as const,
+        label: 'Export Data',
+        icon: <FileDownloadRoundedIcon />,
+        title: 'Export Data',
+        description:
+          'Download clinic records as CSV files from the tables stored in your database.',
       },
       {
         id: 'subscriptions' as const,
@@ -347,6 +358,7 @@ const SettingsModule: FunctionComponent<SettingsProps> = (props: SettingsProps):
               />
             ) : null}
             {activeTab === 'data-mapping' ? <DataConverter /> : null}
+            {activeTab === 'export-data' ? <ExportData /> : null}
             {activeTab === 'subscriptions' ? <Subscriptions state={state} /> : null}
           </section>
         </div>

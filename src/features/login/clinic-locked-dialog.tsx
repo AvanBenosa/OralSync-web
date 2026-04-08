@@ -7,6 +7,8 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  Link,
+  Stack,
   Step,
   StepLabel,
   Stepper,
@@ -15,6 +17,8 @@ import {
 import LockRoundedIcon from '@mui/icons-material/LockRounded';
 import CreditCardRoundedIcon from '@mui/icons-material/CreditCardRounded';
 import { useAuthStore } from '../../common/store/authStore';
+import { isPendingClinicStatus } from '../../common/utils/subscription';
+import { getManualPaymentStatus } from '../subscription/api/api';
 import { CheckoutView } from '../subscription/components/CheckoutView';
 import { PlanSelector } from '../subscription/components/PlanSelector';
 import { PollingView } from '../subscription/components/PollingView';
@@ -35,6 +39,10 @@ type ClinicLockedDialogProps = {
 };
 
 const PAYMENT_STEPS = ['Choose Plan', 'Payment', 'Confirm', 'Done'];
+const ACTIVATION_CONTACT = {
+  phone: '09213595192',
+  email: 'evanbenosa045@gmail.com',
+};
 
 const createInitialPaymentState = (): SubscriptionStateModel => ({
   step: 'plans',
@@ -74,19 +82,51 @@ const ClinicLockedDialog: FunctionComponent<ClinicLockedDialogProps> = ({
   const user = useAuthStore((state) => state.user);
   const updateUser = useAuthStore((state) => state.updateUser);
   const [showPaymentFlow, setShowPaymentFlow] = useState(false);
-  const [paymentState, setPaymentState] = useState<SubscriptionStateModel>(createInitialPaymentState);
+  const [hasSubmittedPendingManualPayment, setHasSubmittedPendingManualPayment] = useState(false);
+  const [isCheckingSubmittedPayment, setIsCheckingSubmittedPayment] = useState(false);
+  const [paymentState, setPaymentState] =
+    useState<SubscriptionStateModel>(createInitialPaymentState);
   const isPendingManualPayment =
     paymentState.transaction?.paymentChannel === PaymentChannel.Manual &&
     paymentState.transaction?.status === PaymentStatus.Pending;
+  const isPendingActivation =
+    isPendingClinicStatus(user?.status) || hasSubmittedPendingManualPayment;
 
   useEffect(() => {
     if (!open) {
       setShowPaymentFlow(false);
+      setHasSubmittedPendingManualPayment(false);
+      setIsCheckingSubmittedPayment(false);
       setPaymentState(createInitialPaymentState());
     }
   }, [open]);
 
-  const handleStartPayment = (): void => {
+  const handleStartPayment = async (): Promise<void> => {
+    if (isPendingActivation) {
+      setIsCheckingSubmittedPayment(true);
+
+      try {
+        const latestManualPayment = await getManualPaymentStatus();
+        const latestStatus = String(latestManualPayment?.status ?? '')
+          .trim()
+          .toLowerCase();
+
+        if (latestStatus === PaymentStatus.Pending.toLowerCase()) {
+          setShowPaymentFlow(true);
+          setPaymentState({
+            ...createInitialPaymentState(),
+            step: 'success',
+            transaction: latestManualPayment,
+          });
+          return;
+        }
+      } catch {
+        // Fall back to the regular payment flow if the latest submitted payment cannot be loaded.
+      } finally {
+        setIsCheckingSubmittedPayment(false);
+      }
+    }
+
     setShowPaymentFlow(true);
     setPaymentState(createInitialPaymentState());
   };
@@ -97,10 +137,53 @@ const ClinicLockedDialog: FunctionComponent<ClinicLockedDialogProps> = ({
   };
 
   const handlePaymentSuccess = async (): Promise<void> => {
-    updateUser(await syncPaidTransactionToUser(user, paymentState.transaction));
+    const transaction = paymentState.transaction;
+    const hasPendingManualPayment =
+      transaction?.paymentChannel === PaymentChannel.Manual &&
+      transaction?.status === PaymentStatus.Pending;
+
+    setHasSubmittedPendingManualPayment(hasPendingManualPayment);
+    updateUser(await syncPaidTransactionToUser(user, transaction));
     setShowPaymentFlow(false);
-    setPaymentState(createInitialPaymentState());
+    setPaymentState(
+      hasPendingManualPayment
+        ? {
+            ...createInitialPaymentState(),
+            transaction,
+          }
+        : createInitialPaymentState()
+    );
   };
+
+  const activationFollowUpContent = (
+    <Box>
+      <Typography variant="body2" sx={{ mb: 1 }}>
+        Please wait while we confirm your payment and activate the account. If activation is urgent,
+        contact:
+      </Typography>
+      <Stack spacing={0.5} sx={{ mb: 1 }}>
+        <Typography variant="body2">
+          <Box component="span" sx={{ fontWeight: 700 }}>
+            Phone:
+          </Box>{' '}
+          <Link href={`tel:${ACTIVATION_CONTACT.phone}`} underline="hover">
+            {ACTIVATION_CONTACT.phone}
+          </Link>
+        </Typography>
+        <Typography variant="body2">
+          <Box component="span" sx={{ fontWeight: 700 }}>
+            Email:
+          </Box>{' '}
+          <Link href={`mailto:${ACTIVATION_CONTACT.email}`} underline="hover">
+            {ACTIVATION_CONTACT.email}
+          </Link>
+        </Typography>
+      </Stack>
+      <Typography variant="body2">
+        Share your clinic name and payment reference number so the account can be activated faster.
+      </Typography>
+    </Box>
+  );
 
   return (
     <Dialog open={open} fullWidth maxWidth={showPaymentFlow ? 'md' : 'sm'} disableEscapeKeyDown>
@@ -126,30 +209,68 @@ const ClinicLockedDialog: FunctionComponent<ClinicLockedDialogProps> = ({
               <LockRoundedIcon />
             </Box>
             <Box sx={{ minWidth: 0 }}>
-              <Typography variant="body1" sx={{ color: '#183b56', fontWeight: 700, mb: 1 }}>
-                {clinicName
-                  ? `${clinicName} is currently locked.`
-                  : 'This clinic account is currently locked.'}
-              </Typography>
-              <Typography variant="body2" sx={{ color: 'text.secondary', mb: 1.5 }}>
-                Access to OralSync DMS has been restricted for this clinic until the subscription
-                payment is settled.
-              </Typography>
-              <Alert severity="warning" sx={{ mb: 1.5 }}>
-                Pay via PayMongo for instant confirmation, or submit a manual payment proof for
-                admin review. Manual payments stay pending until the status is marked as paid.
-              </Alert>
-              <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                You can settle the subscription here. Access resumes once a payment is confirmed as
-                paid.
-              </Typography>
+              {isPendingActivation ? (
+                <>
+                  <Typography variant="body1" sx={{ color: '#183b56', fontWeight: 700, mb: 1 }}>
+                    {clinicName
+                      ? `Payment for ${clinicName} has already been submitted.`
+                      : 'Payment for this clinic has already been submitted.'}
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: 'text.secondary', mb: 1.5 }}>
+                    The clinic account will stay locked while the submitted payment is being
+                    reviewed for activation.
+                  </Typography>
+                  <Alert severity="info" sx={{ mb: 1.5 }}>
+                    Please wait while we validate the payment. If activation is urgent, use the
+                    contact details below for faster follow-up.
+                  </Alert>
+                  <Box
+                    sx={{
+                      border: '1px solid',
+                      borderColor: 'divider',
+                      borderRadius: 2,
+                      p: 2,
+                      mb: 1.5,
+                      bgcolor: 'background.default',
+                    }}
+                  >
+                    <Typography variant="subtitle2" sx={{ color: '#183b56', mb: 1 }}>
+                      Activation Follow-up
+                    </Typography>
+                    {activationFollowUpContent}
+                  </Box>
+                  <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                    Access resumes once the payment is confirmed as paid.
+                  </Typography>
+                </>
+              ) : (
+                <>
+                  <Typography variant="body1" sx={{ color: '#183b56', fontWeight: 700, mb: 1 }}>
+                    {clinicName
+                      ? `${clinicName} is currently locked.`
+                      : 'This clinic account is currently locked.'}
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: 'text.secondary', mb: 1.5 }}>
+                    Access to OralSync DMS has been restricted for this clinic until the
+                    subscription payment is settled.
+                  </Typography>
+                  <Alert severity="warning" sx={{ mb: 1.5 }}>
+                    Pay via PayMongo for instant confirmation, or submit a manual payment proof for
+                    admin review. Manual payments stay pending until the status is marked as paid.
+                  </Alert>
+                  <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                    You can settle the subscription here. Access resumes once a payment is confirmed
+                    as paid.
+                  </Typography>
+                </>
+              )}
             </Box>
           </Box>
         ) : (
           <Box>
             <Alert severity="info" sx={{ mb: 3 }}>
-              Complete the subscription payment below. PayMongo confirms automatically, while
-              manual payment stays pending until an admin validates it as paid.
+              Complete the subscription payment below. PayMongo confirms automatically, while manual
+              payment stays pending until an admin validates it as paid.
             </Alert>
 
             <Stepper activeStep={stepFromState(paymentState.step)} alternativeLabel sx={{ mb: 4 }}>
@@ -180,6 +301,7 @@ const ClinicLockedDialog: FunctionComponent<ClinicLockedDialogProps> = ({
               <SuccessView
                 state={paymentState}
                 onDone={handlePaymentSuccess}
+                pendingManualPaymentInfo={activationFollowUpContent}
                 doneLabel={isPendingManualPayment ? 'Back to Lock Notice' : 'Continue to Workspace'}
               />
             )}
@@ -194,9 +316,14 @@ const ClinicLockedDialog: FunctionComponent<ClinicLockedDialogProps> = ({
           <Button
             variant="contained"
             startIcon={<CreditCardRoundedIcon />}
-            onClick={handleStartPayment}
+            onClick={() => void handleStartPayment()}
+            disabled={isCheckingSubmittedPayment}
           >
-            Pay Subscription
+            {isCheckingSubmittedPayment
+              ? 'Checking Payment...'
+              : isPendingActivation
+              ? "I've Already Paid"
+              : 'Pay Subscription'}
           </Button>
         </DialogActions>
       ) : paymentState.step !== 'success' ? (
