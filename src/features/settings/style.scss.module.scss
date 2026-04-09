@@ -1011,12 +1011,14 @@
   }
 }
 
+// ─── Export Data ──────────────────────────────────────────────────────────────
+
 .exportHeaderRow {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
-  flex-wrap: wrap;
+  flex-wrap: wrap;  // allows button to drop below header text on narrow widths
 }
 
 .exportSurface {
@@ -1036,6 +1038,8 @@
   border-radius: 20px;
   background: linear-gradient(135deg, rgba(236, 246, 255, 0.98), rgba(249, 252, 255, 0.98));
   box-shadow: 0 16px 32px rgba(24, 50, 79, 0.08);
+  // On narrow viewports the content + metrics stack vertically (see breakpoints below)
+  flex-wrap: wrap;
 }
 
 .exportHeroContent {
@@ -1043,7 +1047,7 @@
   flex-direction: column;
   gap: 10px;
   min-width: 0;
-  flex: 1;
+  flex: 1 1 260px; // flex-grow + flex-basis so it shrinks gracefully on tablet
 }
 
 .exportHeroEyebrow {
@@ -1072,7 +1076,9 @@
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
+  // Use 100% width so it stretches on tablet when stacked
   width: min(460px, 100%);
+  flex-shrink: 0; // don't squish the metrics grid horizontally on mid-range widths
 }
 
 .exportHeroMetric {
@@ -1106,18 +1112,167 @@
   line-height: 1.5;
 }
 
+.exportLoadingState {
+  min-height: 240px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(206, 218, 229, 0.95);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.exportDatasetList {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.exportDatasetCard {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 18px;
+  border: 1px solid rgba(206, 218, 229, 0.95);
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(245, 249, 253, 0.98));
+  box-shadow: 0 12px 28px rgba(24, 50, 79, 0.06);
+}
+
+.exportDatasetCardHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
+}
+
+.exportDatasetCardHeaderText {
+  min-width: 0;
+  flex: 1;
+}
+
+.exportDatasetCardTitle {
+  color: #17344f !important;
+  font-size: 17px !important;
+  font-weight: 800 !important;
+  line-height: 1.3 !important;
+  overflow-wrap: anywhere;
+}
+
+.exportDatasetCardDescription {
+  margin-top: 6px !important;
+  color: #6f8297 !important;
+  font-size: 13px !important;
+  line-height: 1.6 !important;
+  overflow-wrap: anywhere;
+}
+
+.exportDatasetChipRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.exportDatasetRecordPill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 0 12px;
+  border: 1px solid rgba(191, 207, 221, 0.95);
+  border-radius: 999px;
+  background: rgba(247, 250, 252, 0.98);
+  color: #48627c;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.exportDatasetMetaGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.exportDatasetMetaItem {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+  padding: 12px 14px;
+  border: 1px solid rgba(219, 228, 236, 0.98);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.82);
+}
+
+.exportDatasetMetaLabel {
+  color: #68829a;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.exportDatasetMetaValue {
+  color: #17344f;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
+.exportDatasetActionButton {
+  min-height: 44px !important;
+  border-radius: 14px !important;
+  background: linear-gradient(180deg, #2d58a6 0%, #1f4385 100%) !important;
+  color: #ffffff !important;
+  font-size: 13px !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  box-shadow: 0 10px 20px rgba(39, 78, 152, 0.2) !important;
+}
+
+.exportTablePrimaryText {
+  font-weight: 800 !important;
+  color: #17344f !important;
+  overflow-wrap: anywhere;
+}
+
+.exportTablePrimaryTextSecondary {
+  font-weight: 700 !important;
+  color: #1f4467 !important;
+  overflow-wrap: anywhere;
+}
+
+.exportTableSecondaryText {
+  color: #6f8297 !important;
+  font-size: 0.84rem !important;
+  line-height: 1.5 !important;
+  overflow-wrap: anywhere;
+}
+
+.exportTableCountText {
+  font-weight: 800 !important;
+  color: #163b62 !important;
+}
+
 .exportTableWrap {
   min-height: 360px;
   border: 1px solid rgba(206, 218, 229, 0.95);
   border-radius: 16px;
   background: rgba(255, 255, 255, 0.92);
-  overflow: hidden;
+  // Allow the table to scroll horizontally on narrow viewports
+  overflow-x: auto;
+  overflow-y: hidden;
 
   :global(.MuiTableContainer-root) {
     max-height: 620px;
+    // Ensure the container itself scrolls both axes as needed
     overflow: auto;
     border-radius: 0;
     background: transparent;
+    // Prevent the table from collapsing columns below their minimum readable width
+    min-width: 720px;
   }
 
   :global(.MuiTableCell-head) {
@@ -1127,12 +1282,20 @@
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 0.03em;
+    // Prevent header cells from wrapping aggressively on tablet
+    white-space: nowrap;
+  }
+
+  :global(.MuiTableCell-root) {
+    vertical-align: top;
   }
 
   :global(.MuiTableRow-hover:hover) {
     background: rgba(244, 249, 253, 0.98);
   }
 }
+
+// ─── Subscription ─────────────────────────────────────────────────────────────
 
 .subscriptionLoadingState {
   min-height: 260px;
@@ -1166,6 +1329,7 @@
   border-radius: 20px;
   background: linear-gradient(135deg, rgba(233, 244, 255, 0.98), rgba(248, 252, 255, 0.98));
   box-shadow: 0 16px 32px rgba(24, 50, 79, 0.08);
+  flex-wrap: wrap;
 }
 
 .subscriptionHeroContent {
@@ -1173,7 +1337,7 @@
   flex-direction: column;
   gap: 10px;
   min-width: 0;
-  flex: 1;
+  flex: 1 1 260px;
 }
 
 .subscriptionHeroEyebrow {
@@ -1209,6 +1373,7 @@
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
   width: min(460px, 100%);
+  flex-shrink: 0;
 }
 
 .subscriptionHeroMetric {
@@ -1511,6 +1676,72 @@
   }
 }
 
+// ─── Tablet breakpoint (new — fills the gap between 960 and 768) ──────────────
+@media (max-width: 960px) {
+  .exportHeroCard {
+    flex-direction: column;
+    padding: 18px;
+  }
+
+  .exportHeroContent {
+    flex: 1 1 auto;
+  }
+
+  .exportHeroMetrics {
+    // 3 columns still fit but fill full width
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    width: 100%;
+  }
+
+  .exportDatasetMetaGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .exportHeaderRow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .moduleActionButton {
+    width: 100%;
+  }
+
+  .tabPanelHeader {
+    max-width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .subscriptionHeroCard {
+    flex-direction: column;
+    padding: 18px;
+  }
+
+  .subscriptionHeroContent {
+    flex: 1 1 auto;
+  }
+
+  .subscriptionHeroMetrics {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    width: 100%;
+  }
+
+  .subscriptionHeaderRow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .subscriptionPlansGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .dualPanelGrid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+    margin-top: 16px;
+  }
+}
+
+// ─── Mobile breakpoint (≤ 768px) ─────────────────────────────────────────────
 @media (max-width: 768px) {
   .wrapper {
     min-height: calc(100vh - 56px);
@@ -1549,6 +1780,8 @@
 
   .tabPanelHeader {
     align-items: flex-start;
+    max-width: 100%;
+    flex-wrap: wrap;
   }
 
   .dualPanelGrid {
@@ -1654,6 +1887,7 @@
     max-height: none;
   }
 
+  // Export — already stacked at 960px; reinforce on mobile
   .exportHeaderRow {
     flex-direction: column;
     align-items: stretch;
@@ -1669,6 +1903,23 @@
     width: 100%;
   }
 
+  .exportDatasetCard {
+    padding: 16px;
+  }
+
+  .exportDatasetCardHeader {
+    flex-direction: column;
+  }
+
+  .exportDatasetMetaGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .exportDatasetActionButton {
+    width: 100%;
+  }
+
+  // Subscription
   .subscriptionHeroCard {
     flex-direction: column;
     padding: 18px;
@@ -1698,6 +1949,7 @@
   }
 }
 
+// ─── Small mobile (≤ 600px) ───────────────────────────────────────────────────
 @media (max-width: 600px) {
   .headerInfo {
     align-items: flex-start;
@@ -1794,6 +2046,7 @@
   }
 }
 
+// ─── Extra-small mobile (≤ 420px) ─────────────────────────────────────────────
 @media (max-width: 420px) {
   .wrapper {
     padding: 70px 8px 84px;
@@ -1849,5 +2102,22 @@
   .dayChipButton {
     width: 100%;
     justify-content: center;
+  }
+
+  .exportHeroTitle {
+    font-size: 22px !important;
+  }
+
+  .exportHeroMetric {
+    padding: 12px;
+  }
+
+  .exportDatasetCard {
+    padding: 14px;
+    border-radius: 16px;
+  }
+
+  .exportDatasetMetaItem {
+    padding: 11px 12px;
   }
 }

@@ -8,6 +8,7 @@ import {
   Button,
   Chip,
   CircularProgress,
+  Divider,
   Paper,
   Stack,
   Table,
@@ -17,6 +18,8 @@ import {
   TableHead,
   TableRow,
   Typography,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material';
 import { FunctionComponent, JSX, useEffect, useMemo, useState } from 'react';
 import { downloadExportDatasetCsv, getExportDatasets } from '../export-data/api/api';
@@ -29,6 +32,8 @@ const formatCount = (value?: number): string => {
 };
 
 const ExportData: FunctionComponent = (): JSX.Element => {
+  const theme = useTheme();
+  const isCompact = useMediaQuery(theme.breakpoints.down('md'));
   const [items, setItems] = useState<ExportDatasetModel[]>([]);
   const [load, setLoad] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
@@ -83,6 +88,16 @@ const ExportData: FunctionComponent = (): JSX.Element => {
       setDownloadingKey('');
     }
   };
+
+  const renderEmptyState = (): JSX.Element => (
+    <div className={styles.emptyMiniState}>
+      <StorageRoundedIcon sx={{ fontSize: 34, color: '#5c7992' }} />
+      <Typography className={styles.emptyMiniTitle}>No export datasets found</Typography>
+      <Typography className={styles.emptyMiniText}>
+        Exportable clinic tables will appear here once the export service is available.
+      </Typography>
+    </div>
+  );
 
   return (
     <div>
@@ -153,109 +168,178 @@ const ExportData: FunctionComponent = (): JSX.Element => {
           tables you need, and empty tables still export with CSV headers.
         </Alert>
 
-        <div className={styles.exportTableWrap}>
-          <TableContainer component={Paper} elevation={0}>
-            <Table stickyHeader aria-label="Exportable dataset table">
-              <TableHead>
-                <TableRow>
-                  <TableCell>Module</TableCell>
-                  <TableCell>Dataset</TableCell>
-                  <TableCell>Database Table</TableCell>
-                  <TableCell align="right">Records</TableCell>
-                  <TableCell>Format</TableCell>
-                  <TableCell align="right">Action</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {load ? (
-                  <TableRow>
-                    <TableCell colSpan={6} align="center" sx={{ py: 8 }}>
-                      <CircularProgress size={28} />
-                    </TableCell>
-                  </TableRow>
-                ) : sortedItems.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={6} align="center" sx={{ py: 8 }}>
-                      <div className={styles.emptyMiniState}>
-                        <StorageRoundedIcon sx={{ fontSize: 34, color: '#5c7992' }} />
-                        <Typography className={styles.emptyMiniTitle}>
-                          No export datasets found
+        {isCompact ? (
+          <div className={styles.exportDatasetList}>
+            {load ? (
+              <div className={styles.exportLoadingState}>
+                <CircularProgress size={28} />
+              </div>
+            ) : sortedItems.length === 0 ? (
+              renderEmptyState()
+            ) : (
+              sortedItems.map((item) => {
+                const isDownloading = downloadingKey === item.key;
+
+                return (
+                  <article key={item.key} className={styles.exportDatasetCard}>
+                    <div className={styles.exportDatasetCardHeader}>
+                      <div className={styles.exportDatasetCardHeaderText}>
+                        <Typography className={styles.exportDatasetCardTitle}>
+                          {item.label}
                         </Typography>
-                        <Typography className={styles.emptyMiniText}>
-                          Exportable clinic tables will appear here once the export service is
-                          available.
+                        <Typography className={styles.exportDatasetCardDescription}>
+                          {item.description}
                         </Typography>
                       </div>
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  sortedItems.map((item) => {
-                    const isDownloading = downloadingKey === item.key;
+                      <Chip label={item.category} size="small" variant="outlined" />
+                    </div>
 
-                    return (
-                      <TableRow hover key={item.key}>
-                        <TableCell>
-                          <Chip label={item.category} size="small" variant="outlined" />
-                        </TableCell>
-                        <TableCell>
-                          <Stack spacing={0.5}>
-                            <Typography sx={{ fontWeight: 800, color: '#17344f' }}>
-                              {item.label}
+                    <div className={styles.exportDatasetChipRow}>
+                      <Chip
+                        icon={<TableViewRoundedIcon />}
+                        label={item.format}
+                        size="small"
+                        color="primary"
+                        variant="outlined"
+                      />
+                      <span className={styles.exportDatasetRecordPill}>
+                        {formatCount(item.recordCount)} records
+                      </span>
+                    </div>
+
+                    <Divider />
+
+                    <div className={styles.exportDatasetMetaGrid}>
+                      <div className={styles.exportDatasetMetaItem}>
+                        <span className={styles.exportDatasetMetaLabel}>Module</span>
+                        <span className={styles.exportDatasetMetaValue}>{item.category}</span>
+                      </div>
+                      <div className={styles.exportDatasetMetaItem}>
+                        <span className={styles.exportDatasetMetaLabel}>Database Table</span>
+                        <span className={styles.exportDatasetMetaValue}>{item.tableName}</span>
+                      </div>
+                      <div className={styles.exportDatasetMetaItem}>
+                        <span className={styles.exportDatasetMetaLabel}>File Name</span>
+                        <span className={styles.exportDatasetMetaValue}>{item.fileName}</span>
+                      </div>
+                    </div>
+
+                    <Button
+                      variant="contained"
+                      startIcon={
+                        isDownloading ? (
+                          <CircularProgress size={16} color="inherit" />
+                        ) : (
+                          <DownloadRoundedIcon />
+                        )
+                      }
+                      onClick={() => void handleDownload(item)}
+                      disabled={isDownloading}
+                      className={styles.exportDatasetActionButton}
+                    >
+                      {isDownloading ? 'Exporting...' : 'Export CSV'}
+                    </Button>
+                  </article>
+                );
+              })
+            )}
+          </div>
+        ) : (
+          <div className={styles.exportTableWrap}>
+            <TableContainer component={Paper} elevation={0}>
+              <Table stickyHeader aria-label="Exportable dataset table">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Module</TableCell>
+                    <TableCell>Dataset</TableCell>
+                    <TableCell>Database Table</TableCell>
+                    <TableCell align="right">Records</TableCell>
+                    <TableCell>Format</TableCell>
+                    <TableCell align="right">Action</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {load ? (
+                    <TableRow>
+                      <TableCell colSpan={6} align="center" sx={{ py: 8 }}>
+                        <CircularProgress size={28} />
+                      </TableCell>
+                    </TableRow>
+                  ) : sortedItems.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={6} align="center" sx={{ py: 8 }}>
+                        {renderEmptyState()}
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    sortedItems.map((item) => {
+                      const isDownloading = downloadingKey === item.key;
+
+                      return (
+                        <TableRow hover key={item.key}>
+                          <TableCell>
+                            <Chip label={item.category} size="small" variant="outlined" />
+                          </TableCell>
+                          <TableCell>
+                            <Stack spacing={0.5}>
+                              <Typography className={styles.exportTablePrimaryText}>
+                                {item.label}
+                              </Typography>
+                              <Typography className={styles.exportTableSecondaryText}>
+                                {item.description}
+                              </Typography>
+                            </Stack>
+                          </TableCell>
+                          <TableCell>
+                            <Stack spacing={0.5}>
+                              <Typography className={styles.exportTablePrimaryTextSecondary}>
+                                {item.tableName}
+                              </Typography>
+                              <Typography className={styles.exportTableSecondaryText}>
+                                {item.fileName}
+                              </Typography>
+                            </Stack>
+                          </TableCell>
+                          <TableCell align="right">
+                            <Typography className={styles.exportTableCountText}>
+                              {formatCount(item.recordCount)}
                             </Typography>
-                            <Typography sx={{ color: '#6f8297', fontSize: '0.84rem' }}>
-                              {item.description}
-                            </Typography>
-                          </Stack>
-                        </TableCell>
-                        <TableCell>
-                          <Stack spacing={0.5}>
-                            <Typography sx={{ fontWeight: 700, color: '#1f4467' }}>
-                              {item.tableName}
-                            </Typography>
-                            <Typography sx={{ color: '#6f8297', fontSize: '0.82rem' }}>
-                              {item.fileName}
-                            </Typography>
-                          </Stack>
-                        </TableCell>
-                        <TableCell align="right">
-                          <Typography sx={{ fontWeight: 800, color: '#163b62' }}>
-                            {formatCount(item.recordCount)}
-                          </Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Chip
-                            icon={<TableViewRoundedIcon />}
-                            label={item.format}
-                            size="small"
-                            color="primary"
-                            variant="outlined"
-                          />
-                        </TableCell>
-                        <TableCell align="right">
-                          <Button
-                            variant="contained"
-                            size="small"
-                            startIcon={
-                              isDownloading ? (
-                                <CircularProgress size={16} color="inherit" />
-                              ) : (
-                                <DownloadRoundedIcon />
-                              )
-                            }
-                            onClick={() => void handleDownload(item)}
-                            disabled={isDownloading}
-                          >
-                            {isDownloading ? 'Exporting...' : 'Export CSV'}
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })
-                )}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </div>
+                          </TableCell>
+                          <TableCell>
+                            <Chip
+                              icon={<TableViewRoundedIcon />}
+                              label={item.format}
+                              size="small"
+                              color="primary"
+                              variant="outlined"
+                            />
+                          </TableCell>
+                          <TableCell align="right">
+                            <Button
+                              variant="contained"
+                              size="small"
+                              startIcon={
+                                isDownloading ? (
+                                  <CircularProgress size={16} color="inherit" />
+                                ) : (
+                                  <DownloadRoundedIcon />
+                                )
+                              }
+                              onClick={() => void handleDownload(item)}
+                              disabled={isDownloading}
+                            >
+                              {isDownloading ? 'Exporting...' : 'Export CSV'}
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })
+                  )}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </div>
+        )}
       </div>
     </div>
   );
