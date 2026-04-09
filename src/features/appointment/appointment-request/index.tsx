@@ -15,6 +15,7 @@ import styles from './style.scss.module.scss';
 import { HandleGetAppointments } from './api/handlers';
 import { useClinicId } from '../../../common/components/ClinicId';
 import RoundedPagination from '../../../common/components/RoundedPagination';
+import { useAuthStore } from '../../../common/store/authStore';
 
 export const AppointmentModule: FunctionComponent<AppointmentProps> = (
   props: AppointmentProps
@@ -24,6 +25,7 @@ export const AppointmentModule: FunctionComponent<AppointmentProps> = (
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const reloadTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const resolvedClinicId = useClinicId(clinicId);
+  const activeBranchId = useAuthStore((store) => store.branchId);
   const lastLoadedClinicIdRef = useRef<string | null | undefined>(undefined);
   const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [activeTab, setActiveTab] = useState<AppointmentViewTab>('requests');
@@ -166,6 +168,7 @@ export const AppointmentModule: FunctionComponent<AppointmentProps> = (
     state.pageEnd,
     activeTab,
     isMobile,
+    activeBranchId,
   ]);
 
   const summaryLabel = state.hasDateFilter ? 'Total Appointments' : 'Appointment Today';

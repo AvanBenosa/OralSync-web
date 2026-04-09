@@ -12,12 +12,14 @@ import { HandleGetPatients } from './api/handlers';
 import { toastConfig } from '../../common/api/responses';
 import { useClinicId } from '../../common/components/ClinicId';
 import RoundedPagination from '../../common/components/RoundedPagination';
+import { useAuthStore } from '../../common/store/authStore';
 export const PatientModule: FunctionComponent<PatientProps> = (
   props: PatientProps
 ): JSX.Element => {
   const { clinicId } = props;
   const reloadTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const resolvedClinicId = useClinicId(clinicId);
+  const activeBranchId = useAuthStore((store) => store.branchId);
   const lastLoadedClinicIdRef = useRef<string | null | undefined>(undefined);
   const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [state, setState] = useState<PatientStateModel>({
@@ -134,7 +136,7 @@ export const PatientModule: FunctionComponent<PatientProps> = (
     };
     // Sync when clinic context, server search, or page offset changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [resolvedClinicId, state.search, state.pageStart, state.pageEnd]);
+  }, [resolvedClinicId, activeBranchId, state.search, state.pageStart, state.pageEnd]);
 
   const handleCloseDialog = (): void => {
     setState((prev: PatientStateModel) => ({

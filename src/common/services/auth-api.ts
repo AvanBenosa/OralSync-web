@@ -37,6 +37,7 @@ export interface AuthUser {
   name: string;
   email: string;
   clinicId?: string | null;
+  defaultBranchId?: string | null;
   clinicName?: string;
   bannerImagePath?: string;
   isDataPrivacyAccepted?: boolean;

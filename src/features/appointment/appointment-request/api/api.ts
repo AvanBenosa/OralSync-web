@@ -7,6 +7,7 @@ import {
   toastSuccess,
 } from '../../../../common/api/responses';
 import { resolveClinicId } from '../../../../common/components/ClinicId';
+import { useAuthStore } from '../../../../common/store/authStore';
 import { AppointmentModel, AppointmentResponseModel, AppointmentStateModel } from './types';
 
 const APPOINTMENT_ENDPOINT = '/api/dmd/appointment/get-appointment';
@@ -141,8 +142,10 @@ export const GetAppointments = async (
   const pageEnd = state.pageEnd;
   const dateFrom = String(state.dateFrom ?? '').trim();
   const dateTo = String(state.dateTo ?? '').trim();
+  const branchId = useAuthStore.getState().branchId?.trim() || '';
   const requestKey = JSON.stringify({
     clinicId: resolvedClinicId ?? 'current-clinic',
+    branchId: branchId || 'all-branches',
     query,
     dateFrom: dateFrom || 'any-from',
     dateTo: dateTo || 'any-to',
@@ -172,6 +175,7 @@ export const GetAppointments = async (
       const response = await apiClient.get<AppointmentResponseModel>(APPOINTMENT_ENDPOINT, {
         params: {
           ClinicId: resolvedClinicId ?? undefined,
+          BranchId: branchId || undefined,
           Que: query,
           DateFrom: dateFrom || undefined,
           DateTo: dateTo || undefined,

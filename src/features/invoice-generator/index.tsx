@@ -5,6 +5,7 @@ import { toast } from 'react-toastify';
 import { toastConfig } from '../../common/api/responses';
 import RoundedPagination from '../../common/components/RoundedPagination';
 import { useClinicId } from '../../common/components/ClinicId';
+import { useAuthStore } from '../../common/store/authStore';
 import { HandleGetInvoiceGeneratorItems } from './api/handlers';
 import type {
   InvoiceGeneratorProps,
@@ -49,6 +50,7 @@ export const InvoiceGeneratorModule: FunctionComponent<InvoiceGeneratorProps> = 
 ): JSX.Element => {
   const { clinicId } = props;
   const resolvedClinicId = useClinicId(clinicId);
+  const activeBranchId = useAuthStore((store) => store.branchId);
   const reloadTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const loadTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastLoadedKeyRef = useRef<string>('');
@@ -184,7 +186,7 @@ export const InvoiceGeneratorModule: FunctionComponent<InvoiceGeneratorProps> = 
     };
     // Sync when clinic context or invoice filters change.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [resolvedClinicId, state.selectedPatientId, state.filterDate]);
+  }, [resolvedClinicId, activeBranchId, state.selectedPatientId, state.filterDate]);
 
   return (
     <div className={styles.wrapper}>

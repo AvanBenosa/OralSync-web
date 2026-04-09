@@ -19,6 +19,7 @@ import RefreshRoundedIcon from '@mui/icons-material/RefreshRounded';
 import { GetPatients } from '../patient/api/api';
 import { PatientModel } from '../patient/api/types';
 import HighlightText from '../../common/components/Highlight';
+import { useAuthStore } from '../../common/store/authStore';
 
 type PatientListProps = {
   clinicId?: string | null;
@@ -58,6 +59,7 @@ export const PatientList: FunctionComponent<PatientListProps> = (props): JSX.Ele
     error,
     helperText,
   } = props;
+  const activeBranchId = useAuthStore((store) => store.branchId);
   const [items, setItems] = useState<PatientModel[]>([]);
   const [query, setQuery] = useState<string>(selectedPatientName || '');
   const [load, setLoad] = useState<boolean>(true);
@@ -103,7 +105,7 @@ export const PatientList: FunctionComponent<PatientListProps> = (props): JSX.Ele
 
   useEffect(() => {
     void loadPatients();
-  }, [loadPatients]);
+  }, [activeBranchId, loadPatients]);
 
   const filteredItems = useMemo(() => {
     const keyword = query.trim().toLowerCase();

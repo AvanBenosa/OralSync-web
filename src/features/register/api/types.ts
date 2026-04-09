@@ -4,6 +4,7 @@ export enum RegisterUserRole {
   Assistant = 2,
   Receptionist = 3,
   User = 4,
+  BranchAdmin = 5,
 }
 
 export enum RegisterEmploymentType {
@@ -27,6 +28,7 @@ export const REGISTER_ROLE_OPTIONS = [
   { value: RegisterUserRole.Assistant, label: 'Assistant' },
   { value: RegisterUserRole.Receptionist, label: 'Receptionist' },
   { value: RegisterUserRole.User, label: 'User' },
+  { value: RegisterUserRole.BranchAdmin, label: 'Branch Admin' },
 ];
 
 export const REGISTER_EMPLOYMENT_OPTIONS = [

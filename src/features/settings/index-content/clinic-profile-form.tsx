@@ -26,6 +26,7 @@ import { useAuthStore } from '../../../common/store/authStore';
 import { HandleUpdateClinicProfile } from '../clinic-profile/api/handlers';
 import { UploadClinicBanner } from '../clinic-profile/api/api';
 import { ClinicProfileStateProps } from '../clinic-profile/api/types';
+import ClinicBranchManagement from './clinic-branch-management';
 import styles from '../style.scss.module.scss';
 
 const workingDayOptions = [
@@ -483,6 +484,8 @@ const ClinicProfileForm: FunctionComponent<ClinicProfileStateProps> = (
           </Grid>
         </section>
       </div>
+
+      <ClinicBranchManagement clinicId={state.item?.id ?? state.clinicProfileId} />
 
       <div className={styles.formActions}>
         {bannerUploadError ? (

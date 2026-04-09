@@ -24,6 +24,8 @@ export type SettingsUserModel = {
   role?: RegisterUserRole;
   roleLabel?: string;
   clinicId?: string | null;
+  defaultBranchId?: string | null;
+  defaultBranchName?: string;
   isActive?: boolean;
 };
 
@@ -49,6 +51,7 @@ export type CreateUserFormValues = {
   employmentType: RegisterEmploymentType;
   bio: string;
   role: RegisterUserRole;
+  defaultBranchId: string;
   password: string;
   confirmPassword: string;
   isActive: boolean;

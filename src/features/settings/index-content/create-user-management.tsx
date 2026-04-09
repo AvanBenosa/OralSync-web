@@ -18,8 +18,9 @@ import GroupRoundedIcon from '@mui/icons-material/GroupRounded';
 import PersonAddAlt1RoundedIcon from '@mui/icons-material/PersonAddAlt1Rounded';
 import SaveRoundedIcon from '@mui/icons-material/SaveRounded';
 import { isAxiosError } from 'axios';
-import { FunctionComponent, JSX, useMemo, useState } from 'react';
+import { FunctionComponent, JSX, useEffect, useMemo, useState } from 'react';
 import { useAuthStore } from '../../../common/store/authStore';
+import { isClinicWideRole } from '../../../common/utils/branch-access';
 import {
   getSubscriptionUserLimit,
   normalizeSubscriptionType,
@@ -34,6 +35,8 @@ import {
   RegisterSuffix,
   RegisterUserRole,
 } from '../../register/api/types';
+import { GetClinicBranches } from '../clinic-branch/api/api';
+import type { ClinicBranchModel } from '../clinic-branch/api/types';
 import {
   HandleCreateClinicUser,
   HandleDeleteClinicUser,
@@ -46,7 +49,9 @@ import {
 } from '../create-user/api/types';
 import styles from '../style.scss.module.scss';
 
-const createInitialValues = (): CreateUserFormValues => ({
+const createInitialValues = (
+  role: RegisterUserRole = RegisterUserRole.User
+): CreateUserFormValues => ({
   id: undefined,
   userName: '',
   firstName: '',
@@ -62,7 +67,8 @@ const createInitialValues = (): CreateUserFormValues => ({
   startDate: '',
   employmentType: RegisterEmploymentType.None,
   bio: '',
-  role: RegisterUserRole.User,
+  role,
+  defaultBranchId: '',
   password: '',
   confirmPassword: '',
   isActive: true,
@@ -93,6 +99,7 @@ const toFormValues = (item: SettingsUserModel): CreateUserFormValues => ({
   employmentType: item.employmentType ?? RegisterEmploymentType.None,
   bio: item.bio || '',
   role: item.role ?? RegisterUserRole.User,
+  defaultBranchId: item.defaultBranchId || '',
   password: '',
   confirmPassword: '',
   isActive: item.isActive ?? true,
@@ -101,6 +108,12 @@ const toFormValues = (item: SettingsUserModel): CreateUserFormValues => ({
 const isSuperAdminUser = (item: SettingsUserModel): boolean =>
   item.role === RegisterUserRole.SuperAdmin ||
   (item.roleLabel || '').toLowerCase() === 'superadmin';
+
+const requiresBranchAssignment = (role?: RegisterUserRole): boolean =>
+  role === RegisterUserRole.BranchAdmin ||
+  role === RegisterUserRole.Dentist ||
+  role === RegisterUserRole.Assistant ||
+  role === RegisterUserRole.Receptionist;
 
 const formatSubscriptionLabel = (value?: string | null): string => {
   const normalizedValue = normalizeSubscriptionType(value);
@@ -125,7 +138,16 @@ const CreateUserManagement: FunctionComponent<CreateUserStateProps> = (
 ): JSX.Element => {
   const { state, setState } = props;
   const subscriptionType = useAuthStore((store) => store.user?.subscriptionType ?? '');
-  const [formValues, setFormValues] = useState<CreateUserFormValues>(createInitialValues);
+  const clinicId = useAuthStore((store) => store.user?.clinicId ?? null);
+  const currentUserRole = useAuthStore((store) => store.user?.role ?? '');
+  const canAssignClinicWideRoles = isClinicWideRole(currentUserRole);
+  const defaultManagedRole = canAssignClinicWideRoles
+    ? RegisterUserRole.User
+    : RegisterUserRole.BranchAdmin;
+  const [formValues, setFormValues] = useState<CreateUserFormValues>(() =>
+    createInitialValues(defaultManagedRole)
+  );
+  const [branches, setBranches] = useState<ClinicBranchModel[]>([]);
   const [statusMessage, setStatusMessage] = useState('');
   const [submitError, setSubmitError] = useState('');
   const userLimit = getSubscriptionUserLimit(subscriptionType);
@@ -137,6 +159,48 @@ const CreateUserManagement: FunctionComponent<CreateUserStateProps> = (
     userLimit !== null
       ? `${subscriptionLabel} subscription allows up to ${userLimit} users only. Upgrade the plan to add more clinic accounts.`
       : '';
+  const branchAssignmentRequired = requiresBranchAssignment(formValues.role);
+  const availableRoleOptions = useMemo(
+    () =>
+      canAssignClinicWideRoles
+        ? REGISTER_ROLE_OPTIONS
+        : REGISTER_ROLE_OPTIONS.filter((option) =>
+            [
+              RegisterUserRole.BranchAdmin,
+              RegisterUserRole.Dentist,
+              RegisterUserRole.Assistant,
+              RegisterUserRole.Receptionist,
+            ].includes(option.value)
+          ),
+    [canAssignClinicWideRoles]
+  );
+
+  useEffect(() => {
+    if (!clinicId?.trim()) {
+      setBranches([]);
+      return;
+    }
+
+    void GetClinicBranches(clinicId)
+      .then((response) => {
+        setBranches(response.items || []);
+      })
+      .catch(() => {
+        setBranches([]);
+      });
+  }, [clinicId]);
+
+  useEffect(() => {
+    if (state.isUpdate) {
+      return;
+    }
+
+    setFormValues((current) =>
+      availableRoleOptions.some((option) => option.value === current.role)
+        ? current
+        : createInitialValues(defaultManagedRole)
+    );
+  }, [availableRoleOptions, defaultManagedRole, state.isUpdate]);
 
   const filteredUsers = useMemo(() => {
     const query = state.search.trim().toLowerCase();
@@ -153,7 +217,7 @@ const CreateUserManagement: FunctionComponent<CreateUserStateProps> = (
   }, [state.items, state.search]);
 
   const resetForm = (): void => {
-    setFormValues(createInitialValues());
+    setFormValues(createInitialValues(defaultManagedRole));
     setState((prev: any) => ({
       ...prev,
       item: null,
@@ -246,6 +310,11 @@ const CreateUserManagement: FunctionComponent<CreateUserStateProps> = (
 
     if (!formValues.emailAddress.trim()) {
       setSubmitError('Email address is required.');
+      return;
+    }
+
+    if (branchAssignmentRequired && !formValues.defaultBranchId.trim()) {
+      setSubmitError('Default branch is required for branch-scoped users.');
       return;
     }
 
@@ -346,6 +415,9 @@ const CreateUserManagement: FunctionComponent<CreateUserStateProps> = (
                       </Typography>
                       <Typography className={styles.userListEmail}>
                         {item.emailAddress || '--'}
+                      </Typography>
+                      <Typography className={styles.userListEmail}>
+                        {item.defaultBranchName?.trim() || 'All branches'}
                       </Typography>
                     </div>
                   </div>
@@ -525,9 +597,32 @@ const CreateUserManagement: FunctionComponent<CreateUserStateProps> = (
               fullWidth
               size="small"
             >
-              {REGISTER_ROLE_OPTIONS.map((option) => (
+              {availableRoleOptions.map((option) => (
                 <MenuItem key={option.value} value={option.value}>
                   {option.label}
+                </MenuItem>
+              ))}
+            </TextField>
+          </Grid>
+          <Grid size={{ xs: 12, md: 8 }}>
+            <TextField
+              label="Default Branch"
+              select
+              value={formValues.defaultBranchId}
+              onChange={(event) => handleTextChange('defaultBranchId', event.target.value)}
+              fullWidth
+              size="small"
+              required={branchAssignmentRequired}
+              helperText={
+                branchAssignmentRequired
+                  ? 'Branch-scoped users are restricted to this branch.'
+                  : 'Clinic-wide users can keep access to all branches.'
+              }
+            >
+              {canAssignClinicWideRoles ? <MenuItem value="">All Branches</MenuItem> : null}
+              {branches.map((branch) => (
+                <MenuItem key={branch.id} value={branch.id}>
+                  {branch.name || branch.code || 'Unnamed Branch'}
                 </MenuItem>
               ))}
             </TextField>

@@ -10,6 +10,8 @@ import { useSearchParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { toastConfig } from '../../common/api/responses';
 import { useClinicId } from '../../common/components/ClinicId';
+import { useAuthStore } from '../../common/store/authStore';
+import { isClinicWideRole } from '../../common/utils/branch-access';
 import { HandleGetCurrentClinicProfile } from './clinic-profile/api/handlers';
 import { ClinicProfileStateModel } from './clinic-profile/api/types';
 import { HandleGetClinicUsers } from './create-user/api/handlers';
@@ -38,9 +40,18 @@ type SettingsTabId =
   | 'export-data'
   | 'subscriptions';
 
+type SettingsTabConfig = {
+  id: SettingsTabId;
+  label: string;
+  icon: JSX.Element;
+  title: string;
+  description: string;
+};
+
 const SettingsModule: FunctionComponent<SettingsProps> = (props: SettingsProps): JSX.Element => {
   const { clinicId } = props;
   const [searchParams, setSearchParams] = useSearchParams();
+  const currentUserRole = useAuthStore((store) => store.user?.role || '');
   const reloadTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const resolvedClinicId = useClinicId(clinicId);
   const lastLoadedClinicProfileIdRef = useRef<string | null | undefined>(undefined);
@@ -83,66 +94,74 @@ const SettingsModule: FunctionComponent<SettingsProps> = (props: SettingsProps):
     isDelete: false,
   });
 
+  const canManageUsers = useMemo(
+    () => isClinicWideRole(currentUserRole) || currentUserRole.trim().toLowerCase() === 'branchadmin',
+    [currentUserRole]
+  );
+
   const settingsTabs = useMemo(
-    () => [
-      {
-        id: 'clinic-profile' as const,
-        label: 'Clinic Profile',
-        icon: <BusinessRoundedIcon />,
-        title: 'Clinic Profile',
-        description:
-          'Manage the clinic identity, branch details, contact information, and profile settings from this section.',
-      },
-      {
-        id: 'create-user' as const,
-        label: 'Create user',
-        icon: <PersonAddAlt1RoundedIcon />,
-        title: 'Create user',
-        description:
-          'Add and manage dentist or doctor accounts for this clinic from the settings workspace.',
-      },
-      {
-        id: 'build-up' as const,
-        label: 'Build Up',
-        icon: <ConstructionRoundedIcon />,
-        title: 'Build Up',
-        description:
-          'Use this tab for clinic build up details, setup options, and operational configuration items.',
-      },
-      {
-        id: 'data-mapping' as const,
-        label: 'Data Mapping',
-        icon: <MapRoundedIcon />,
-        title: 'Data Mapping',
-        description:
-          'Use this tab for clinic build up details, setup options, and operational configuration items.',
-      },
-      {
-        id: 'audit-logs' as const,
-        label: 'Audit Logs',
-        icon: <FactCheckRoundedIcon />,
-        title: 'Audit Logs',
-        description:
-          'Review clinic activity history, record changes, and traceable operational events.',
-      },
-      {
-        id: 'export-data' as const,
-        label: 'Export Data',
-        icon: <FileDownloadRoundedIcon />,
-        title: 'Export Data',
-        description:
-          'Download clinic records as CSV files from the tables stored in your database.',
-      },
-      {
-        id: 'subscriptions' as const,
-        label: 'Subscriptions',
-        icon: <WorkspacePremiumRoundedIcon />,
-        title: 'Subscriptions',
-        description:
-          'Review the clinic subscription type, assigned validity date, and current access status.',
-      },
-    ],
-    []
+    (): SettingsTabConfig[] =>
+      [
+        {
+          id: 'clinic-profile' as const,
+          label: 'Clinic Profile',
+          icon: <BusinessRoundedIcon />,
+          title: 'Clinic Profile',
+          description:
+            'Manage the clinic identity, branch details, contact information, and profile settings from this section.',
+        },
+        canManageUsers
+          ? {
+              id: 'create-user' as const,
+              label: 'Create user',
+              icon: <PersonAddAlt1RoundedIcon />,
+              title: 'Create user',
+              description:
+                'Add and manage dentist or doctor accounts for this clinic from the settings workspace.',
+            }
+          : null,
+        {
+          id: 'build-up' as const,
+          label: 'Build Up',
+          icon: <ConstructionRoundedIcon />,
+          title: 'Build Up',
+          description:
+            'Use this tab for clinic build up details, setup options, and operational configuration items.',
+        },
+        {
+          id: 'data-mapping' as const,
+          label: 'Data Mapping',
+          icon: <MapRoundedIcon />,
+          title: 'Data Mapping',
+          description:
+            'Use this tab for clinic build up details, setup options, and operational configuration items.',
+        },
+        {
+          id: 'audit-logs' as const,
+          label: 'Audit Logs',
+          icon: <FactCheckRoundedIcon />,
+          title: 'Audit Logs',
+          description:
+            'Review clinic activity history, record changes, and traceable operational events.',
+        },
+        {
+          id: 'export-data' as const,
+          label: 'Export Data',
+          icon: <FileDownloadRoundedIcon />,
+          title: 'Export Data',
+          description:
+            'Download clinic records as CSV files from the tables stored in your database.',
+        },
+        {
+          id: 'subscriptions' as const,
+          label: 'Subscriptions',
+          icon: <WorkspacePremiumRoundedIcon />,
+          title: 'Subscriptions',
+          description:
+            'Review the clinic subscription type, assigned validity date, and current access status.',
+        },
+      ].filter((tab): tab is SettingsTabConfig => Boolean(tab)),
+    [canManageUsers]
   );
 
   const validTabs = settingsTabs.map((tab) => tab.id);

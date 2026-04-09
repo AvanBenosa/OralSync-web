@@ -13,6 +13,7 @@ import {
 } from './types';
 import { isAxiosError } from 'axios';
 import { resolveClinicId } from '../../../common/components/ClinicId';
+import { useAuthStore } from '../../../common/store/authStore';
 
 const PATIENT_ENDPOINT = '/api/dmd/patient/get-patient';
 const CREATE_PATIENT_ENDPOINT = '/api/dmd/patient/create-patient';
@@ -47,8 +48,10 @@ export const GetPatients = async (
       ? state.pageStart - state.pageEnd
       : state.pageStart;
   const pageEnd = state.pageEnd;
+  const branchId = useAuthStore.getState().branchId?.trim() || '';
   const requestKey = JSON.stringify({
     clinicId: resolvedClinicId ?? 'current-clinic',
+    branchId: branchId || 'all-branches',
     query: query || 'all',
     pageStart,
     pageEnd,
@@ -73,6 +76,7 @@ export const GetPatients = async (
       const response = await apiClient.get<PatientResponseModel>(PATIENT_ENDPOINT, {
         params: {
           ClinicId: resolvedClinicId ?? undefined,
+          BranchId: branchId || undefined,
           Que: query || 'all',
           pageStart,
           pageEnd,
@@ -109,7 +113,11 @@ export const GetPatients = async (
 
 export const CreatePatient = async (request: PatientModel): Promise<PatientModel> => {
   try {
-    const response = await apiClient.post<PatientModel>(CREATE_PATIENT_ENDPOINT, request);
+    const branchId = useAuthStore.getState().branchId?.trim() || undefined;
+    const response = await apiClient.post<PatientModel>(CREATE_PATIENT_ENDPOINT, {
+      ...request,
+      BranchId: branchId,
+    });
     return SuccessResponse(response, ResponseMethod.Create) as PatientModel;
   } catch (error) {
     if (isAxiosError(error)) {

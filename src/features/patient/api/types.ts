@@ -5,6 +5,7 @@ export type PatientProps = {
 export type PatientModel = {
   id?: string;
   clinicProfileId?: string | null;
+  createdBranchId?: string | null;
   patientNumber?: string;
   profilePicture?: string;
   firstName?: string;

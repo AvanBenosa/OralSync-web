@@ -6,6 +6,7 @@ import {
   SuccessResponse,
 } from '../../../common/api/responses';
 import { resolveClinicId } from '../../../common/components/ClinicId';
+import { useAuthStore } from '../../../common/store/authStore';
 import { apiClient } from '../../../common/services/api-client';
 import type { InvoiceGeneratorModel } from './types';
 
@@ -23,6 +24,7 @@ const invoiceGeneratorResponseCache = new Map<
 
 type InvoiceGeneratorQuery = {
   clinicId?: string | null;
+  branchId?: string | null;
   patientInfoId?: string;
   date?: string;
 };
@@ -31,11 +33,13 @@ const normalizeQueryValue = (value?: string | null): string => value?.trim() ?? 
 
 const buildInvoiceGeneratorRequestKey = (query?: InvoiceGeneratorQuery): string => {
   const clinicId = normalizeQueryValue(query?.clinicId);
+  const branchId = normalizeQueryValue(query?.branchId);
   const patientInfoId = normalizeQueryValue(query?.patientInfoId);
   const date = normalizeQueryValue(query?.date);
 
   return [
     `clinic:${clinicId || 'current'}`,
+    `branch:${branchId || 'all'}`,
     `patient:${patientInfoId || 'none'}`,
     `date:${date || 'none'}`,
   ].join('|');
@@ -46,10 +50,12 @@ export const GetInvoiceGeneratorItems = async (
   forceRefresh: boolean = false
 ): Promise<InvoiceGeneratorModel[]> => {
   const clinicId = resolveClinicId(query?.clinicId);
+  const branchId = useAuthStore.getState().branchId?.trim() || '';
   const patientInfoId = normalizeQueryValue(query?.patientInfoId);
   const date = normalizeQueryValue(query?.date);
   const requestKey = buildInvoiceGeneratorRequestKey({
     clinicId,
+    branchId,
     patientInfoId,
     date,
   });
@@ -80,6 +86,7 @@ export const GetInvoiceGeneratorItems = async (
       const response = await apiClient.get<InvoiceGeneratorModel[]>(INVOICE_GENERATOR_ENDPOINT, {
         params: {
           ClinicId: clinicId || undefined,
+          BranchId: branchId || undefined,
           PatientInfoId: patientInfoId || undefined,
           Date: date || undefined,
         },

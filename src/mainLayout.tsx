@@ -1,7 +1,7 @@
 import React from 'react';
 import { matchPath, useLocation, useNavigate, useOutlet } from 'react-router-dom';
 import Box from '@mui/material/Box';
-import { useMediaQuery, useTheme } from '@mui/material';
+import { MenuItem, TextField, Typography, useMediaQuery, useTheme } from '@mui/material';
 import SideNav from './common/sideNav/sideNav';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
@@ -21,6 +21,9 @@ import BetaTestingDialog from './features/login/beta-testing-dialog';
 import PostLoginBootScreen, { usePostLoginBoot } from './common/loading/post-login-boot';
 import AiAssistant from './common/components/AiAssistant';
 import { GetCurrentClinicProfile } from './features/settings/clinic-profile/api/api';
+import { GetClinicBranches } from './features/settings/clinic-branch/api/api';
+import type { ClinicBranchModel } from './features/settings/clinic-branch/api/types';
+import { isClinicWideRole } from './common/utils/branch-access';
 // import RegisterBootstrapModal from './features/register';
 
 const MainLayout = () => {
@@ -31,6 +34,7 @@ const MainLayout = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
   const user = useAuthStore((state) => state.user);
+  const activeBranchId = useAuthStore((state) => state.branchId);
   const clinicId = user?.clinicId;
   const clinicName = user?.clinicName;
   const clinicStatus = user?.status;
@@ -41,6 +45,7 @@ const MainLayout = () => {
   // const requiresRegistration = useAuthStore((state) => state.requiresRegistration);
   const setRequiresRegistration = useAuthStore((state) => state.setRequiresRegistration);
   const updateUser = useAuthStore((state) => state.updateUser);
+  const setBranchId = useAuthStore((state) => state.setBranchId);
   const logout = useAuthStore((state) => state.logout);
   const [showClinicLockedDialog, setShowClinicLockedDialog] = useState(false);
   const [showDataPrivacyDialog, setShowDataPrivacyDialog] = useState(false);
@@ -52,8 +57,13 @@ const MainLayout = () => {
   const [dataPrivacyError, setDataPrivacyError] = useState('');
   const [contractPolicyError, setContractPolicyError] = useState('');
   const [betaTestingError, setBetaTestingError] = useState('');
+  const [branches, setBranches] = useState<ClinicBranchModel[]>([]);
   const lockStatusIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const showPostLoginBoot = usePostLoginBoot();
+  const canSwitchBranches = useMemo(
+    () => Boolean(user?.portalType === 'clinic' && isClinicWideRole(user?.role)),
+    [user?.portalType, user?.role]
+  );
   const shouldCheckDataPrivacy = useMemo(
     () => Boolean(isLoggedIn && clinicId),
     [clinicId, isLoggedIn]
@@ -119,6 +129,22 @@ const MainLayout = () => {
       })
       .catch(() => undefined);
   }, [isLoggedIn, setRequiresRegistration]);
+
+  useEffect(() => {
+    if (!canSwitchBranches || !clinicId) {
+      setBranches([]);
+      setBranchId(null);
+      return;
+    }
+
+    void GetClinicBranches(clinicId)
+      .then((response) => {
+        setBranches(response.items || []);
+      })
+      .catch(() => {
+        setBranches([]);
+      });
+  }, [canSwitchBranches, clinicId, setBranchId]);
 
   useEffect(() => {
     if (!shouldCheckDataPrivacy) {
@@ -378,6 +404,54 @@ const MainLayout = () => {
     <Box display="flex" minHeight="100vh" bgcolor="background.default">
       <SideNav />
       <Box component="main" flexGrow={1} sx={{ overflowX: 'hidden' }}>
+        {canSwitchBranches ? (
+          <Box
+            sx={{
+              px: { xs: 1.5, sm: 2.5 },
+              py: 1.5,
+              borderBottom: '1px solid rgba(201, 214, 226, 0.72)',
+              background:
+                'linear-gradient(180deg, rgba(255,255,255,0.96) 0%, rgba(245,249,252,0.98) 100%)',
+            }}
+          >
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: { xs: 'stretch', sm: 'center' },
+                justifyContent: 'space-between',
+                gap: 1.5,
+                flexDirection: { xs: 'column', md: 'row' },
+              }}
+            >
+              <Box>
+                <Typography sx={{ fontSize: '0.92rem', fontWeight: 800, color: '#17344f' }}>
+                  Branch View
+                </Typography>
+                <Typography sx={{ mt: 0.35, fontSize: '0.82rem', color: '#5f7891' }}>
+                  Filter patients, appointments, and invoices by branch, or keep the clinic-wide
+                  view on all branches.
+                </Typography>
+              </Box>
+              <TextField
+                select
+                size="small"
+                label="Active Branch"
+                value={activeBranchId ?? ''}
+                onChange={(event) => {
+                  setBranchId(event.target.value || null);
+                }}
+                sx={{ minWidth: { xs: '100%', sm: 280 } }}
+              >
+                <MenuItem value="">All Branches</MenuItem>
+                {branches.map((branch) => (
+                  <MenuItem key={branch.id} value={branch.id}>
+                    {branch.name || branch.code || 'Unnamed Branch'}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </Box>
+          </Box>
+        ) : null}
         <Box key={location.pathname} sx={{ minHeight: '100vh' }}>
           {outlet}
         </Box>
