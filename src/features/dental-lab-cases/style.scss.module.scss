@@ -628,6 +628,7 @@
   }
 
   .headerInfo {
+    flex: unset;
     align-items: flex-start;
     gap: 12px;
   }
@@ -649,9 +650,11 @@
 
   .headerTitleRow {
     gap: 8px;
+    flex-wrap: wrap;
   }
 
   .headerActions {
+    flex: unset;
     width: 100%;
   }
 
@@ -667,13 +670,18 @@
 
   .headerActionControls {
     width: 100%;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 40px;
+    align-items: center;
     justify-content: stretch;
+    gap: 8px;
   }
 
   .buttonContainer {
     gap: 6px;
-    width: auto;
+    width: 100%;
     flex: 1 1 auto;
+    grid-column: 1 / -1;
   }
 
   .searchInput {
@@ -775,6 +783,7 @@
   }
 
   .headerActionControls {
+    grid-template-columns: minmax(0, 1fr) 38px;
     gap: 6px;
   }
 
@@ -791,6 +800,7 @@
 
   .buttonContainer {
     gap: 5px;
+    grid-column: 1 / -1;
   }
 
   .buttonItem {

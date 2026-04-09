@@ -413,6 +413,39 @@
     margin-top: 10px;
   }
 
+  .headerInfo {
+    flex: unset;
+    align-items: flex-start;
+  }
+
+  .headerTitleRow {
+    flex-wrap: wrap;
+  }
+
+  .legendGroup {
+    width: 100%;
+  }
+
+  .headerActions {
+    flex: unset;
+    width: 100%;
+  }
+
+  .headerActionControls {
+    display: grid;
+    grid-template-columns: repeat(3, 40px) minmax(0, 1fr);
+    align-items: center;
+    justify-content: stretch;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .buttonContainer {
+    grid-column: 1 / -1;
+    width: 100%;
+    justify-content: flex-start;
+  }
+
   .standaloneTabsRow {
     align-items: stretch;
     justify-content: stretch;
@@ -443,6 +476,15 @@
 @media (max-width: 420px) {
   .headerSubtitle {
     font-size: 11px;
+  }
+
+  .headerActionControls {
+    grid-template-columns: repeat(3, 38px) minmax(0, 1fr);
+    gap: 6px;
+  }
+
+  .buttonContainer {
+    grid-column: 1 / -1;
   }
 
   .filterPopoverBody {
