@@ -20,6 +20,7 @@ import ClinicLockModule from '../../features/admin-portal/clinic-locks';
 import PaymentRequestsModule from '../../features/admin-portal/payment-requests';
 import PublicRegistrationPage from '../../features/public-registration';
 import { useAuthStore } from '../store/authStore';
+import { canAccessSettingsModule } from '../utils/branch-access';
 import { isBasicSubscription } from '../utils/subscription';
 
 const AppRoutes = () => {
@@ -74,7 +75,13 @@ const AppRoutes = () => {
           />
           <Route
             path="/settings"
-            element={<SettingsModule clinicId={user?.clinicId ?? undefined} />}
+            element={
+              canAccessSettingsModule(user?.role) ? (
+                <SettingsModule clinicId={user?.clinicId ?? undefined} />
+              ) : (
+                <Navigate to="/dashboard" replace />
+              )
+            }
           />
           <Route
             path="/subscription"

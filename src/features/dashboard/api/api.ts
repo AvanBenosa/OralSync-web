@@ -6,6 +6,7 @@ import {
 } from '../../../common/api/responses';
 import { resolveClinicId } from '../../../common/components/ClinicId';
 import { apiClient } from '../../../common/services/api-client';
+import { useAuthStore } from '../../../common/store/authStore';
 import { DashboardResponseModel } from './types';
 
 const DASHBOARD_ENDPOINT = '/api/dmd/dashboard/get-dashboard';
@@ -24,7 +25,8 @@ export const GetDashboard = async (
   forceRefresh: boolean = false
 ): Promise<DashboardResponseModel> => {
   const resolvedClinicId = resolveClinicId(clinicId);
-  const clinicKey = String(resolvedClinicId ?? 'current-clinic');
+  const branchId = useAuthStore.getState().branchId?.trim() || '';
+  const clinicKey = `${String(resolvedClinicId ?? 'current-clinic')}|${branchId || 'all-branches'}`;
 
   if (forceRefresh) {
     dashboardResponseCache.delete(clinicKey);
@@ -48,6 +50,7 @@ export const GetDashboard = async (
       const response = await apiClient.get<DashboardResponseModel>(DASHBOARD_ENDPOINT, {
         params: {
           ClinicId: resolvedClinicId ?? undefined,
+          BranchId: branchId || undefined,
         },
       });
 

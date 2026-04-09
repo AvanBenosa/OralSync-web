@@ -22,6 +22,7 @@ import StarRoundedIcon from '@mui/icons-material/StarRounded';
 import { isAxiosError } from 'axios';
 
 import { getApiBaseUrl } from '../../../common/services/api-client';
+import { useAuthStore } from '../../../common/store/authStore';
 import {
   HandleCreateClinicBranch,
   HandleDeleteClinicBranch,
@@ -91,11 +92,14 @@ const resolveClinicBannerSrc = (bannerImagePath?: string): string => {
 
 type ClinicBranchManagementProps = {
   clinicId?: string | null;
+  mode?: 'all-branches' | 'assigned-branch';
 };
 
 const ClinicBranchManagement: FunctionComponent<ClinicBranchManagementProps> = ({
   clinicId,
+  mode = 'all-branches',
 }: ClinicBranchManagementProps): JSX.Element => {
+  const assignedBranchName = useAuthStore((store) => store.user?.defaultBranchName?.trim() || '');
   const [state, setState] = useState<ClinicBranchStateModel>({
     items: [],
     selectedItem: null,
@@ -114,6 +118,11 @@ const ClinicBranchManagement: FunctionComponent<ClinicBranchManagementProps> = (
   const [selectedBannerFileName, setSelectedBannerFileName] = useState('');
   const [bannerPreviewUrl, setBannerPreviewUrl] = useState('');
   const bannerInputRef = useRef<HTMLInputElement | null>(null);
+  const isAssignedBranchMode = mode === 'assigned-branch';
+  const sectionTitle = isAssignedBranchMode ? 'Assigned Branch Profile' : 'Clinic Branches';
+  const sectionDescription = isAssignedBranchMode
+    ? 'View and update the branch assigned to your account. Branch creation and deletion are not available for Branch Admin.'
+    : 'Create and manage the branches under this clinic. Branch contact details, working days, schedule, and banner are maintained here.';
 
   useEffect(() => {
     setState((prev) => ({
@@ -318,6 +327,11 @@ const ClinicBranchManagement: FunctionComponent<ClinicBranchManagementProps> = (
   const handleSubmit = async (): Promise<void> => {
     clearMessages();
 
+    if (isAssignedBranchMode && !state.isUpdate) {
+      setSubmitError('Branch creation is not available for this account.');
+      return;
+    }
+
     if (!formValues.name.trim()) {
       setSubmitError('Branch name is required.');
       return;
@@ -393,22 +407,29 @@ const ClinicBranchManagement: FunctionComponent<ClinicBranchManagementProps> = (
             <StorefrontRoundedIcon />
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <h3 className={styles.formPanelTitle}>Clinic Branches</h3>
-            <p className={styles.formPanelDescription}>
-              Create and manage the branches under this clinic. Branch contact details, working
-              days, schedule, and banner are maintained here.
-            </p>
+            <h3 className={styles.formPanelTitle}>{sectionTitle}</h3>
+            <p className={styles.formPanelDescription}>{sectionDescription}</p>
           </div>
-          <Button
-            type="button"
-            variant="contained"
-            startIcon={<AddRoundedIcon />}
-            className={styles.moduleActionButton}
-            onClick={openCreateDialog}
-          >
-            Add Branch
-          </Button>
+          {!isAssignedBranchMode ? (
+            <Button
+              type="button"
+              variant="contained"
+              startIcon={<AddRoundedIcon />}
+              className={styles.moduleActionButton}
+              onClick={openCreateDialog}
+            >
+              Add Branch
+            </Button>
+          ) : null}
         </div>
+
+        {isAssignedBranchMode ? (
+          <Alert severity="info" sx={{ mb: 2 }}>
+            {assignedBranchName
+              ? `You can only manage your assigned branch: ${assignedBranchName}.`
+              : 'You can only manage the branch assigned to your account.'}
+          </Alert>
+        ) : null}
 
         {statusMessage ? (
           <Alert severity="success" sx={{ mb: 2 }}>
@@ -433,9 +454,13 @@ const ClinicBranchManagement: FunctionComponent<ClinicBranchManagementProps> = (
 
         {clinicId?.trim() && !state.load && sortedItems.length === 0 ? (
           <div className={styles.emptyMiniState}>
-            <Typography className={styles.emptyMiniTitle}>No Branches Yet</Typography>
+            <Typography className={styles.emptyMiniTitle}>
+              {isAssignedBranchMode ? 'Assigned Branch Not Found' : 'No Branches Yet'}
+            </Typography>
             <Typography className={styles.emptyMiniText}>
-              Add the main branch and any additional clinic locations from this panel.
+              {isAssignedBranchMode
+                ? 'No branch record is currently available for your assigned branch.'
+                : 'Add the main branch and any additional clinic locations from this panel.'}
             </Typography>
           </div>
         ) : null}
@@ -506,14 +531,16 @@ const ClinicBranchManagement: FunctionComponent<ClinicBranchManagementProps> = (
                     >
                       <EditRoundedIcon />
                     </Button>
-                    <Button
-                      type="button"
-                      variant="outlined"
-                      className={`${styles.userListActionButton} ${styles.userListDeleteButton}`}
-                      onClick={() => openDeleteDialog(item)}
-                    >
-                      <DeleteRoundedIcon />
-                    </Button>
+                    {!isAssignedBranchMode ? (
+                      <Button
+                        type="button"
+                        variant="outlined"
+                        className={`${styles.userListActionButton} ${styles.userListDeleteButton}`}
+                        onClick={() => openDeleteDialog(item)}
+                      >
+                        <DeleteRoundedIcon />
+                      </Button>
+                    ) : null}
                   </div>
                 </div>
               </div>
@@ -562,7 +589,11 @@ const ClinicBranchManagement: FunctionComponent<ClinicBranchManagementProps> = (
         ) : (
           <>
             <DialogTitle sx={{ pb: 1, fontWeight: 800, color: '#16324f' }}>
-              {state.isUpdate ? 'Edit Branch' : 'Create Branch'}
+              {state.isUpdate
+                ? isAssignedBranchMode
+                  ? 'Update Assigned Branch'
+                  : 'Edit Branch'
+                : 'Create Branch'}
             </DialogTitle>
             <DialogContent dividers>
               {submitError ? (
@@ -699,34 +730,38 @@ const ClinicBranchManagement: FunctionComponent<ClinicBranchManagementProps> = (
                         InputLabelProps={{ shrink: true }}
                       />
                     </Grid>
-                    <Grid size={{ xs: 12, sm: 6 }}>
-                      <Box className={styles.inlineCheckboxCard}>
-                        <FormControlLabel
-                          control={
-                            <Checkbox
-                              name="isMainBranch"
-                              checked={formValues.isMainBranch}
-                              onChange={handleCheckboxChange}
-                            />
-                          }
-                          label="Set as main branch"
-                        />
-                      </Box>
-                    </Grid>
-                    <Grid size={{ xs: 12, sm: 6 }}>
-                      <Box className={styles.inlineCheckboxCard}>
-                        <FormControlLabel
-                          control={
-                            <Checkbox
-                              name="isActive"
-                              checked={formValues.isActive}
-                              onChange={handleCheckboxChange}
-                            />
-                          }
-                          label="Branch is active"
-                        />
-                      </Box>
-                    </Grid>
+                    {!isAssignedBranchMode ? (
+                      <Grid size={{ xs: 12, sm: 6 }}>
+                        <Box className={styles.inlineCheckboxCard}>
+                          <FormControlLabel
+                            control={
+                              <Checkbox
+                                name="isMainBranch"
+                                checked={formValues.isMainBranch}
+                                onChange={handleCheckboxChange}
+                              />
+                            }
+                            label="Set as main branch"
+                          />
+                        </Box>
+                      </Grid>
+                    ) : null}
+                    {!isAssignedBranchMode ? (
+                      <Grid size={{ xs: 12, sm: 6 }}>
+                        <Box className={styles.inlineCheckboxCard}>
+                          <FormControlLabel
+                            control={
+                              <Checkbox
+                                name="isActive"
+                                checked={formValues.isActive}
+                                onChange={handleCheckboxChange}
+                              />
+                            }
+                            label="Branch is active"
+                          />
+                        </Box>
+                      </Grid>
+                    ) : null}
                   </Grid>
                 </Grid>
                 <Grid size={{ xs: 12, md: 5 }}>

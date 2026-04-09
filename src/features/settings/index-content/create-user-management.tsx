@@ -109,6 +109,13 @@ const isSuperAdminUser = (item: SettingsUserModel): boolean =>
   item.role === RegisterUserRole.SuperAdmin ||
   (item.roleLabel || '').toLowerCase() === 'superadmin';
 
+const isBranchAdmin = (item: SettingsUserModel): boolean =>
+  item.role === RegisterUserRole.BranchAdmin ||
+  (item.roleLabel || '').toLowerCase() === 'branchadmin';
+
+const isSuperAdminRole = (value?: string | null): boolean =>
+  (value || '').trim().toLowerCase() === 'superadmin';
+
 const requiresBranchAssignment = (role?: RegisterUserRole): boolean =>
   role === RegisterUserRole.BranchAdmin ||
   role === RegisterUserRole.Dentist ||
@@ -141,9 +148,10 @@ const CreateUserManagement: FunctionComponent<CreateUserStateProps> = (
   const clinicId = useAuthStore((store) => store.user?.clinicId ?? null);
   const currentUserRole = useAuthStore((store) => store.user?.role ?? '');
   const canAssignClinicWideRoles = isClinicWideRole(currentUserRole);
+  const canManageBranchAdminAccounts = isSuperAdminRole(currentUserRole);
   const defaultManagedRole = canAssignClinicWideRoles
     ? RegisterUserRole.User
-    : RegisterUserRole.BranchAdmin;
+    : RegisterUserRole.Dentist;
   const [formValues, setFormValues] = useState<CreateUserFormValues>(() =>
     createInitialValues(defaultManagedRole)
   );
@@ -160,19 +168,83 @@ const CreateUserManagement: FunctionComponent<CreateUserStateProps> = (
       ? `${subscriptionLabel} subscription allows up to ${userLimit} users only. Upgrade the plan to add more clinic accounts.`
       : '';
   const branchAssignmentRequired = requiresBranchAssignment(formValues.role);
+  const selectedItemIsBranchAdmin = Boolean(state.item && isBranchAdmin(state.item));
+  const isBranchAdminEditLocked =
+    state.isUpdate && selectedItemIsBranchAdmin && !canManageBranchAdminAccounts;
+  const branchAdminAssignmentsByBranchId = useMemo(() => {
+    const assignments = new Map<string, SettingsUserModel>();
+
+    state.items.forEach((item) => {
+      if (!isBranchAdmin(item) || !item.defaultBranchId?.trim()) {
+        return;
+      }
+
+      assignments.set(item.defaultBranchId.trim(), item);
+    });
+
+    return assignments;
+  }, [state.items]);
+  const conflictingBranchAdmin = useMemo(() => {
+    const branchId = formValues.defaultBranchId.trim();
+    if (!branchId) {
+      return null;
+    }
+
+    const branchAdmin = branchAdminAssignmentsByBranchId.get(branchId);
+    if (!branchAdmin) {
+      return null;
+    }
+
+    return branchAdmin.id && formValues.id && branchAdmin.id === formValues.id ? null : branchAdmin;
+  }, [branchAdminAssignmentsByBranchId, formValues.defaultBranchId, formValues.id]);
+  const branchAdminConflictMessage = conflictingBranchAdmin
+    ? `${[conflictingBranchAdmin.firstName, conflictingBranchAdmin.lastName]
+        .filter(Boolean)
+        .join(' ') || conflictingBranchAdmin.userName || 'Another user'} is already assigned as Branch Admin for the selected branch.`
+    : '';
   const availableRoleOptions = useMemo(
-    () =>
-      canAssignClinicWideRoles
+    () => {
+      const baseOptions = canAssignClinicWideRoles
         ? REGISTER_ROLE_OPTIONS
         : REGISTER_ROLE_OPTIONS.filter((option) =>
             [
-              RegisterUserRole.BranchAdmin,
               RegisterUserRole.Dentist,
               RegisterUserRole.Assistant,
               RegisterUserRole.Receptionist,
             ].includes(option.value)
-          ),
-    [canAssignClinicWideRoles]
+          );
+
+      if (!canManageBranchAdminAccounts) {
+        const nonBranchAdminOptions = baseOptions.filter(
+          (option) => option.value !== RegisterUserRole.BranchAdmin
+        );
+
+        if (isBranchAdminEditLocked) {
+          return [
+            ...nonBranchAdminOptions,
+            {
+              value: RegisterUserRole.BranchAdmin,
+              label: 'Branch Admin',
+            },
+          ];
+        }
+
+        return nonBranchAdminOptions;
+      }
+
+      if (conflictingBranchAdmin && formValues.role !== RegisterUserRole.BranchAdmin) {
+        return baseOptions.filter((option) => option.value !== RegisterUserRole.BranchAdmin);
+      }
+
+      return baseOptions;
+    },
+    [
+      canAssignClinicWideRoles,
+      canManageBranchAdminAccounts,
+      conflictingBranchAdmin,
+      formValues.role,
+      isBranchAdminEditLocked,
+    ]
   );
 
   useEffect(() => {
@@ -201,6 +273,21 @@ const CreateUserManagement: FunctionComponent<CreateUserStateProps> = (
         : createInitialValues(defaultManagedRole)
     );
   }, [availableRoleOptions, defaultManagedRole, state.isUpdate]);
+
+  useEffect(() => {
+    if (branchAssignmentRequired) {
+      return;
+    }
+
+    setFormValues((current) =>
+      current.defaultBranchId
+        ? {
+            ...current,
+            defaultBranchId: '',
+          }
+        : current
+    );
+  }, [branchAssignmentRequired]);
 
   const filteredUsers = useMemo(() => {
     const query = state.search.trim().toLowerCase();
@@ -256,7 +343,7 @@ const CreateUserManagement: FunctionComponent<CreateUserStateProps> = (
   };
 
   const handleDelete = async (item: SettingsUserModel): Promise<void> => {
-    if (!item.id || isSuperAdminUser(item)) {
+    if (!item.id || isSuperAdminUser(item) || isBranchAdmin(item)) {
       return;
     }
 
@@ -294,6 +381,11 @@ const CreateUserManagement: FunctionComponent<CreateUserStateProps> = (
     setStatusMessage('');
     setSubmitError('');
 
+    if (isBranchAdminEditLocked) {
+      setSubmitError('Only super admin can update Branch Admin accounts.');
+      return;
+    }
+
     if (isCreateLimitReached) {
       setSubmitError(createLimitMessage);
       return;
@@ -315,6 +407,22 @@ const CreateUserManagement: FunctionComponent<CreateUserStateProps> = (
 
     if (branchAssignmentRequired && !formValues.defaultBranchId.trim()) {
       setSubmitError('Default branch is required for branch-scoped users.');
+      return;
+    }
+
+    if (
+      formValues.role === RegisterUserRole.BranchAdmin &&
+      !canManageBranchAdminAccounts
+    ) {
+      setSubmitError('Only super admin can assign the Branch Admin role.');
+      return;
+    }
+
+    if (
+      formValues.role === RegisterUserRole.BranchAdmin &&
+      conflictingBranchAdmin
+    ) {
+      setSubmitError('The selected branch already has a Branch Admin assigned.');
       return;
     }
 
@@ -437,7 +545,7 @@ const CreateUserManagement: FunctionComponent<CreateUserStateProps> = (
                         <EditRoundedIcon fontSize="small" />
                       )}
                     </IconButton>
-                    {!isSuperAdminUser(item) ? (
+                    {!isSuperAdminUser(item) && !isBranchAdmin(item) ? (
                       <IconButton
                         size="small"
                         className={`${styles.userListActionButton} ${styles.userListDeleteButton}`}
@@ -488,236 +596,273 @@ const CreateUserManagement: FunctionComponent<CreateUserStateProps> = (
             {createLimitMessage}
           </Alert>
         ) : null}
+        {isBranchAdminEditLocked ? (
+          <Alert severity="info" sx={{ mb: 2 }}>
+            Only Super Admin can update Branch Admin accounts.
+          </Alert>
+        ) : null}
 
-        <Grid container spacing={2}>
-          <Grid size={{ xs: 12, md: 6 }}>
-            <TextField
-              label="Username"
-              value={formValues.userName}
-              onChange={(event) => handleTextChange('userName', event.target.value)}
-              fullWidth
-              size="small"
-            />
+        {!isBranchAdminEditLocked &&
+        formValues.role === RegisterUserRole.BranchAdmin &&
+        conflictingBranchAdmin ? (
+          <Alert severity="warning" sx={{ mb: 2 }}>
+            {branchAdminConflictMessage}
+          </Alert>
+        ) : null}
+
+        <fieldset
+          disabled={isBranchAdminEditLocked}
+          style={{ border: 0, margin: 0, padding: 0, minInlineSize: 0 }}
+        >
+          <Grid container spacing={2}>
+            <Grid size={{ xs: 12, md: 6 }}>
+              <TextField
+                label="Username"
+                value={formValues.userName}
+                onChange={(event) => handleTextChange('userName', event.target.value)}
+                fullWidth
+                size="small"
+              />
+            </Grid>
+            <Grid size={{ xs: 12, md: 6 }}>
+              <TextField
+                label="Email Address"
+                type="email"
+                value={formValues.emailAddress}
+                onChange={(event) => handleTextChange('emailAddress', event.target.value)}
+                fullWidth
+                size="small"
+              />
+            </Grid>
+            <Grid size={{ xs: 12, md: 4 }}>
+              <TextField
+                label="First Name"
+                value={formValues.firstName}
+                onChange={(event) => handleTextChange('firstName', event.target.value)}
+                fullWidth
+                size="small"
+              />
+            </Grid>
+            <Grid size={{ xs: 12, md: 4 }}>
+              <TextField
+                label="Middle Name"
+                value={formValues.middleName}
+                onChange={(event) => handleTextChange('middleName', event.target.value)}
+                fullWidth
+                size="small"
+              />
+            </Grid>
+            <Grid size={{ xs: 12, md: 4 }}>
+              <TextField
+                label="Last Name"
+                value={formValues.lastName}
+                onChange={(event) => handleTextChange('lastName', event.target.value)}
+                fullWidth
+                size="small"
+              />
+            </Grid>
+            <Grid size={{ xs: 12, md: 6 }}>
+              <TextField
+                label="Contact Number"
+                value={formValues.contactNumber}
+                onChange={(event) => handleTextChange('contactNumber', event.target.value)}
+                fullWidth
+                size="small"
+              />
+            </Grid>
+            <Grid size={{ xs: 12, md: 6 }}>
+              <TextField
+                label="Birth Date"
+                type="date"
+                value={formValues.birthDate}
+                onChange={(event) => handleTextChange('birthDate', event.target.value)}
+                fullWidth
+                size="small"
+                InputLabelProps={{ shrink: true }}
+              />
+            </Grid>
+            <Grid size={{ xs: 12, md: 4 }}>
+              <TextField
+                label="Prefix"
+                select
+                value={formValues.preffix}
+                onChange={(event) => handleTextChange('preffix', Number(event.target.value))}
+                fullWidth
+                size="small"
+              >
+                {REGISTER_PREFIX_OPTIONS.map((option) => (
+                  <MenuItem key={option.value} value={option.value}>
+                    {option.label}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </Grid>
+            <Grid size={{ xs: 12, md: 4 }}>
+              <TextField
+                label="Suffix"
+                select
+                value={formValues.suffix}
+                onChange={(event) => handleTextChange('suffix', Number(event.target.value))}
+                fullWidth
+                size="small"
+              >
+                {REGISTER_SUFFIX_OPTIONS.map((option) => (
+                  <MenuItem key={option.value} value={option.value}>
+                    {option.label}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </Grid>
+            <Grid size={{ xs: 12, md: 4 }}>
+              <TextField
+                label="Role"
+                select
+                value={formValues.role}
+                onChange={(event) => handleTextChange('role', Number(event.target.value))}
+                fullWidth
+                size="small"
+              >
+                {availableRoleOptions.map((option) => (
+                  <MenuItem
+                    key={option.value}
+                    value={option.value}
+                    disabled={
+                      option.value === RegisterUserRole.BranchAdmin &&
+                      (!canManageBranchAdminAccounts || Boolean(conflictingBranchAdmin))
+                    }
+                  >
+                    {option.label}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </Grid>
+            <Grid size={{ xs: 12, md: 8 }}>
+              <TextField
+                label="Default Branch"
+                select
+                value={formValues.defaultBranchId}
+                onChange={(event) => handleTextChange('defaultBranchId', event.target.value)}
+                fullWidth
+                size="small"
+                required={branchAssignmentRequired}
+                helperText={
+                  formValues.role === RegisterUserRole.BranchAdmin && conflictingBranchAdmin
+                    ? branchAdminConflictMessage
+                    : branchAssignmentRequired
+                    ? 'Branch-scoped users are restricted to this branch.'
+                    : 'Clinic-wide users can keep access to all branches.'
+                }
+              >
+                {canAssignClinicWideRoles ? <MenuItem value="">All Branches</MenuItem> : null}
+                {branches.map((branch) => {
+                  const existingBranchAdmin = branch.id
+                    ? branchAdminAssignmentsByBranchId.get(branch.id)
+                    : undefined;
+                  const isBranchAdminBranchTaken =
+                    formValues.role === RegisterUserRole.BranchAdmin &&
+                    Boolean(existingBranchAdmin) &&
+                    existingBranchAdmin?.id !== formValues.id;
+
+                  return (
+                    <MenuItem key={branch.id} value={branch.id} disabled={isBranchAdminBranchTaken}>
+                      {branch.name || branch.code || 'Unnamed Branch'}
+                    </MenuItem>
+                  );
+                })}
+              </TextField>
+            </Grid>
+            <Grid size={{ xs: 12, md: 6 }}>
+              <TextField
+                label="Start Date"
+                type="date"
+                value={formValues.startDate}
+                onChange={(event) => handleTextChange('startDate', event.target.value)}
+                fullWidth
+                size="small"
+                InputLabelProps={{ shrink: true }}
+              />
+            </Grid>
+            <Grid size={{ xs: 12, md: 6 }}>
+              <TextField
+                label="Employment Type"
+                select
+                value={formValues.employmentType}
+                onChange={(event) => handleTextChange('employmentType', Number(event.target.value))}
+                fullWidth
+                size="small"
+              >
+                {REGISTER_EMPLOYMENT_OPTIONS.map((option) => (
+                  <MenuItem key={option.value} value={option.value}>
+                    {option.label}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </Grid>
+            <Grid size={{ xs: 12 }}>
+              <TextField
+                label="Address"
+                value={formValues.address}
+                onChange={(event) => handleTextChange('address', event.target.value)}
+                fullWidth
+                size="small"
+                multiline
+                minRows={3}
+              />
+            </Grid>
+            <Grid size={{ xs: 12, md: 6 }}>
+              <TextField
+                label="Religion"
+                value={formValues.religion}
+                onChange={(event) => handleTextChange('religion', event.target.value)}
+                fullWidth
+                size="small"
+              />
+            </Grid>
+            <Grid size={{ xs: 12, md: 6 }}>
+              <FormControlLabel
+                sx={{ height: '100%', alignItems: 'center' }}
+                control={
+                  <Switch
+                    checked={formValues.isActive}
+                    onChange={(event) => handleTextChange('isActive', event.target.checked)}
+                  />
+                }
+                label="Active Account"
+              />
+            </Grid>
+            <Grid size={{ xs: 12 }}>
+              <TextField
+                label="Bio"
+                value={formValues.bio}
+                onChange={(event) => handleTextChange('bio', event.target.value)}
+                fullWidth
+                size="small"
+                multiline
+                minRows={3}
+              />
+            </Grid>
+            <Grid size={{ xs: 12, md: 6 }}>
+              <TextField
+                label={state.isUpdate ? 'New Password' : 'Password'}
+                type="password"
+                value={formValues.password}
+                onChange={(event) => handleTextChange('password', event.target.value)}
+                fullWidth
+                size="small"
+              />
+            </Grid>
+            <Grid size={{ xs: 12, md: 6 }}>
+              <TextField
+                label={state.isUpdate ? 'Confirm New Password' : 'Confirm Password'}
+                type="password"
+                value={formValues.confirmPassword}
+                onChange={(event) => handleTextChange('confirmPassword', event.target.value)}
+                fullWidth
+                size="small"
+              />
+            </Grid>
           </Grid>
-          <Grid size={{ xs: 12, md: 6 }}>
-            <TextField
-              label="Email Address"
-              type="email"
-              value={formValues.emailAddress}
-              onChange={(event) => handleTextChange('emailAddress', event.target.value)}
-              fullWidth
-              size="small"
-            />
-          </Grid>
-          <Grid size={{ xs: 12, md: 4 }}>
-            <TextField
-              label="First Name"
-              value={formValues.firstName}
-              onChange={(event) => handleTextChange('firstName', event.target.value)}
-              fullWidth
-              size="small"
-            />
-          </Grid>
-          <Grid size={{ xs: 12, md: 4 }}>
-            <TextField
-              label="Middle Name"
-              value={formValues.middleName}
-              onChange={(event) => handleTextChange('middleName', event.target.value)}
-              fullWidth
-              size="small"
-            />
-          </Grid>
-          <Grid size={{ xs: 12, md: 4 }}>
-            <TextField
-              label="Last Name"
-              value={formValues.lastName}
-              onChange={(event) => handleTextChange('lastName', event.target.value)}
-              fullWidth
-              size="small"
-            />
-          </Grid>
-          <Grid size={{ xs: 12, md: 6 }}>
-            <TextField
-              label="Contact Number"
-              value={formValues.contactNumber}
-              onChange={(event) => handleTextChange('contactNumber', event.target.value)}
-              fullWidth
-              size="small"
-            />
-          </Grid>
-          <Grid size={{ xs: 12, md: 6 }}>
-            <TextField
-              label="Birth Date"
-              type="date"
-              value={formValues.birthDate}
-              onChange={(event) => handleTextChange('birthDate', event.target.value)}
-              fullWidth
-              size="small"
-              InputLabelProps={{ shrink: true }}
-            />
-          </Grid>
-          <Grid size={{ xs: 12, md: 4 }}>
-            <TextField
-              label="Prefix"
-              select
-              value={formValues.preffix}
-              onChange={(event) => handleTextChange('preffix', Number(event.target.value))}
-              fullWidth
-              size="small"
-            >
-              {REGISTER_PREFIX_OPTIONS.map((option) => (
-                <MenuItem key={option.value} value={option.value}>
-                  {option.label}
-                </MenuItem>
-              ))}
-            </TextField>
-          </Grid>
-          <Grid size={{ xs: 12, md: 4 }}>
-            <TextField
-              label="Suffix"
-              select
-              value={formValues.suffix}
-              onChange={(event) => handleTextChange('suffix', Number(event.target.value))}
-              fullWidth
-              size="small"
-            >
-              {REGISTER_SUFFIX_OPTIONS.map((option) => (
-                <MenuItem key={option.value} value={option.value}>
-                  {option.label}
-                </MenuItem>
-              ))}
-            </TextField>
-          </Grid>
-          <Grid size={{ xs: 12, md: 4 }}>
-            <TextField
-              label="Role"
-              select
-              value={formValues.role}
-              onChange={(event) => handleTextChange('role', Number(event.target.value))}
-              fullWidth
-              size="small"
-            >
-              {availableRoleOptions.map((option) => (
-                <MenuItem key={option.value} value={option.value}>
-                  {option.label}
-                </MenuItem>
-              ))}
-            </TextField>
-          </Grid>
-          <Grid size={{ xs: 12, md: 8 }}>
-            <TextField
-              label="Default Branch"
-              select
-              value={formValues.defaultBranchId}
-              onChange={(event) => handleTextChange('defaultBranchId', event.target.value)}
-              fullWidth
-              size="small"
-              required={branchAssignmentRequired}
-              helperText={
-                branchAssignmentRequired
-                  ? 'Branch-scoped users are restricted to this branch.'
-                  : 'Clinic-wide users can keep access to all branches.'
-              }
-            >
-              {canAssignClinicWideRoles ? <MenuItem value="">All Branches</MenuItem> : null}
-              {branches.map((branch) => (
-                <MenuItem key={branch.id} value={branch.id}>
-                  {branch.name || branch.code || 'Unnamed Branch'}
-                </MenuItem>
-              ))}
-            </TextField>
-          </Grid>
-          <Grid size={{ xs: 12, md: 6 }}>
-            <TextField
-              label="Start Date"
-              type="date"
-              value={formValues.startDate}
-              onChange={(event) => handleTextChange('startDate', event.target.value)}
-              fullWidth
-              size="small"
-              InputLabelProps={{ shrink: true }}
-            />
-          </Grid>
-          <Grid size={{ xs: 12, md: 6 }}>
-            <TextField
-              label="Employment Type"
-              select
-              value={formValues.employmentType}
-              onChange={(event) => handleTextChange('employmentType', Number(event.target.value))}
-              fullWidth
-              size="small"
-            >
-              {REGISTER_EMPLOYMENT_OPTIONS.map((option) => (
-                <MenuItem key={option.value} value={option.value}>
-                  {option.label}
-                </MenuItem>
-              ))}
-            </TextField>
-          </Grid>
-          <Grid size={{ xs: 12 }}>
-            <TextField
-              label="Address"
-              value={formValues.address}
-              onChange={(event) => handleTextChange('address', event.target.value)}
-              fullWidth
-              size="small"
-              multiline
-              minRows={3}
-            />
-          </Grid>
-          <Grid size={{ xs: 12, md: 6 }}>
-            <TextField
-              label="Religion"
-              value={formValues.religion}
-              onChange={(event) => handleTextChange('religion', event.target.value)}
-              fullWidth
-              size="small"
-            />
-          </Grid>
-          <Grid size={{ xs: 12, md: 6 }}>
-            <FormControlLabel
-              sx={{ height: '100%', alignItems: 'center' }}
-              control={
-                <Switch
-                  checked={formValues.isActive}
-                  onChange={(event) => handleTextChange('isActive', event.target.checked)}
-                />
-              }
-              label="Active Account"
-            />
-          </Grid>
-          <Grid size={{ xs: 12 }}>
-            <TextField
-              label="Bio"
-              value={formValues.bio}
-              onChange={(event) => handleTextChange('bio', event.target.value)}
-              fullWidth
-              size="small"
-              multiline
-              minRows={3}
-            />
-          </Grid>
-          <Grid size={{ xs: 12, md: 6 }}>
-            <TextField
-              label={state.isUpdate ? 'New Password' : 'Password'}
-              type="password"
-              value={formValues.password}
-              onChange={(event) => handleTextChange('password', event.target.value)}
-              fullWidth
-              size="small"
-            />
-          </Grid>
-          <Grid size={{ xs: 12, md: 6 }}>
-            <TextField
-              label={state.isUpdate ? 'Confirm New Password' : 'Confirm Password'}
-              type="password"
-              value={formValues.confirmPassword}
-              onChange={(event) => handleTextChange('confirmPassword', event.target.value)}
-              fullWidth
-              size="small"
-            />
-          </Grid>
-        </Grid>
+        </fieldset>
 
         <Divider sx={{ my: 2 }} />
 
@@ -741,7 +886,7 @@ const CreateUserManagement: FunctionComponent<CreateUserStateProps> = (
             type="button"
             className={styles.primaryActionButton}
             onClick={() => void handleSubmit()}
-            disabled={isCreateLimitReached}
+            disabled={isCreateLimitReached || isBranchAdminEditLocked}
           >
             <SaveRoundedIcon />
             <span>{state.isUpdate ? 'Update User' : 'Create User'}</span>

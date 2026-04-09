@@ -8,6 +8,7 @@ import {
 } from '../../../common/api/responses';
 import { resolveClinicId } from '../../../common/components/ClinicId';
 import { apiClient } from '../../../common/services/api-client';
+import { useAuthStore } from '../../../common/store/authStore';
 import {
   DentalLabCaseAttachmentUploadResponse,
   DentalLabCaseModel,
@@ -46,8 +47,10 @@ export const GetDentalLabCases = async (
   const pageEnd = state.pageEnd;
   const status =
     state.statusFilter && state.statusFilter !== 'All' ? state.statusFilter : undefined;
+  const branchId = useAuthStore.getState().branchId?.trim() || '';
   const requestKey = JSON.stringify({
     clinicId: resolvedClinicId ?? 'current-clinic',
+    branchId: branchId || 'all-branches',
     query: query || 'all',
     status: status || 'all',
     pageStart,
@@ -73,6 +76,7 @@ export const GetDentalLabCases = async (
       const response = await apiClient.get<DentalLabCaseResponseModel>(LAB_CASES_ENDPOINT, {
         params: {
           ClinicId: resolvedClinicId ?? undefined,
+          BranchId: branchId || undefined,
           Que: query || 'all',
           Status: status,
           pageStart,

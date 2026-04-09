@@ -10,9 +10,18 @@ const resolveSessionBranchId = (
   currentBranchId?: string | null
 ): string | null => {
   const userDefaultBranchId = user?.defaultBranchId?.trim() || null;
+  const currentScope = user?.currentScope?.trim().toLowerCase() || '';
 
   if (!user) {
     return null;
+  }
+
+  if (currentScope === 'branch') {
+    return userDefaultBranchId;
+  }
+
+  if (currentScope === 'clinic') {
+    return currentBranchId?.trim() || null;
   }
 
   if (!isClinicWideRole(user.role)) {

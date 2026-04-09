@@ -8,6 +8,7 @@ import {
 } from '../../../common/api/responses';
 import { resolveClinicId } from '../../../common/components/ClinicId';
 import { apiClient } from '../../../common/services/api-client';
+import { useAuthStore } from '../../../common/store/authStore';
 import { InventoryModel, InventoryResponseModel, InventoryStateModel } from './types';
 
 const INVENTORY_ENDPOINT = '/api/dmd/dental-inventories/get-dental-inventories';
@@ -36,8 +37,10 @@ export const GetInventories = async (
       ? state.pageStart - state.pageEnd
       : state.pageStart;
   const pageEnd = state.pageEnd;
+  const branchId = useAuthStore.getState().branchId?.trim() || '';
   const requestKey = JSON.stringify({
     clinicId: resolvedClinicId ?? 'current-clinic',
+    branchId: branchId || 'all-branches',
     query: query || 'all',
     pageStart,
     pageEnd,
@@ -62,6 +65,7 @@ export const GetInventories = async (
       const response = await apiClient.get<InventoryResponseModel>(INVENTORY_ENDPOINT, {
         params: {
           ClinicId: resolvedClinicId ?? undefined,
+          BranchId: branchId || undefined,
           Que: query || 'all',
           pageStart,
           pageEnd,
@@ -99,7 +103,11 @@ export const GetInventories = async (
 
 export const CreateInventory = async (request: InventoryModel): Promise<InventoryModel> => {
   try {
-    const response = await apiClient.post<InventoryModel>(CREATE_INVENTORY_ENDPOINT, request);
+    const branchId = useAuthStore.getState().branchId?.trim() || undefined;
+    const response = await apiClient.post<InventoryModel>(CREATE_INVENTORY_ENDPOINT, {
+      ...request,
+      BranchId: branchId,
+    });
     return SuccessResponse(response, ResponseMethod.Create) as InventoryModel;
   } catch (error) {
     if (isAxiosError(error)) {

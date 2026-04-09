@@ -38,6 +38,7 @@ export interface AuthUser {
   email: string;
   clinicId?: string | null;
   defaultBranchId?: string | null;
+  defaultBranchName?: string;
   clinicName?: string;
   bannerImagePath?: string;
   isDataPrivacyAccepted?: boolean;
@@ -46,6 +47,7 @@ export interface AuthUser {
   isLocked?: boolean;
   role: string;
   roleLabel: string;
+  currentScope?: string;
   contactNumber?: string;
   createdAt?: string;
   updatedAt?: string;

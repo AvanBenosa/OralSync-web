@@ -39,6 +39,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 import { isBasicSubscription } from '../utils/subscription';
+import { canAccessSettingsModule } from '../utils/branch-access';
 import SideNavAssistant from './side-nav-assistant';
 import { GetCurrentClinicProfile } from '../../features/settings/clinic-profile/api/api';
 import { ClinicProfileModel } from '../../features/settings/clinic-profile/api/types';
@@ -117,11 +118,16 @@ const SideNav = () => {
   const visibleMenuItems = isBasicSubscription(user?.subscriptionType)
     ? menuItems.filter((item) => item.path !== '/inventory')
     : menuItems;
+  const visibleFooterMenuItems = canAccessSettingsModule(user?.role) ? footerMenuItems : [];
 
   const activeItem = visibleMenuItems.find((item) => item.path === location.pathname);
   const clinicName = user?.clinicName?.trim() || 'OralSync';
   const userDisplayName = user?.name?.trim() || username || user?.email || '';
-  const clinicInitials = getInitials(clinicName);
+  const defaultBranchName = user?.defaultBranchName?.trim() || '';
+  const isBranchScopedUser = user?.currentScope?.trim().toLowerCase() === 'branch';
+  const contextDisplayName =
+    (isBranchScopedUser ? defaultBranchName : clinicName) || clinicName;
+  const clinicInitials = getInitials(contextDisplayName);
   const roleLabel = formatRoleLabel(user?.roleLabel);
   const clinicEmailAddress = clinicProfile?.emailAddress?.trim() || '';
   const hasValidClinicReplyEmail = isValidEmail(clinicEmailAddress);
@@ -470,7 +476,7 @@ const SideNav = () => {
           <Toolbar
             sx={{ display: 'flex', justifyContent: 'space-around', minHeight: '56px !important' }}
           >
-            {[...visibleMenuItems, ...footerMenuItems].map((item) => {
+            {[...visibleMenuItems, ...visibleFooterMenuItems].map((item) => {
               const active = item.path === location.pathname;
 
               return (
@@ -615,10 +621,10 @@ const SideNav = () => {
                   <Box sx={{ minWidth: 0 }}>
                     <Typography
                       fontWeight={800}
-                      title={clinicName}
+                      title={contextDisplayName}
                       sx={{
                         lineHeight: 1.05,
-                        fontSize: clinicName.length > 18 ? '0.9rem' : '1rem',
+                        fontSize: contextDisplayName.length > 18 ? '0.9rem' : '1rem',
                         letterSpacing: '-0.01em',
                         display: '-webkit-box',
                         WebkitLineClamp: 2,
@@ -628,7 +634,7 @@ const SideNav = () => {
                         pr: 0.5,
                       }}
                     >
-                      {clinicName}
+                      {contextDisplayName}
                     </Typography>
                     {userDisplayName ? (
                       <Typography
@@ -690,7 +696,7 @@ const SideNav = () => {
             ) : (
               <Box sx={{ display: 'flex', justifyContent: 'center' }}>
                 <Tooltip
-                  title={`${clinicName}${userDisplayName ? ` - ${userDisplayName}` : ''}`}
+                  title={`${contextDisplayName}${userDisplayName ? ` - ${userDisplayName}` : ''}`}
                   placement="right"
                 >
                   <IconButton
@@ -820,7 +826,7 @@ const SideNav = () => {
           ) : null}
 
           <List sx={{ p: 0, mb: 1 }}>
-            {footerMenuItems.map((item) => {
+            {visibleFooterMenuItems.map((item) => {
               const active = item.path === location.pathname;
 
               return (

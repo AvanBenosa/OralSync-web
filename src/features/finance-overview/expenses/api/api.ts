@@ -8,6 +8,7 @@ import {
 } from '../../../../common/api/responses';
 import { resolveClinicId } from '../../../../common/components/ClinicId';
 import { apiClient } from '../../../../common/services/api-client';
+import { useAuthStore } from '../../../../common/store/authStore';
 import {
   FinanceExpenseModel,
   FinanceExpenseResponseModel,
@@ -36,9 +37,11 @@ const buildFinanceExpenseCacheKey = (
   dateTo?: string
 ): string => {
   const resolvedClinicId = resolveClinicId(clinicId);
+  const branchId = useAuthStore.getState().branchId?.trim() || '';
 
   return [
     resolvedClinicId ?? 'current-clinic',
+    branchId || 'all-branches',
     dateFrom?.trim() || 'any-from',
     dateTo?.trim() || 'any-to',
   ].join('|');
@@ -112,9 +115,11 @@ const GetClinicExpenseItems = async (
   dateTo?: string
 ): Promise<FinanceExpenseModel[]> => {
   try {
+    const branchId = useAuthStore.getState().branchId?.trim() || '';
     const response = await apiClient.get<FinanceExpenseModel[]>(FINANCE_EXPENSE_ENDPOINT, {
       params: {
         ClinicId: clinicId?.trim() || undefined,
+        BranchId: branchId || undefined,
         DateFrom: dateFrom?.trim() || undefined,
         DateTo: dateTo?.trim() || undefined,
       },
@@ -324,9 +329,13 @@ export const CreateFinanceExpenseItem = async (
   request: FinanceExpenseModel
 ): Promise<FinanceExpenseModel> => {
   try {
+    const branchId = useAuthStore.getState().branchId?.trim() || undefined;
     const response = await apiClient.post<FinanceExpenseModel>(
       CREATE_FINANCE_EXPENSE_ENDPOINT,
-      request
+      {
+        ...request,
+        BranchId: branchId,
+      }
     );
     return SuccessResponse(response, ResponseMethod.Create) as FinanceExpenseModel;
   } catch (error) {

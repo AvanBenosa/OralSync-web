@@ -67,6 +67,7 @@ const ClinicProfileForm: FunctionComponent<ClinicProfileStateProps> = (
   const navigate = useNavigate();
   const logout = useAuthStore((store) => store.logout);
   const currentClinicName = useAuthStore((store) => store.user?.clinicName?.trim() || '');
+  const currentUserRole = useAuthStore((store) => store.user?.role?.trim().toLowerCase() || '');
   const [statusMessage, setStatusMessage] = useState('');
   const [submitError, setSubmitError] = useState('');
   const [bannerUploadError, setBannerUploadError] = useState('');
@@ -234,6 +235,21 @@ const ClinicProfileForm: FunctionComponent<ClinicProfileStateProps> = (
   const registrationLink = qrCodeValue
     ? `${window.location.origin}/register-appointment?clinicId=${encodeURIComponent(qrCodeValue)}`
     : '';
+  const isBranchAdmin = currentUserRole === 'branchadmin';
+
+  if (isBranchAdmin) {
+    return (
+      <>
+        <Alert severity="info" sx={{ mb: 2 }}>
+          Clinic profile access for this account is limited to the branch assigned to you.
+        </Alert>
+        <ClinicBranchManagement
+          clinicId={state.item?.id ?? state.clinicProfileId}
+          mode="assigned-branch"
+        />
+      </>
+    );
+  }
 
   return (
     <form onSubmit={handleSubmit}>

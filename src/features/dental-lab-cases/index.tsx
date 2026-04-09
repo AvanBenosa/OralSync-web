@@ -5,6 +5,7 @@ import { toast } from 'react-toastify';
 import RoundedPagination from '../../common/components/RoundedPagination';
 import { toastConfig } from '../../common/api/responses';
 import { useClinicId } from '../../common/components/ClinicId';
+import { useAuthStore } from '../../common/store/authStore';
 import { HandleGetDentalLabCases } from './api/handlers';
 import { DentalLabCasesProps, DentalLabCaseStateModel } from './api/types';
 import DentalLabCasesForm from './index-content/dental-lab-cases-form';
@@ -20,7 +21,8 @@ export const DentalLabCasesModule: FunctionComponent<DentalLabCasesProps> = (
   const { clinicId } = props;
   const reloadTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const resolvedClinicId = useClinicId(clinicId);
-  const lastLoadedClinicIdRef = useRef<string | null | undefined>(undefined);
+  const activeBranchId = useAuthStore((store) => store.branchId);
+  const lastLoadedContextKeyRef = useRef<string | null | undefined>(undefined);
   const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [state, setState] = useState<DentalLabCaseStateModel>({
     load: true,
@@ -111,8 +113,9 @@ export const DentalLabCasesModule: FunctionComponent<DentalLabCasesProps> = (
       };
     }
 
-    const clinicChanged = lastLoadedClinicIdRef.current !== resolvedClinicId;
-    lastLoadedClinicIdRef.current = resolvedClinicId;
+    const contextKey = `${resolvedClinicId ?? 'current-clinic'}:${activeBranchId ?? 'all-branches'}`;
+    const clinicChanged = lastLoadedContextKeyRef.current !== contextKey;
+    lastLoadedContextKeyRef.current = contextKey;
 
     if (searchTimeoutRef.current) {
       clearTimeout(searchTimeoutRef.current);
@@ -136,7 +139,7 @@ export const DentalLabCasesModule: FunctionComponent<DentalLabCasesProps> = (
     };
     // Sync when clinic context, search, or page offset changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [resolvedClinicId, state.search, state.statusFilter, state.pageStart, state.pageEnd]);
+  }, [activeBranchId, resolvedClinicId, state.search, state.statusFilter, state.pageStart, state.pageEnd]);
 
   const handleCloseDialog = (): void => {
     setState((prev) => ({

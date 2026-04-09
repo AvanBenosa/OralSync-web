@@ -1,7 +1,7 @@
 import React from 'react';
 import { matchPath, useLocation, useNavigate, useOutlet } from 'react-router-dom';
 import Box from '@mui/material/Box';
-import { MenuItem, TextField, Typography, useMediaQuery, useTheme } from '@mui/material';
+import { MenuItem, TextField, useMediaQuery, useTheme } from '@mui/material';
 import SideNav from './common/sideNav/sideNav';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
@@ -407,49 +407,34 @@ const MainLayout = () => {
         {canSwitchBranches ? (
           <Box
             sx={{
+              display: 'flex',
+              justifyContent: 'flex-end',
               px: { xs: 1.5, sm: 2.5 },
-              py: 1.5,
-              borderBottom: '1px solid rgba(201, 214, 226, 0.72)',
-              background:
-                'linear-gradient(180deg, rgba(255,255,255,0.96) 0%, rgba(245,249,252,0.98) 100%)',
+              pt: { xs: 1.5, sm: 2 },
+              pb: 0.5,
             }}
           >
-            <Box
+            <TextField
+              select
+              size="small"
+              label="Active Branch"
+              value={activeBranchId ?? ''}
+              onChange={(event) => {
+                setBranchId(event.target.value || null);
+              }}
               sx={{
-                display: 'flex',
-                alignItems: { xs: 'stretch', sm: 'center' },
-                justifyContent: 'space-between',
-                gap: 1.5,
-                flexDirection: { xs: 'column', md: 'row' },
+                minWidth: { xs: '100%', sm: 260 },
+                maxWidth: { xs: '100%', sm: 320 },
+                bgcolor: 'rgba(255,255,255,0.92)',
               }}
             >
-              <Box>
-                <Typography sx={{ fontSize: '0.92rem', fontWeight: 800, color: '#17344f' }}>
-                  Branch View
-                </Typography>
-                <Typography sx={{ mt: 0.35, fontSize: '0.82rem', color: '#5f7891' }}>
-                  Filter patients, appointments, and invoices by branch, or keep the clinic-wide
-                  view on all branches.
-                </Typography>
-              </Box>
-              <TextField
-                select
-                size="small"
-                label="Active Branch"
-                value={activeBranchId ?? ''}
-                onChange={(event) => {
-                  setBranchId(event.target.value || null);
-                }}
-                sx={{ minWidth: { xs: '100%', sm: 280 } }}
-              >
-                <MenuItem value="">All Branches</MenuItem>
-                {branches.map((branch) => (
-                  <MenuItem key={branch.id} value={branch.id}>
-                    {branch.name || branch.code || 'Unnamed Branch'}
-                  </MenuItem>
-                ))}
-              </TextField>
-            </Box>
+              <MenuItem value="">All Branches</MenuItem>
+              {branches.map((branch) => (
+                <MenuItem key={branch.id} value={branch.id}>
+                  {branch.name || branch.code || 'Unnamed Branch'}
+                </MenuItem>
+              ))}
+            </TextField>
           </Box>
         ) : null}
         <Box key={location.pathname} sx={{ minHeight: '100vh' }}>

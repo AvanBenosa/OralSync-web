@@ -7,6 +7,7 @@ import { toast } from 'react-toastify';
 import RoundedPagination from '../../../common/components/RoundedPagination';
 import { toastConfig } from '../../../common/api/responses';
 import { useClinicId } from '../../../common/components/ClinicId';
+import { useAuthStore } from '../../../common/store/authStore';
 import type { FinanceModuleStateModel, FinanceViewTab } from '../api/types';
 import { HandleGetFinanceExpenseItems } from './api/handlers';
 import type { FinanceExpenseModel, FinanceExpenseStateModel } from './api/types';
@@ -51,7 +52,8 @@ export const FinanceOverviewExpenses: FunctionComponent<FinanceOverviewExpensePr
   } as const;
   const reloadTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const lastLoadedClinicIdRef = useRef<string | null | undefined>(undefined);
+  const activeBranchId = useAuthStore((store) => store.branchId);
+  const lastLoadedContextKeyRef = useRef<string | null | undefined>(undefined);
   const resolvedClinicId = useClinicId(clinicId);
   const [state, setState] = useState<FinanceExpenseStateModel>(() => ({
     ...createInitialModuleState<FinanceExpenseModel>(resolvedClinicId),
@@ -164,8 +166,9 @@ export const FinanceOverviewExpenses: FunctionComponent<FinanceOverviewExpensePr
       };
     }
 
-    const clinicChanged = lastLoadedClinicIdRef.current !== resolvedClinicId;
-    lastLoadedClinicIdRef.current = resolvedClinicId;
+    const contextKey = `${resolvedClinicId ?? 'current-clinic'}:${activeBranchId ?? 'all-branches'}`;
+    const clinicChanged = lastLoadedContextKeyRef.current !== contextKey;
+    lastLoadedContextKeyRef.current = contextKey;
 
     if (searchTimeoutRef.current) {
       clearTimeout(searchTimeoutRef.current);
@@ -192,6 +195,7 @@ export const FinanceOverviewExpenses: FunctionComponent<FinanceOverviewExpensePr
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     resolvedClinicId,
+    activeBranchId,
     state.search,
     state.dateFrom,
     state.dateTo,

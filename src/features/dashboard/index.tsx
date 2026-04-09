@@ -10,14 +10,16 @@ import DashBoardLists from './index-content/dashboard-lists';
 import DashBoardWidgets from './index-content/dashboard-widgets';
 import { HandleGetDashboard } from './api/handlers';
 import { useClinicId } from '../../common/components/ClinicId';
+import { useAuthStore } from '../../common/store/authStore';
 export const DashBoard: FunctionComponent<DashboardProps> = (
   props: DashboardProps
 ): JSX.Element => {
   const { clinicId } = props;
   const resolvedClinicId = useClinicId(clinicId);
+  const activeBranchId = useAuthStore((store) => store.branchId);
 
   const reloadTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const lastLoadedClinicIdRef = useRef<string | null | undefined>(undefined);
+  const lastLoadedContextKeyRef = useRef<string | null | undefined>(undefined);
   const [state, setState] = useState<DashboardStateModel>({
     load: true,
     totalPatients: 0,
@@ -102,7 +104,8 @@ export const DashBoard: FunctionComponent<DashboardProps> = (
       };
     }
 
-    if (lastLoadedClinicIdRef.current === resolvedClinicId) {
+    const contextKey = `${resolvedClinicId ?? 'current-clinic'}:${activeBranchId ?? 'all-branches'}`;
+    if (lastLoadedContextKeyRef.current === contextKey) {
       return () => {
         if (reloadTimeoutRef.current) {
           clearTimeout(reloadTimeoutRef.current);
@@ -110,7 +113,7 @@ export const DashBoard: FunctionComponent<DashboardProps> = (
       };
     }
 
-    lastLoadedClinicIdRef.current = resolvedClinicId;
+    lastLoadedContextKeyRef.current = contextKey;
 
     (async (): Promise<void> => {
       await loadDashboard(false, false);
@@ -123,7 +126,7 @@ export const DashBoard: FunctionComponent<DashboardProps> = (
     };
     // Fetch when clinic context changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [resolvedClinicId]);
+  }, [activeBranchId, resolvedClinicId]);
   return (
     <div className={styles.wrapper}>
       <div className={styles.bodyWrapper}>
