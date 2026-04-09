@@ -228,6 +228,245 @@
   line-height: 1.6;
 }
 
+.auditSummaryGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.auditSummaryCard {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  min-width: 0;
+  padding: 18px;
+  border: 1px solid rgba(194, 208, 220, 0.92) !important;
+  border-radius: 18px !important;
+  background: linear-gradient(180deg, rgba(250, 252, 254, 0.96), rgba(239, 244, 248, 0.98)) !important;
+  box-shadow: 0 12px 28px rgba(24, 50, 79, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
+}
+
+.auditSummaryIcon {
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
+  border: 1px solid rgba(174, 198, 218, 0.9);
+  background: linear-gradient(180deg, #f1f7fc 0%, #dbe9f5 100%);
+
+  svg {
+    font-size: 22px !important;
+    color: #2f6db3;
+  }
+}
+
+.auditSummaryLabel {
+  color: #688199;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.auditSummaryValue {
+  margin-top: 6px !important;
+  color: #143a63;
+  font-size: 20px !important;
+  font-weight: 800 !important;
+  line-height: 1.1;
+}
+
+.auditSummaryMeta {
+  margin-top: 8px !important;
+  color: #5e7891;
+  font-size: 13px !important;
+  line-height: 1.6;
+}
+
+.auditPanelGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 20px;
+  margin-top: 20px;
+  min-width: 0;
+  width: 100%;
+}
+
+.auditSurface {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+  width: 100%;
+  padding: 20px;
+  border: 1px solid rgba(194, 208, 220, 0.92);
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(250, 252, 254, 0.96), rgba(239, 244, 248, 0.98));
+  box-shadow: 0 12px 28px rgba(24, 50, 79, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.auditAlert {
+  :global(.MuiAlert-message) {
+    font-size: 13px;
+    line-height: 1.6;
+  }
+}
+
+.auditSectionHeader {
+  min-width: 0;
+}
+
+.auditSectionTitle {
+  margin: 0 !important;
+  color: #143a63;
+  font-size: 17px !important;
+  font-weight: 800 !important;
+}
+
+.auditSectionText {
+  margin-top: 8px !important;
+  color: #5e7891;
+  font-size: 13px !important;
+  line-height: 1.6;
+}
+
+.auditLoadingState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 220px;
+}
+
+.auditChipGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.auditChip {
+  border: 1px solid rgba(184, 205, 223, 0.9) !important;
+  background: rgba(236, 244, 251, 0.95) !important;
+  color: #355b80 !important;
+  font-weight: 700 !important;
+}
+
+.auditTableWrap {
+  border: 1px solid rgba(206, 218, 229, 0.95);
+  border-radius: 18px !important;
+  background: rgba(255, 255, 255, 0.88) !important;
+  box-shadow: 0 12px 24px rgba(36, 60, 91, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  overflow-x: auto;
+
+  :global(.MuiTable-root) {
+    min-width: 560px;
+  }
+
+  :global(.MuiTableHead-root .MuiTableCell-root) {
+    border-bottom: 1px solid rgba(220, 228, 236, 0.95);
+    background: linear-gradient(180deg, #f9fbfd 0%, #eef4f8 100%);
+    color: #355b80;
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+}
+
+.auditTablePrimaryText {
+  color: #143a63 !important;
+  font-size: 14px !important;
+  font-weight: 800 !important;
+}
+
+.auditTableSecondaryText {
+  color: #5e7891 !important;
+  font-size: 13px !important;
+  line-height: 1.6 !important;
+}
+
+.auditActionPill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  padding: 0 10px;
+  border: 1px solid rgba(184, 205, 223, 0.9);
+  border-radius: 999px;
+  background: rgba(236, 244, 251, 0.95);
+  color: #355b80;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.auditLogCardList {
+  display: grid;
+  gap: 12px;
+}
+
+.auditLogCard {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid rgba(206, 218, 229, 0.95);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 12px 24px rgba(36, 60, 91, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.auditLogCardHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.auditLogCardHeaderText {
+  min-width: 0;
+}
+
+.auditLogMetaGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.auditLogMetaItem {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid rgba(210, 221, 231, 0.92);
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(248, 251, 253, 0.98), rgba(240, 246, 250, 0.98));
+}
+
+.auditLogMetaLabel {
+  color: #688199;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.auditLogMetaValue {
+  color: #143a63;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
 .dualPanelGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1678,6 +1917,14 @@
 
 // ─── Tablet breakpoint (new — fills the gap between 960 and 768) ──────────────
 @media (max-width: 960px) {
+  .auditSummaryGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .auditPanelGrid {
+    grid-template-columns: 1fr;
+  }
+
   .exportHeroCard {
     flex-direction: column;
     padding: 18px;
@@ -1782,6 +2029,26 @@
     align-items: flex-start;
     max-width: 100%;
     flex-wrap: wrap;
+  }
+
+  .auditSummaryGrid {
+    gap: 12px;
+    margin-top: 18px;
+  }
+
+  .auditSummaryCard,
+  .auditSurface {
+    padding: 16px;
+    border-radius: 16px !important;
+  }
+
+  .auditPanelGrid {
+    gap: 14px;
+    margin-top: 16px;
+  }
+
+  .auditLogCard {
+    padding: 14px;
   }
 
   .dualPanelGrid {
@@ -2092,6 +2359,28 @@
 
   .inlineCheckboxCard {
     padding: 10px;
+  }
+
+  .auditSummaryCard,
+  .auditSurface {
+    padding: 14px;
+    border-radius: 14px !important;
+  }
+
+  .auditLogCardHeader {
+    flex-direction: column;
+  }
+
+  .auditLogMetaGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .auditSummaryValue {
+    font-size: 18px !important;
+  }
+
+  .auditSectionTitle {
+    font-size: 16px !important;
   }
 
   .daySelectorGroup {

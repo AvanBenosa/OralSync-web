@@ -1,6 +1,7 @@
 import { FunctionComponent, JSX, useEffect, useMemo, useRef, useState } from 'react';
 import BusinessRoundedIcon from '@mui/icons-material/BusinessRounded';
 import ConstructionRoundedIcon from '@mui/icons-material/ConstructionRounded';
+import FactCheckRoundedIcon from '@mui/icons-material/FactCheckRounded';
 import FileDownloadRoundedIcon from '@mui/icons-material/FileDownloadRounded';
 import MapRoundedIcon from '@mui/icons-material/MapRounded';
 import PersonAddAlt1RoundedIcon from '@mui/icons-material/PersonAddAlt1Rounded';
@@ -21,6 +22,7 @@ import BuildUp from './index-content/build-up';
 import ClinicProfileForm from './index-content/clinic-profile-form';
 import CreateUserManagement from './index-content/create-user-management';
 import DataConverter from './index-content/data-converter';
+import AuditLogs from './index-content/audit-logs';
 import ExportData from './index-content/export-data';
 import SettingsHeader from './index-content/settings-header';
 import Subscriptions from './index-content/subscriptions';
@@ -32,6 +34,7 @@ type SettingsTabId =
   | 'create-user'
   | 'build-up'
   | 'data-mapping'
+  | 'audit-logs'
   | 'export-data'
   | 'subscriptions';
 
@@ -113,6 +116,14 @@ const SettingsModule: FunctionComponent<SettingsProps> = (props: SettingsProps):
         title: 'Data Mapping',
         description:
           'Use this tab for clinic build up details, setup options, and operational configuration items.',
+      },
+      {
+        id: 'audit-logs' as const,
+        label: 'Audit Logs',
+        icon: <FactCheckRoundedIcon />,
+        title: 'Audit Logs',
+        description:
+          'Review clinic activity history, record changes, and traceable operational events.',
       },
       {
         id: 'export-data' as const,
@@ -358,6 +369,7 @@ const SettingsModule: FunctionComponent<SettingsProps> = (props: SettingsProps):
               />
             ) : null}
             {activeTab === 'data-mapping' ? <DataConverter /> : null}
+            {activeTab === 'audit-logs' ? <AuditLogs /> : null}
             {activeTab === 'export-data' ? <ExportData /> : null}
             {activeTab === 'subscriptions' ? (
               <Subscriptions state={state} onReload={() => loadClinicProfile(false)} />
