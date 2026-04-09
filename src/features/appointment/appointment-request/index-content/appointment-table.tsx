@@ -96,7 +96,7 @@ const AppointmentTable: FunctionComponent<AppointmentStateProps> = (
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
-  const columnCount = isMobile ? 1 : 6;
+  const columnCount = isMobile ? 2 : 6;
 
   const getStatusRowClassName = (statusTone?: AppointmentStatusTone): string | undefined => {
     if (statusTone === 'pending') {
@@ -191,7 +191,9 @@ const AppointmentTable: FunctionComponent<AppointmentStateProps> = (
         <TableHead>
           <TableRow>
             <TableCell className={styles.tableHeaderCell}>Patient</TableCell>
-            {!isMobile ? (
+            {isMobile ? (
+              <TableCell className={styles.tableHeaderCell}>Date</TableCell>
+            ) : (
               <>
                 <TableCell className={styles.tableHeaderCell}>Schedule</TableCell>
                 <TableCell className={styles.tableHeaderCell}>Reason</TableCell>
@@ -199,7 +201,7 @@ const AppointmentTable: FunctionComponent<AppointmentStateProps> = (
                 <TableCell className={styles.tableHeaderCell}>Appointment Type</TableCell>
                 <TableCell className={styles.tableHeaderCell} align="right"></TableCell>
               </>
-            ) : null}
+            )}
           </TableRow>
         </TableHead>
         <TableBody>
@@ -253,28 +255,9 @@ const AppointmentTable: FunctionComponent<AppointmentStateProps> = (
                 >
                   <TableCell className={styles.tableBodyCell}>
                     {isMobile ? (
-                      <div className={styles.mobileRowInline}>
-                        <div className={styles.mobileMain}>
-                          <Typography component="span" className={styles.mobileName}>
-                            <HighlightText query={state.search} text={item.patientName} />
-                          </Typography>
-                          <div className={styles.mobileMeta}>
-                            <Typography component="span" className={styles.mobileContact}>
-                              {formatAppointmentRange(item)}
-                            </Typography>
-                            {statusPillClassName ? (
-                              <span className={`${styles.statusPill} ${statusPillClassName}`}>
-                                {statusLabel}
-                              </span>
-                            ) : (
-                              <Typography component="span" className={styles.mobileContact}>
-                                {statusLabel}
-                              </Typography>
-                            )}
-                          </div>
-                        </div>
-                        <div className={styles.mobileActions}>{renderActionButtons(item)}</div>
-                      </div>
+                      <Typography component="span" className={styles.mobileName}>
+                        <HighlightText query={state.search} text={item.patientName} />
+                      </Typography>
                     ) : (
                       <div>
                         <Typography sx={{ fontWeight: 700, color: '#1f4467' }}>
@@ -286,7 +269,11 @@ const AppointmentTable: FunctionComponent<AppointmentStateProps> = (
                       </div>
                     )}
                   </TableCell>
-                  {!isMobile ? (
+                  {isMobile ? (
+                    <TableCell className={styles.tableBodyCell}>
+                      {formatAppointmentRange(item)}
+                    </TableCell>
+                  ) : (
                     <>
                       <TableCell className={styles.tableBodyCell}>
                         {formatAppointmentRange(item)}
@@ -310,7 +297,7 @@ const AppointmentTable: FunctionComponent<AppointmentStateProps> = (
                         {renderActionButtons(item)}
                       </TableCell>
                     </>
-                  ) : null}
+                  )}
                 </TableRow>
               );
             })

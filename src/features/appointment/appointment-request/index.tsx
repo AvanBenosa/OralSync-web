@@ -1,5 +1,5 @@
 import { FunctionComponent, JSX, useEffect, useRef, useState } from 'react';
-import { Dialog } from '@mui/material';
+import { Dialog, useMediaQuery, useTheme } from '@mui/material';
 import CalendarMonthRoundedIcon from '@mui/icons-material/CalendarMonthRounded';
 import ListAltRoundedIcon from '@mui/icons-material/ListAltRounded';
 import { toast } from 'react-toastify';
@@ -20,6 +20,8 @@ export const AppointmentModule: FunctionComponent<AppointmentProps> = (
   props: AppointmentProps
 ): JSX.Element => {
   const { clinicId } = props;
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const reloadTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const resolvedClinicId = useClinicId(clinicId);
   const lastLoadedClinicIdRef = useRef<string | null | undefined>(undefined);
@@ -42,6 +44,7 @@ export const AppointmentModule: FunctionComponent<AppointmentProps> = (
     summaryCount: 0,
     hasDateFilter: false,
   });
+  const effectiveActiveTab: AppointmentViewTab = isMobile ? 'requests' : activeTab;
 
   const loadAppointments = async (
     showToast: boolean = false,
@@ -61,7 +64,7 @@ export const AppointmentModule: FunctionComponent<AppointmentProps> = (
       return;
     }
 
-    const isRequestsView = activeTab === 'requests';
+    const isRequestsView = effectiveActiveTab === 'requests';
     const requestState: AppointmentStateModel = {
       ...state,
       load: true,
@@ -136,7 +139,7 @@ export const AppointmentModule: FunctionComponent<AppointmentProps> = (
       clearTimeout(searchTimeoutRef.current);
     }
 
-    const shouldDebounceSearch = activeTab === 'requests' && !clinicChanged;
+    const shouldDebounceSearch = effectiveActiveTab === 'requests' && !clinicChanged;
     searchTimeoutRef.current = setTimeout(
       () => {
         void loadAppointments(false, !clinicChanged);
@@ -154,7 +157,16 @@ export const AppointmentModule: FunctionComponent<AppointmentProps> = (
     };
     // Fetch when clinic context, server search, page offset, or active view changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [resolvedClinicId, state.search, state.dateFrom, state.dateTo, state.pageStart, state.pageEnd, activeTab]);
+  }, [
+    resolvedClinicId,
+    state.search,
+    state.dateFrom,
+    state.dateTo,
+    state.pageStart,
+    state.pageEnd,
+    activeTab,
+    isMobile,
+  ]);
 
   const summaryLabel = state.hasDateFilter ? 'Total Appointments' : 'Appointment Today';
   const formattedSummaryCount = Number(state.summaryCount ?? 0).toLocaleString('en-US');
@@ -184,39 +196,41 @@ export const AppointmentModule: FunctionComponent<AppointmentProps> = (
             setState={setState}
             clinicId={state.clinicId}
             onReload={handleReload}
-            activeTab={activeTab}
+            activeTab={effectiveActiveTab}
           />
           <div className={styles.standaloneTabsRow}>
-            <div className={styles.tabList} role="tablist" aria-label="Appointment views">
-              <button
-                type="button"
-                role="tab"
-                aria-selected={activeTab === 'requests'}
-                className={`${styles.tabButton} ${
-                  activeTab === 'requests' ? styles.tabButtonActive : ''
-                }`}
-                onClick={() => setActiveTab('requests')}
-              >
-                <span className={styles.tabButtonIcon} aria-hidden="true">
-                  <ListAltRoundedIcon />
-                </span>
-                <span>Requests</span>
-              </button>
-              <button
-                type="button"
-                role="tab"
-                aria-selected={activeTab === 'calendar'}
-                className={`${styles.tabButton} ${
-                  activeTab === 'calendar' ? styles.tabButtonActive : ''
-                }`}
-                onClick={() => setActiveTab('calendar')}
-              >
-                <span className={styles.tabButtonIcon} aria-hidden="true">
-                  <CalendarMonthRoundedIcon />
-                </span>
-                <span>Calendar</span>
-              </button>
-            </div>
+            {!isMobile ? (
+              <div className={styles.tabList} role="tablist" aria-label="Appointment views">
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={activeTab === 'requests'}
+                  className={`${styles.tabButton} ${
+                    activeTab === 'requests' ? styles.tabButtonActive : ''
+                  }`}
+                  onClick={() => setActiveTab('requests')}
+                >
+                  <span className={styles.tabButtonIcon} aria-hidden="true">
+                    <ListAltRoundedIcon />
+                  </span>
+                  <span>Requests</span>
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={activeTab === 'calendar'}
+                  className={`${styles.tabButton} ${
+                    activeTab === 'calendar' ? styles.tabButtonActive : ''
+                  }`}
+                  onClick={() => setActiveTab('calendar')}
+                >
+                  <span className={styles.tabButtonIcon} aria-hidden="true">
+                    <CalendarMonthRoundedIcon />
+                  </span>
+                  <span>Calendar</span>
+                </button>
+              </div>
+            ) : null}
             <div className={styles.summaryCard} aria-live="polite">
               <span className={styles.summaryLabel}>{summaryLabel}:</span>
               <strong className={styles.summaryValue}>{formattedSummaryCount}</strong>
@@ -224,10 +238,10 @@ export const AppointmentModule: FunctionComponent<AppointmentProps> = (
           </div>
           <div
             className={`${styles.listItem} ${
-              activeTab === 'requests' ? styles.listItemWithPagination : ''
+              effectiveActiveTab === 'requests' ? styles.listItemWithPagination : ''
             }`}
           >
-            {activeTab === 'requests' ? (
+            {effectiveActiveTab === 'requests' ? (
               <>
                 <div className={styles.tableArea}>
                   <AppointmentTable state={state} setState={setState} clinicId={state.clinicId} />
