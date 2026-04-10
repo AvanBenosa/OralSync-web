@@ -198,54 +198,55 @@ const CreateUserManagement: FunctionComponent<CreateUserStateProps> = (
     return branchAdmin.id && formValues.id && branchAdmin.id === formValues.id ? null : branchAdmin;
   }, [branchAdminAssignmentsByBranchId, formValues.defaultBranchId, formValues.id]);
   const branchAdminConflictMessage = conflictingBranchAdmin
-    ? `${[conflictingBranchAdmin.firstName, conflictingBranchAdmin.lastName]
-        .filter(Boolean)
-        .join(' ') || conflictingBranchAdmin.userName || 'Another user'} is already assigned as Branch Admin for the selected branch.`
+    ? `${
+        [conflictingBranchAdmin.firstName, conflictingBranchAdmin.lastName]
+          .filter(Boolean)
+          .join(' ') ||
+        conflictingBranchAdmin.userName ||
+        'Another user'
+      } is already assigned as Branch Admin for the selected branch.`
     : '';
-  const availableRoleOptions = useMemo(
-    () => {
-      const baseOptions = canAssignClinicWideRoles
-        ? REGISTER_ROLE_OPTIONS
-        : REGISTER_ROLE_OPTIONS.filter((option) =>
-            [
-              RegisterUserRole.Dentist,
-              RegisterUserRole.Assistant,
-              RegisterUserRole.Receptionist,
-            ].includes(option.value)
-          );
-
-      if (!canManageBranchAdminAccounts) {
-        const nonBranchAdminOptions = baseOptions.filter(
-          (option) => option.value !== RegisterUserRole.BranchAdmin
+  const availableRoleOptions = useMemo(() => {
+    const baseOptions = canAssignClinicWideRoles
+      ? REGISTER_ROLE_OPTIONS
+      : REGISTER_ROLE_OPTIONS.filter((option) =>
+          [
+            RegisterUserRole.Dentist,
+            RegisterUserRole.Assistant,
+            RegisterUserRole.Receptionist,
+          ].includes(option.value)
         );
 
-        if (isBranchAdminEditLocked) {
-          return [
-            ...nonBranchAdminOptions,
-            {
-              value: RegisterUserRole.BranchAdmin,
-              label: 'Branch Admin',
-            },
-          ];
-        }
+    if (!canManageBranchAdminAccounts) {
+      const nonBranchAdminOptions = baseOptions.filter(
+        (option) => option.value !== RegisterUserRole.BranchAdmin
+      );
 
-        return nonBranchAdminOptions;
+      if (isBranchAdminEditLocked) {
+        return [
+          ...nonBranchAdminOptions,
+          {
+            value: RegisterUserRole.BranchAdmin,
+            label: 'Branch Admin',
+          },
+        ];
       }
 
-      if (conflictingBranchAdmin && formValues.role !== RegisterUserRole.BranchAdmin) {
-        return baseOptions.filter((option) => option.value !== RegisterUserRole.BranchAdmin);
-      }
+      return nonBranchAdminOptions;
+    }
 
-      return baseOptions;
-    },
-    [
-      canAssignClinicWideRoles,
-      canManageBranchAdminAccounts,
-      conflictingBranchAdmin,
-      formValues.role,
-      isBranchAdminEditLocked,
-    ]
-  );
+    if (conflictingBranchAdmin && formValues.role !== RegisterUserRole.BranchAdmin) {
+      return baseOptions.filter((option) => option.value !== RegisterUserRole.BranchAdmin);
+    }
+
+    return baseOptions;
+  }, [
+    canAssignClinicWideRoles,
+    canManageBranchAdminAccounts,
+    conflictingBranchAdmin,
+    formValues.role,
+    isBranchAdminEditLocked,
+  ]);
 
   useEffect(() => {
     if (!clinicId?.trim()) {
@@ -405,23 +406,17 @@ const CreateUserManagement: FunctionComponent<CreateUserStateProps> = (
       return;
     }
 
-    if (branchAssignmentRequired && !formValues.defaultBranchId.trim()) {
-      setSubmitError('Default branch is required for branch-scoped users.');
-      return;
-    }
+    // if (branchAssignmentRequired && !formValues.defaultBranchId.trim()) {
+    //   setSubmitError('Default branch is required for branch-scoped users.');
+    //   return;
+    // }
 
-    if (
-      formValues.role === RegisterUserRole.BranchAdmin &&
-      !canManageBranchAdminAccounts
-    ) {
+    if (formValues.role === RegisterUserRole.BranchAdmin && !canManageBranchAdminAccounts) {
       setSubmitError('Only super admin can assign the Branch Admin role.');
       return;
     }
 
-    if (
-      formValues.role === RegisterUserRole.BranchAdmin &&
-      conflictingBranchAdmin
-    ) {
+    if (formValues.role === RegisterUserRole.BranchAdmin && conflictingBranchAdmin) {
       setSubmitError('The selected branch already has a Branch Admin assigned.');
       return;
     }
