@@ -40,7 +40,7 @@ type ClinicLockedDialogProps = {
 
 const PAYMENT_STEPS = ['Choose Plan', 'Payment', 'Confirm', 'Done'];
 const ACTIVATION_CONTACT = {
-  phone: '09213595192',
+  phone: '+63 976 562 8426',
   email: 'evanbenosa045@gmail.com',
 };
 

@@ -19,7 +19,7 @@ import AuthTopNav from './auth-top-nav';
 
 const REMEMBER_ME_STORAGE_KEY = 'dmd-web-login-credentials';
 const CONTACT_PHONE_NUMBER = '+63 976 562 8426';
-const CONTACT_EMAIL_ADDRESS = 'evanbenosa45@gmail.com';
+const CONTACT_EMAIL_ADDRESS = 'evanbenosa045@gmail.com';
 const CONTACT_FACEBOOK_URL =
   'https://www.facebook.com/evan.is.deads?mibextid=wwXIfr&rdid=m2CKYAoANdb5WhcF&share_url=https%3A%2F%2Fwww.facebook.com%2Fshare%2F19rWefzSDX%2F%3Fmibextid%3DwwXIfr';
 

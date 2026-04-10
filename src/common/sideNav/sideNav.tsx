@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import {
   Alert,
   AppBar,
+  Badge,
   Box,
   Button,
   CircularProgress,
@@ -44,6 +45,8 @@ import SideNavAssistant from './side-nav-assistant';
 import { GetCurrentClinicProfile } from '../../features/settings/clinic-profile/api/api';
 import { ClinicProfileModel } from '../../features/settings/clinic-profile/api/types';
 import { sendClinicFeedback } from '../services/clinic-feedback-api';
+import { GetAppointments } from '../../features/appointment/appointment-request/api/api';
+import { AppointmentStateModel } from '../../features/appointment/appointment-request/api/types';
 const drawerWidth = 240;
 const collapsedDrawerWidth = 72;
 const navPalette = {
@@ -102,11 +105,13 @@ const SideNav = () => {
   const logout = useAuthStore((state) => state.logout);
   const user = useAuthStore((state) => state.user);
   const username = useAuthStore((state) => state.username);
+  const branchId = useAuthStore((state) => state.branchId);
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [drawerOpen, setDrawerOpen] = useState(true);
   const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
   const [feedbackDialogOpen, setFeedbackDialogOpen] = useState(false);
   const [clinicProfile, setClinicProfile] = useState<ClinicProfileModel | null>(null);
+  const [todayAppointmentCount, setTodayAppointmentCount] = useState(0);
   const [isSendingFeedback, setIsSendingFeedback] = useState(false);
   const [feedbackError, setFeedbackError] = useState('');
   const [feedbackForm, setFeedbackForm] = useState({
@@ -136,6 +141,69 @@ const SideNav = () => {
     feedbackForm.replyToEmail.trim() ||
     user?.email?.trim() ||
     '';
+
+  useEffect(() => {
+    let isMounted = true;
+    let intervalRef: ReturnType<typeof setInterval> | null = null;
+
+    const loadTodayAppointmentCount = async (forceRefresh: boolean = false): Promise<void> => {
+      try {
+        const response = await GetAppointments(
+          {
+            items: [],
+            load: false,
+            initial: 0,
+            totalItem: 0,
+            pageStart: 0,
+            pageEnd: 10,
+            search: '',
+            dateFrom: '',
+            dateTo: '',
+            openModal: false,
+            isUpdate: false,
+            isDelete: false,
+            clinicId: user?.clinicId ?? undefined,
+            summaryCount: 0,
+            hasDateFilter: false,
+          } as AppointmentStateModel,
+          forceRefresh
+        );
+
+        if (!isMounted) {
+          return;
+        }
+
+        setTodayAppointmentCount(response.summaryCount ?? 0);
+      } catch {
+        if (!isMounted) {
+          return;
+        }
+
+        setTodayAppointmentCount(0);
+      }
+    };
+
+    void loadTodayAppointmentCount(false);
+    intervalRef = setInterval(() => {
+      void loadTodayAppointmentCount(true);
+    }, 60000);
+
+    return () => {
+      isMounted = false;
+
+      if (intervalRef) {
+        clearInterval(intervalRef);
+      }
+    };
+  }, [branchId, user?.clinicId]);
+
+  const getMenuItemBadgeContent = (path: string): string | null => {
+    if (path !== '/appointment' || todayAppointmentCount <= 0) {
+      return null;
+    }
+
+    return todayAppointmentCount > 99 ? '99+' : String(todayAppointmentCount);
+  };
 
   useEffect(() => {
     let isMounted = true;
@@ -478,6 +546,7 @@ const SideNav = () => {
           >
             {[...visibleMenuItems, ...visibleFooterMenuItems].map((item) => {
               const active = item.path === location.pathname;
+              const badgeContent = getMenuItemBadgeContent(item.path);
 
               return (
                 <IconButton
@@ -485,7 +554,26 @@ const SideNav = () => {
                   onClick={() => handleNavigate(item.path)}
                   sx={{ color: active ? navPalette.light : 'white' }}
                 >
-                  {item.icon}
+                  {badgeContent ? (
+                    <Badge
+                      badgeContent={badgeContent}
+                      overlap="circular"
+                      sx={{
+                        '& .MuiBadge-badge': {
+                          backgroundColor: '#ffb300',
+                          color: '#17344f',
+                          fontWeight: 800,
+                          minWidth: 18,
+                          height: 18,
+                          fontSize: '0.64rem',
+                        },
+                      }}
+                    >
+                      {item.icon}
+                    </Badge>
+                  ) : (
+                    item.icon
+                  )}
                 </IconButton>
               );
             })}
@@ -728,6 +816,27 @@ const SideNav = () => {
           <List>
             {visibleMenuItems.map((item) => {
               const active = item.path === location.pathname;
+              const badgeContent = getMenuItemBadgeContent(item.path);
+              const iconNode = badgeContent ? (
+                <Badge
+                  badgeContent={badgeContent}
+                  overlap="circular"
+                  sx={{
+                    '& .MuiBadge-badge': {
+                      backgroundColor: '#ffb300',
+                      color: '#17344f',
+                      fontWeight: 800,
+                      minWidth: 18,
+                      height: 18,
+                      fontSize: '0.64rem',
+                    },
+                  }}
+                >
+                  {item.icon}
+                </Badge>
+              ) : (
+                item.icon
+              );
 
               return (
                 <Tooltip title={!drawerOpen ? item.label : ''} placement="right" key={item.path}>
@@ -752,15 +861,28 @@ const SideNav = () => {
                         mr: drawerOpen ? 3 : 'auto',
                       }}
                     >
-                      {item.icon}
+                      {iconNode}
                     </ListItemIcon>
                     {drawerOpen ? (
                       <ListItemText
                         primary={item.label}
+                        secondary={
+                          item.path === '/appointment' && todayAppointmentCount > 0
+                            ? `${todayAppointmentCount} today`
+                            : undefined
+                        }
                         primaryTypographyProps={{
                           sx: {
                             color: active ? navPalette.light : '#fff',
                             fontWeight: active ? 700 : 600,
+                          },
+                        }}
+                        secondaryTypographyProps={{
+                          sx: {
+                            color: 'rgba(255,255,255,0.76)',
+                            fontSize: '0.72rem',
+                            fontWeight: 700,
+                            lineHeight: 1.2,
                           },
                         }}
                       />
