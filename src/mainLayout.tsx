@@ -13,7 +13,7 @@ import {
 } from './common/services/auth-api';
 import { toastSuccess } from './common/api/responses';
 import { useAuthStore } from './common/store/authStore';
-import { isPendingClinicStatus } from './common/utils/subscription';
+import { isPendingClinicStatus, isPremiumSubscription } from './common/utils/subscription';
 import ClinicLockedDialog from './features/login/clinic-locked-dialog';
 import DataPrivacyConsentDialog from './features/login/data-privacy-consent-dialog';
 import ContractPolicyDialog from './features/login/contract-policy-dialog';
@@ -64,6 +64,12 @@ const MainLayout = () => {
     () => Boolean(user?.portalType === 'clinic' && isClinicWideRole(user?.role)),
     [user?.portalType, user?.role]
   );
+  const hasPremiumSubscription = useMemo(
+    () => isPremiumSubscription(user?.subscriptionType),
+    [user?.subscriptionType]
+  );
+  const canLoadBranches = canSwitchBranches && hasPremiumSubscription;
+  const shouldShowBranchSelector = canLoadBranches && branches.length > 0;
   const shouldCheckDataPrivacy = useMemo(
     () => Boolean(isLoggedIn && clinicId),
     [clinicId, isLoggedIn]
@@ -131,7 +137,7 @@ const MainLayout = () => {
   }, [isLoggedIn, setRequiresRegistration]);
 
   useEffect(() => {
-    if (!canSwitchBranches || !clinicId) {
+    if (!canLoadBranches || !clinicId) {
       setBranches([]);
       setBranchId(null);
       return;
@@ -143,8 +149,15 @@ const MainLayout = () => {
       })
       .catch(() => {
         setBranches([]);
+        setBranchId(null);
       });
-  }, [canSwitchBranches, clinicId, setBranchId]);
+  }, [canLoadBranches, clinicId, setBranchId]);
+
+  useEffect(() => {
+    if (!shouldShowBranchSelector && activeBranchId) {
+      setBranchId(null);
+    }
+  }, [activeBranchId, setBranchId, shouldShowBranchSelector]);
 
   useEffect(() => {
     if (!shouldCheckDataPrivacy) {
@@ -404,7 +417,7 @@ const MainLayout = () => {
     <Box display="flex" minHeight="100vh" bgcolor="background.default">
       <SideNav />
       <Box component="main" flexGrow={1} sx={{ overflowX: 'hidden' }}>
-        {canSwitchBranches ? (
+        {shouldShowBranchSelector ? (
           <Box
             sx={{
               display: 'flex',

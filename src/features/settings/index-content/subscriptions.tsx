@@ -38,10 +38,7 @@ import {
   resolveProtectedApiAssetUrl,
 } from '../../../common/services/api-client';
 import { isPendingClinicStatus } from '../../../common/utils/subscription';
-import {
-  getManualPaymentStatus,
-  getManualPaymentTransactions,
-} from '../../subscription/api/api';
+import { getManualPaymentStatus, getManualPaymentTransactions } from '../../subscription/api/api';
 import { syncSubscriptionTransactionToUser } from '../../subscription/api/session';
 import {
   formatCurrency,
@@ -65,7 +62,7 @@ type SubscriptionsProps = {
   onReload?: () => Promise<void> | void;
 };
 
-type SubscriptionPlanId = 'basic' | 'standard' | 'pro';
+type SubscriptionPlanId = 'basic' | 'standard' | 'premium';
 
 type SubscriptionFeature = {
   icon: JSX.Element;
@@ -165,8 +162,8 @@ const normalizeSubscriptionType = (value?: string): SubscriptionPlanId | '' => {
     return 'standard';
   }
 
-  if (normalizedValue === 'pro' || normalizedValue === 'premium' || normalizedValue === 'premuim') {
-    return 'pro';
+  if (normalizedValue === 'premium') {
+    return 'premium';
   }
 
   return '';
@@ -183,8 +180,8 @@ const formatSubscriptionType = (value?: string): string => {
     return 'Standard';
   }
 
-  if (normalizedValue === 'pro') {
-    return 'Pro';
+  if (normalizedValue === 'premium') {
+    return 'Premium';
   }
 
   return '--';
@@ -315,6 +312,24 @@ const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
     features: [
       { icon: <GroupsRoundedIcon />, label: 'Patient records up to 1,000' },
       { icon: <PhotoLibraryRoundedIcon />, label: 'Store up to 1,000 patient photos/files' },
+      { icon: <SmsRoundedIcon />, label: 'SMS reminders with monthly usage limits' },
+      { icon: <MarkEmailReadRoundedIcon />, label: 'Email notifications included' },
+      { icon: <Inventory2RoundedIcon />, label: 'Inventory module included' },
+    ],
+  },
+  {
+    id: 'premium',
+    label: 'Premium',
+    tagline: 'Balanced everyday plan',
+    summary: 'Built for growing clinics that want reminders, inventory, and larger storage.',
+    price: 1300,
+    patientLimit: '2000 patients',
+    storageLimit: '2000 photos/files',
+    userLimit: '10 users',
+    accentClassName: styles.subscriptionPlanCardStandard,
+    features: [
+      { icon: <GroupsRoundedIcon />, label: 'Patient records up to 2,000' },
+      { icon: <PhotoLibraryRoundedIcon />, label: 'Store up to 2,000 patient photos/files' },
       { icon: <SmsRoundedIcon />, label: 'SMS reminders with monthly usage limits' },
       { icon: <MarkEmailReadRoundedIcon />, label: 'Email notifications included' },
       { icon: <Inventory2RoundedIcon />, label: 'Inventory module included' },
@@ -523,8 +538,8 @@ const Subscriptions: FunctionComponent<SubscriptionsProps> = (
         Your clinic stays active while this manual upgrade payment is under review.
       </Typography>
       <Typography variant="body2">
-        Once the payment is marked as paid, the selected subscription type and the extended
-        validity date will be applied automatically.
+        Once the payment is marked as paid, the selected subscription type and the extended validity
+        date will be applied automatically.
       </Typography>
     </Box>
   );
@@ -556,8 +571,8 @@ const Subscriptions: FunctionComponent<SubscriptionsProps> = (
             {isCheckingSubmittedUpgrade
               ? 'Checking Payment...'
               : hasPendingUpgrade
-                ? 'View Pending Upgrade'
-                : 'Upgrade Subscription'}
+              ? 'View Pending Upgrade'
+              : 'Upgrade Subscription'}
           </Button>
 
           <Button
@@ -596,12 +611,10 @@ const Subscriptions: FunctionComponent<SubscriptionsProps> = (
               </Typography>
               <Typography variant="body2">
                 {latestPendingManualPayment
-                  ? `Your ${pendingUpgradePlanLabel} payment for ${
-                      MONTHS_LABEL[pendingUpgradeMonths]
-                    } is awaiting admin confirmation.`
+                  ? `Your ${pendingUpgradePlanLabel} payment for ${MONTHS_LABEL[pendingUpgradeMonths]} is awaiting admin confirmation.`
                   : 'Your submitted manual upgrade payment is awaiting admin confirmation.'}{' '}
-                Your clinic remains active while validation is in progress. Once marked as paid,
-                the selected plan and updated validity date will be applied automatically.
+                Your clinic remains active while validation is in progress. Once marked as paid, the
+                selected plan and updated validity date will be applied automatically.
               </Typography>
               {pendingUpgradeReference ? (
                 <Typography variant="body2" sx={{ mt: 0.5, fontWeight: 700 }}>
@@ -753,12 +766,7 @@ const Subscriptions: FunctionComponent<SubscriptionsProps> = (
         </div>
       )}
 
-      <Dialog
-        open={isUpgradeDialogOpen}
-        onClose={handleCloseUpgradeDialog}
-        fullWidth
-        maxWidth="md"
-      >
+      <Dialog open={isUpgradeDialogOpen} onClose={handleCloseUpgradeDialog} fullWidth maxWidth="md">
         <DialogTitle sx={{ fontWeight: 800, color: '#183b56' }}>
           {dialogHasPendingManualPayment ? 'Pending Subscription Upgrade' : 'Upgrade Subscription'}
         </DialogTitle>

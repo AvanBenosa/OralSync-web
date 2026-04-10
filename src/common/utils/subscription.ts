@@ -5,8 +5,8 @@ export const normalizeSubscriptionType = (value?: string | null): string => {
     return '';
   }
 
-  if (normalizedValue === 'premium' || normalizedValue === 'premuim') {
-    return 'pro';
+  if (normalizedValue === 'premium' || normalizedValue === 'premuim' || normalizedValue === 'pro') {
+    return 'premium';
   }
 
   return normalizedValue;
@@ -82,6 +82,9 @@ export const getSubscriptionDaysRemaining = (value?: string | null): number | nu
 export const isBasicSubscription = (value?: string | null): boolean =>
   normalizeSubscriptionType(value) === 'basic';
 
+export const isPremiumSubscription = (value?: string | null): boolean =>
+  normalizeSubscriptionType(value) === 'premium';
+
 export const isPendingClinicStatus = (value?: string | null): boolean =>
   ['pending', 'pendingpayment'].includes(normalizeClinicStatus(value));
 
@@ -96,7 +99,11 @@ export const getSubscriptionUserLimit = (value?: string | null): number | null =
   }
 
   if (normalizedValue === 'standard') {
-    return 10;
+    return 5;
+  }
+
+  if (normalizedValue === 'premium') {
+    return 5;
   }
 
   return null;

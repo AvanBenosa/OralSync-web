@@ -246,6 +246,7 @@ const ClinicProfileForm: FunctionComponent<ClinicProfileStateProps> = (
         <ClinicBranchManagement
           clinicId={state.item?.id ?? state.clinicProfileId}
           mode="assigned-branch"
+          subscriptionType={state.item?.subscriptionType}
         />
       </>
     );
@@ -501,7 +502,10 @@ const ClinicProfileForm: FunctionComponent<ClinicProfileStateProps> = (
         </section>
       </div>
 
-      <ClinicBranchManagement clinicId={state.item?.id ?? state.clinicProfileId} />
+      <ClinicBranchManagement
+        clinicId={state.item?.id ?? state.clinicProfileId}
+        subscriptionType={state.item?.subscriptionType}
+      />
 
       <div className={styles.formActions}>
         {bannerUploadError ? (

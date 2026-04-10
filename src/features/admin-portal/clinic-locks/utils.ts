@@ -7,7 +7,7 @@ import {
 export const SUBSCRIPTION_OPTIONS = [
   { value: 'Basic', label: 'Basic' },
   { value: 'Standard', label: 'Standard' },
-  { value: 'Premuim', label: 'Premium' },
+  { value: 'Premium', label: 'Premium' },
 ] as const;
 
 export const formatClinicSubscriptionType = (value?: string): string => {

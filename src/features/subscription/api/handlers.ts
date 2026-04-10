@@ -16,7 +16,7 @@ import type {
 import { SubscriptionPlan } from './types';
 
 export const handleCreatePaymentLink = async (
-  plan: SubscriptionPlan.Standard | SubscriptionPlan.Basic,
+  plan: SubscriptionPlan.Standard | SubscriptionPlan.Basic | SubscriptionPlan.Premium,
   months: SubscriptionMonths,
   setState: Function
 ): Promise<void> => {
@@ -44,7 +44,7 @@ export const handleCreatePaymentLink = async (
 };
 
 export const handleCreateManualPayment = async (
-  plan: SubscriptionPlan.Standard | SubscriptionPlan.Basic,
+  plan: SubscriptionPlan.Standard | SubscriptionPlan.Basic | SubscriptionPlan.Premium,
   months: SubscriptionMonths,
   manualPayment: ManualPaymentFormModel,
   setState: Function

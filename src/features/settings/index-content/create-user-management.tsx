@@ -133,8 +133,8 @@ const formatSubscriptionLabel = (value?: string | null): string => {
     return 'Standard';
   }
 
-  if (normalizedValue === 'pro') {
-    return 'Pro';
+  if (normalizedValue === 'premium') {
+    return 'Premium';
   }
 
   return 'Current';

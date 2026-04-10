@@ -23,6 +23,7 @@ import { isAxiosError } from 'axios';
 
 import { getApiBaseUrl } from '../../../common/services/api-client';
 import { useAuthStore } from '../../../common/store/authStore';
+import { isPremiumSubscription } from '../../../common/utils/subscription';
 import {
   HandleCreateClinicBranch,
   HandleDeleteClinicBranch,
@@ -93,11 +94,13 @@ const resolveClinicBannerSrc = (bannerImagePath?: string): string => {
 type ClinicBranchManagementProps = {
   clinicId?: string | null;
   mode?: 'all-branches' | 'assigned-branch';
+  subscriptionType?: string | null;
 };
 
 const ClinicBranchManagement: FunctionComponent<ClinicBranchManagementProps> = ({
   clinicId,
   mode = 'all-branches',
+  subscriptionType,
 }: ClinicBranchManagementProps): JSX.Element => {
   const assignedBranchName = useAuthStore((store) => store.user?.defaultBranchName?.trim() || '');
   const [state, setState] = useState<ClinicBranchStateModel>({
@@ -119,10 +122,14 @@ const ClinicBranchManagement: FunctionComponent<ClinicBranchManagementProps> = (
   const [bannerPreviewUrl, setBannerPreviewUrl] = useState('');
   const bannerInputRef = useRef<HTMLInputElement | null>(null);
   const isAssignedBranchMode = mode === 'assigned-branch';
+  const hasPremiumSubscription = isPremiumSubscription(subscriptionType);
+  const canAccessClinicBranches = isAssignedBranchMode || hasPremiumSubscription;
   const sectionTitle = isAssignedBranchMode ? 'Assigned Branch Profile' : 'Clinic Branches';
   const sectionDescription = isAssignedBranchMode
     ? 'View and update the branch assigned to your account. Branch creation and deletion are not available for Branch Admin.'
-    : 'Create and manage the branches under this clinic. Branch contact details, working days, schedule, and banner are maintained here.';
+    : hasPremiumSubscription
+    ? 'Create and manage the branches under this clinic. Branch contact details, working days, schedule, and banner are maintained here.'
+    : 'Clinic branch management is available on the Premium subscription plan only.';
 
   useEffect(() => {
     setState((prev) => ({
@@ -133,6 +140,17 @@ const ClinicBranchManagement: FunctionComponent<ClinicBranchManagementProps> = (
 
   useEffect(() => {
     if (!clinicId?.trim()) {
+      setState((prev) => ({
+        ...prev,
+        load: false,
+        items: [],
+        totalItem: 0,
+        selectedItem: null,
+      }));
+      return;
+    }
+
+    if (!canAccessClinicBranches) {
       setState((prev) => ({
         ...prev,
         load: false,
@@ -164,7 +182,7 @@ const ClinicBranchManagement: FunctionComponent<ClinicBranchManagementProps> = (
     });
     // Fetch only when the resolved clinic changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [clinicId]);
+  }, [canAccessClinicBranches, clinicId]);
 
   useEffect(() => {
     return () => {
@@ -207,6 +225,10 @@ const ClinicBranchManagement: FunctionComponent<ClinicBranchManagementProps> = (
   };
 
   const openCreateDialog = (): void => {
+    if (!canAccessClinicBranches) {
+      return;
+    }
+
     clearMessages();
     setFormValues(createDefaultFormValues());
     setSelectedBannerFileName('');
@@ -332,6 +354,11 @@ const ClinicBranchManagement: FunctionComponent<ClinicBranchManagementProps> = (
       return;
     }
 
+    if (!canAccessClinicBranches) {
+      setSubmitError('Clinic branch creation is available on the Premium plan only.');
+      return;
+    }
+
     if (!formValues.name.trim()) {
       setSubmitError('Branch name is required.');
       return;
@@ -410,7 +437,7 @@ const ClinicBranchManagement: FunctionComponent<ClinicBranchManagementProps> = (
             <h3 className={styles.formPanelTitle}>{sectionTitle}</h3>
             <p className={styles.formPanelDescription}>{sectionDescription}</p>
           </div>
-          {!isAssignedBranchMode ? (
+          {!isAssignedBranchMode && hasPremiumSubscription ? (
             <Button
               type="button"
               variant="contained"
@@ -428,6 +455,10 @@ const ClinicBranchManagement: FunctionComponent<ClinicBranchManagementProps> = (
             {assignedBranchName
               ? `You can only manage your assigned branch: ${assignedBranchName}.`
               : 'You can only manage the branch assigned to your account.'}
+          </Alert>
+        ) : !hasPremiumSubscription ? (
+          <Alert severity="info" sx={{ mb: 2 }}>
+            Upgrade this clinic to Premium to create and manage clinic branches.
           </Alert>
         ) : null}
 
@@ -452,7 +483,7 @@ const ClinicBranchManagement: FunctionComponent<ClinicBranchManagementProps> = (
           </div>
         ) : null}
 
-        {clinicId?.trim() && !state.load && sortedItems.length === 0 ? (
+        {clinicId?.trim() && canAccessClinicBranches && !state.load && sortedItems.length === 0 ? (
           <div className={styles.emptyMiniState}>
             <Typography className={styles.emptyMiniTitle}>
               {isAssignedBranchMode ? 'Assigned Branch Not Found' : 'No Branches Yet'}
@@ -465,7 +496,7 @@ const ClinicBranchManagement: FunctionComponent<ClinicBranchManagementProps> = (
           </div>
         ) : null}
 
-        {sortedItems.length > 0 ? (
+        {canAccessClinicBranches && sortedItems.length > 0 ? (
           <div className={styles.userListSurface}>
             {sortedItems.map((item) => (
               <div

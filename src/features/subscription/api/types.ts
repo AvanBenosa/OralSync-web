@@ -1,6 +1,7 @@
 export enum SubscriptionPlan {
   Basic = 'Basic',
   Standard = 'Standard',
+  Premium = 'Premium',
 }
 
 export enum PaymentStatus {
@@ -23,6 +24,7 @@ export enum ManualPaymentMethod {
 export const SUBSCRIPTION_PLAN_LABELS: Record<SubscriptionPlan, string> = {
   [SubscriptionPlan.Basic]: 'Basic',
   [SubscriptionPlan.Standard]: 'Standard',
+  [SubscriptionPlan.Premium]: 'Premium',
 };
 
 export const PAYMENT_CHANNEL_LABELS: Record<PaymentChannel, string> = {
@@ -41,6 +43,7 @@ export type SubscriptionMonths = (typeof SUBSCRIPTION_MONTHS_OPTIONS)[number];
 export const PRICING_TABLE: Record<SubscriptionPlan, Record<SubscriptionMonths, number>> = {
   [SubscriptionPlan.Basic]: { 1: 450, 3: 1200, 6: 2400, 12: 4500 },
   [SubscriptionPlan.Standard]: { 1: 800, 3: 2100, 6: 3900, 12: 7200 },
+  [SubscriptionPlan.Premium]: { 1: 1300, 3: 3900, 6: 7800, 12: 15600 },
 };
 
 export const MONTHS_LABEL: Record<SubscriptionMonths, string> = {
@@ -66,6 +69,15 @@ export const PLAN_FEATURES: Record<SubscriptionPlan, string[]> = {
     'SMS reminders with monthly usage limits',
     'Email notifications included',
     'Inventory module included',
+  ],
+  [SubscriptionPlan.Premium]: [
+    'Up to 10 users',
+    'Patient records up to 2,000',
+    'Store up to 2,000 patient photos/files',
+    'SMS reminders with monthly usage limits',
+    'Email notifications included',
+    'Inventory module included',
+    'Clinic branch management included',
   ],
 };
 
@@ -132,5 +144,7 @@ export const getPrice = (plan: SubscriptionPlan, months: SubscriptionMonths): nu
 export const isPaidPlan = (plan?: SubscriptionPlan | string | null): boolean =>
   plan === SubscriptionPlan.Basic ||
   plan === SubscriptionPlan.Standard ||
+  plan === SubscriptionPlan.Premium ||
   plan?.toLowerCase() === 'basic' ||
-  plan?.toLowerCase() === 'standard';
+  plan?.toLowerCase() === 'standard' ||
+  plan?.toLowerCase() === 'premium';

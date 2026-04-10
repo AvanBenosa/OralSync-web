@@ -1,4 +1,5 @@
-import { FunctionComponent, JSX } from 'react';
+import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
+import CancelRoundedIcon from '@mui/icons-material/CancelRounded';
 import {
   Box,
   Button,
@@ -12,8 +13,7 @@ import {
   ToggleButtonGroup,
   Typography,
 } from '@mui/material';
-import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
-import CancelRoundedIcon from '@mui/icons-material/CancelRounded';
+import { FunctionComponent, JSX, MouseEvent } from 'react';
 import {
   formatCurrency,
   getPrice,
@@ -31,27 +31,31 @@ type Props = {
   currentPlan?: string;
 };
 
-// Both Basic and Standard are selectable — Premium is disabled (commented out)
-const ALL_PLANS: SubscriptionPlan[] = [SubscriptionPlan.Basic, SubscriptionPlan.Standard];
+const ALL_PLANS: SubscriptionPlan[] = [
+  SubscriptionPlan.Basic,
+  SubscriptionPlan.Standard,
+  SubscriptionPlan.Premium,
+];
 
-// Which features are included per plan — index matches PLAN_FEATURES arrays
 const FEATURE_INCLUDED: Record<SubscriptionPlan, boolean[]> = {
   [SubscriptionPlan.Basic]: [true, true, true, false, false, false],
   [SubscriptionPlan.Standard]: [true, true, true, true, true, true],
+  [SubscriptionPlan.Premium]: [true, true, true, true, true, true, true],
 };
 
-// Plan taglines shown in the card overline
 const PLAN_TAGLINE: Record<SubscriptionPlan, string> = {
   [SubscriptionPlan.Basic]: 'Starter clinic plan',
   [SubscriptionPlan.Standard]: 'Balanced everyday plan',
+  [SubscriptionPlan.Premium]: 'Expanded multi-branch plan',
 };
 
-// Plan short description shown below the title
 const PLAN_DESCRIPTION: Record<SubscriptionPlan, string> = {
   [SubscriptionPlan.Basic]:
     'Best for solo or startup clinics handling a lighter daily patient load.',
   [SubscriptionPlan.Standard]:
     'Built for growing clinics that want reminders, inventory, and larger storage.',
+  [SubscriptionPlan.Premium]:
+    'Built for larger clinics that need more storage, more patients, and clinic branch management.',
 };
 
 export const PlanSelector: FunctionComponent<Props> = ({
@@ -61,8 +65,11 @@ export const PlanSelector: FunctionComponent<Props> = ({
 }): JSX.Element => {
   const { selectedPlan, selectedMonths, isSubmitting } = state;
 
-  const handleMonthsChange = (_: React.MouseEvent<HTMLElement>, val: SubscriptionMonths | null) => {
-    if (!val) return;
+  const handleMonthsChange = (_: MouseEvent<HTMLElement>, val: SubscriptionMonths | null) => {
+    if (!val) {
+      return;
+    }
+
     setState((prev: SubscriptionStateModel) => ({ ...prev, selectedMonths: val }));
   };
 
@@ -71,13 +78,15 @@ export const PlanSelector: FunctionComponent<Props> = ({
   };
 
   const handleProceed = () => {
-    if (!selectedPlan) return;
+    if (!selectedPlan) {
+      return;
+    }
+
     setState((prev: SubscriptionStateModel) => ({ ...prev, step: 'checkout' }));
   };
 
   return (
     <Box>
-      {/* Header */}
       <Typography variant="h5" fontWeight={700} mb={0.5}>
         Subscription Plans
       </Typography>
@@ -85,7 +94,6 @@ export const PlanSelector: FunctionComponent<Props> = ({
         Choose a plan and billing period, then continue with PayMongo or manual payment.
       </Typography>
 
-      {/* Billing period toggle */}
       <Stack direction="row" alignItems="center" spacing={2} mb={4} flexWrap="wrap" gap={1}>
         <Typography variant="body2" fontWeight={500}>
           Billing period:
@@ -112,16 +120,14 @@ export const PlanSelector: FunctionComponent<Props> = ({
         </ToggleButtonGroup>
       </Stack>
 
-      {/* Plan cards — Basic + Standard both selectable */}
-      {/* Premium is intentionally commented out — not yet available */}
       <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} mb={4}>
         {ALL_PLANS.map((plan) => {
           const price = getPrice(plan, selectedMonths);
           const isActive = selectedPlan === plan;
+          const normalizedCurrentPlan = currentPlan?.toLowerCase();
           const isCurrent =
-            currentPlan?.toLowerCase() === plan.toLowerCase() ||
-            // normalise backend typo "premuim" just in case it ever appears
-            (currentPlan?.toLowerCase() === 'premuim' && plan === SubscriptionPlan.Standard);
+            normalizedCurrentPlan === plan.toLowerCase() ||
+            (normalizedCurrentPlan === 'premuim' && plan === SubscriptionPlan.Premium);
 
           return (
             <Card
@@ -139,25 +145,21 @@ export const PlanSelector: FunctionComponent<Props> = ({
               }}
             >
               <CardContent>
-                {/* Overline + current badge */}
                 <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
                   <Typography variant="overline" color={isActive ? 'primary' : 'text.secondary'}>
                     {PLAN_TAGLINE[plan]}
                   </Typography>
-                  {isCurrent && <Chip label="Current" color="primary" size="small" />}
+                  {isCurrent ? <Chip label="Current" color="primary" size="small" /> : null}
                 </Stack>
 
-                {/* Plan name */}
                 <Typography variant="h6" fontWeight={700}>
                   {plan}
                 </Typography>
 
-                {/* Short description */}
                 <Typography variant="body2" color="text.secondary" mb={1}>
                   {PLAN_DESCRIPTION[plan]}
                 </Typography>
 
-                {/* Price */}
                 <Stack direction="row" alignItems="baseline" spacing={0.5} my={1}>
                   <Typography variant="h4" fontWeight={800}>
                     {formatCurrency(price)}
@@ -167,20 +169,18 @@ export const PlanSelector: FunctionComponent<Props> = ({
                   </Typography>
                 </Stack>
 
-                {/* Per-month breakdown for multi-month */}
-                {selectedMonths > 1 && (
+                {selectedMonths > 1 ? (
                   <Typography variant="caption" color="success.main">
-                    ≈ {formatCurrency(Math.round(price / selectedMonths))} / month
+                    Approx. {formatCurrency(Math.round(price / selectedMonths))} / month
                   </Typography>
-                )}
+                ) : null}
 
                 <Divider sx={{ my: 1.5 }} />
 
-                {/* Feature list */}
                 <Stack spacing={1}>
-                  {PLAN_FEATURES[plan].map((f, i) => (
-                    <Stack key={f} direction="row" spacing={1} alignItems="center">
-                      {FEATURE_INCLUDED[plan][i] ? (
+                  {PLAN_FEATURES[plan].map((feature, index) => (
+                    <Stack key={feature} direction="row" spacing={1} alignItems="center">
+                      {FEATURE_INCLUDED[plan][index] ? (
                         <CheckCircleRoundedIcon
                           fontSize="small"
                           color={isActive ? 'primary' : 'action'}
@@ -192,7 +192,7 @@ export const PlanSelector: FunctionComponent<Props> = ({
                         variant="body2"
                         color={isActive ? 'text.primary' : 'text.secondary'}
                       >
-                        {f}
+                        {feature}
                       </Typography>
                     </Stack>
                   ))}
@@ -203,33 +203,19 @@ export const PlanSelector: FunctionComponent<Props> = ({
                 <Button
                   variant={isActive ? 'contained' : 'outlined'}
                   fullWidth
-                  onClick={(e) => {
-                    e.stopPropagation();
+                  onClick={(event) => {
+                    event.stopPropagation();
                     handleSelectPlan(plan);
                   }}
                 >
-                  {isActive ? `✓ ${plan} Selected` : `Select ${plan}`}
+                  {isActive ? `${plan} Selected` : `Select ${plan}`}
                 </Button>
               </CardActions>
             </Card>
           );
         })}
-
-        {/* ── Premium — DISABLED, coming soon ───────────────────────────── */}
-        {/*
-        <Card variant="outlined" sx={{ flex: 1, opacity: 0.4, pointerEvents: 'none' }}>
-          <CardContent>
-            <Typography variant="overline" color="text.secondary">Coming Soon</Typography>
-            <Typography variant="h6" fontWeight={700}>Premium</Typography>
-            <Typography variant="body2" color="text.secondary">
-              Advanced clinic operations with AI, unlimited users, and priority support.
-            </Typography>
-          </CardContent>
-        </Card>
-        */}
       </Stack>
 
-      {/* Proceed button */}
       <Box textAlign="right">
         <Button
           variant="contained"
@@ -237,7 +223,7 @@ export const PlanSelector: FunctionComponent<Props> = ({
           disabled={!selectedPlan || isSubmitting}
           onClick={handleProceed}
         >
-          Continue to Payment →
+          Continue to Payment
         </Button>
       </Box>
     </Box>
