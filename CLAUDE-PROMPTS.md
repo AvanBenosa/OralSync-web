@@ -26,6 +26,7 @@
 ## HOW TO USE THIS FILE
 
 Each prompt has:
+
 - **Purpose** — what it does
 - **When to use** — the situation it's meant for
 - **The Prompt** — copy the block, fill in `{PLACEHOLDERS}`, paste to Claude
@@ -640,35 +641,36 @@ Error message: {PASTE or "none"}
 
 ### Frontend
 
-| Task | File | Reference Pattern |
-|------|------|-------------------|
-| New API call | `features/{x}/api/api.ts` | `GetInventories`, `CreateInventory` |
-| New handler | `features/{x}/api/handlers.ts` | `HandleGetInventories` |
-| New type | `features/{x}/api/types.ts` | `InventoryModel`, `InventoryStateModel` |
-| New Yup validation | `features/{x}/api/validation.ts` | `inventoryValidationSchema` |
-| New form | `features/{x}/index-content/{x}-form.tsx` | Formik + Yup |
-| New table | `features/{x}/index-content/{x}-table.tsx` | MUI Table |
-| New module page | `features/{x}/index.tsx` | `InventoryModule` |
-| New route | `common/routes/routes.tsx` | ClinicRoute + MainLayout |
-| Global state | `common/store/` | Zustand `create()` + `persist()` |
-| Protected file URL | `common/services/api-client.ts` | `loadProtectedAssetObjectUrl()` |
+| Task               | File                                       | Reference Pattern                       |
+| ------------------ | ------------------------------------------ | --------------------------------------- |
+| New API call       | `features/{x}/api/api.ts`                  | `GetInventories`, `CreateInventory`     |
+| New handler        | `features/{x}/api/handlers.ts`             | `HandleGetInventories`                  |
+| New type           | `features/{x}/api/types.ts`                | `InventoryModel`, `InventoryStateModel` |
+| New Yup validation | `features/{x}/api/validation.ts`           | `inventoryValidationSchema`             |
+| New form           | `features/{x}/index-content/{x}-form.tsx`  | Formik + Yup                            |
+| New table          | `features/{x}/index-content/{x}-table.tsx` | MUI Table                               |
+| New module page    | `features/{x}/index.tsx`                   | `InventoryModule`                       |
+| New route          | `common/routes/routes.tsx`                 | ClinicRoute + MainLayout                |
+| Global state       | `common/store/`                            | Zustand `create()` + `persist()`        |
+| Protected file URL | `common/services/api-client.ts`            | `loadProtectedAssetObjectUrl()`         |
 
 ### Backend
 
-| Task | File | Reference Pattern |
-|------|------|-------------------|
-| New entity | `DMD.DOMAIN/Entities/{x}/{x}.cs` | `BaseEntity<int>` |
-| New command | `DMD.APPLICATION/{x}/Commands/{Op}/Command.cs` | `CreateDentalInventoryCommand` |
-| New query | `DMD.APPLICATION/{x}/Queries/Get/Query.cs` | DentalInventories Get pattern |
-| New response model | `DMD.APPLICATION/{x}/Models/{x}Model.cs` | `DentalInventoryModel` |
-| New controller | `DMD/Controllers/{x}/{x}Controller.cs` | `DentalInventoriesController` |
-| New background job | `DMD.HANGFIRE/{x}/` | `AppointmentReminderJob` |
-| DbContext change | `DMD.PERSISTENCE/Context/DmdDbContext.Entities.cs` | DbSet + query filter |
-| Migration | CLI | `dotnet ef migrations add {Name} --project DMD.PERSISTENCE --startup-project DMD` |
+| Task               | File                                               | Reference Pattern                                                                 |
+| ------------------ | -------------------------------------------------- | --------------------------------------------------------------------------------- |
+| New entity         | `DMD.DOMAIN/Entities/{x}/{x}.cs`                   | `BaseEntity<int>`                                                                 |
+| New command        | `DMD.APPLICATION/{x}/Commands/{Op}/Command.cs`     | `CreateDentalInventoryCommand`                                                    |
+| New query          | `DMD.APPLICATION/{x}/Queries/Get/Query.cs`         | DentalInventories Get pattern                                                     |
+| New response model | `DMD.APPLICATION/{x}/Models/{x}Model.cs`           | `DentalInventoryModel`                                                            |
+| New controller     | `DMD/Controllers/{x}/{x}Controller.cs`             | `DentalInventoriesController`                                                     |
+| New background job | `DMD.HANGFIRE/{x}/`                                | `AppointmentReminderJob`                                                          |
+| DbContext change   | `DMD.PERSISTENCE/Context/DmdDbContext.Entities.cs` | DbSet + query filter                                                              |
+| Migration          | CLI                                                | `dotnet ef migrations add {Name} --project DMD.PERSISTENCE --startup-project DMD` |
 
 ### Common Mistakes to Avoid
 
 **Frontend**
+
 - ❌ `setState({ ...state, x })` → ✅ `setState(prev => ({ ...prev, x }))`
 - ❌ `fetch()` → ✅ `apiClient` from `common/services/api-client`
 - ❌ `/storage/...` raw URL → ✅ `resolveProtectedApiAssetUrl(path)`
@@ -676,6 +678,7 @@ Error message: {PASTE or "none"}
 - ❌ `any` type → ✅ Proper TypeScript types
 
 **Backend**
+
 - ❌ `dbContext.Remove(item)` → ✅ `item.IsDeleted = true`
 - ❌ `request.ClinicId` from body → ✅ JWT claim: `FindFirstValue("clinicId")`
 - ❌ `throw new Exception()` in handler → ✅ `return new BadRequestResponse("...")`
@@ -684,4 +687,4 @@ Error message: {PASTE or "none"}
 
 ---
 
-*Last updated: April 2026*
+_Last updated: April 2026_

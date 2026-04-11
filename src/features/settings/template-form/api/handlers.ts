@@ -12,6 +12,36 @@ import {
   TemplateFormStateModel,
 } from './types';
 
+const refreshTemplateForms = async (
+  state: TemplateFormStateModel,
+  setState: Dispatch<SetStateAction<TemplateFormStateModel>>,
+  preferredSelectedItemId?: string | null
+): Promise<void> => {
+  const response = await GetTemplateForms(state.clinicId);
+  const nextItems = (response.items || []).map((item) => ({
+    ...item,
+    type: normalizeTemplateType(item.type),
+  }));
+  const nextSelectedItem =
+    (preferredSelectedItemId
+      ? nextItems.find((item) => item.id === preferredSelectedItemId)
+      : null) ||
+    nextItems.find((item) => item.id === state.selectedItem?.id) ||
+    nextItems[0] ||
+    null;
+
+  setState((prev) => ({
+    ...prev,
+    load: false,
+    items: nextItems,
+    selectedItem: nextSelectedItem,
+    totalItem: response.totalCount || 0,
+    openModal: false,
+    isUpdate: false,
+    isDelete: false,
+  }));
+};
+
 export const HandleGetTemplateForms = async (
   state: TemplateFormStateModel,
   setState: Dispatch<SetStateAction<TemplateFormStateModel>>,
@@ -45,15 +75,8 @@ export const HandleCreateTemplateForm = async (
     type: normalizeTemplateType(response.type ?? request.type),
   };
 
-  setState((prev) => ({
-    ...prev,
-    items: [createdItem, ...prev.items],
-    selectedItem: createdItem,
-    totalItem: prev.totalItem + 1,
-    openModal: false,
-    isUpdate: false,
-    isDelete: false,
-  }));
+  await refreshTemplateForms(state, setState, createdItem.id);
+
   return createdItem;
 };
 
@@ -68,14 +91,8 @@ export const HandleUpdateTemplateForm = async (
     type: normalizeTemplateType(response.type ?? request.type),
   };
 
-  setState((prev) => ({
-    ...prev,
-    items: prev.items.map((item) => (item.id === updatedItem.id ? updatedItem : item)),
-    selectedItem: updatedItem,
-    openModal: false,
-    isUpdate: false,
-    isDelete: false,
-  }));
+  await refreshTemplateForms(state, setState, updatedItem.id);
+
   return updatedItem;
 };
 
@@ -86,19 +103,9 @@ export const HandleDeleteTemplateForm = async (
 ): Promise<void> => {
   await DeleteTemplateForm(id);
 
-  const nextItems = state.items.filter((item) => item.id !== id);
-  const nextSelectedItem =
-    state.selectedItem?.id === id
-      ? nextItems[0] || null
-      : nextItems.find((item) => item.id === state.selectedItem?.id) || nextItems[0] || null;
-
-  setState((prev) => ({
-    ...prev,
-    items: nextItems,
-    selectedItem: nextSelectedItem,
-    totalItem: Math.max(0, prev.totalItem - 1),
-    openModal: false,
-    isUpdate: false,
-    isDelete: false,
-  }));
+  await refreshTemplateForms(
+    state,
+    setState,
+    state.selectedItem?.id && state.selectedItem.id !== id ? state.selectedItem.id : null
+  );
 };

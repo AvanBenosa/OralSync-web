@@ -18,6 +18,8 @@ import { HandleGetClinicUsers } from './create-user/api/handlers';
 import { CreateUserStateModel } from './create-user/api/types';
 import { HandleGetLabProviders } from './lab-provider/api/handlers';
 import { LabProviderStateModel } from './lab-provider/api/types';
+import { HandleGetEmployees } from './employee/api';
+import type { EmployeeStateModel } from './employee/api';
 import { HandleGetTemplateForms } from './template-form/api/handlers';
 import { TemplateFormStateModel } from './template-form/api/types';
 import BuildUp from './index-content/build-up';
@@ -93,9 +95,20 @@ const SettingsModule: FunctionComponent<SettingsProps> = (props: SettingsProps):
     isUpdate: false,
     isDelete: false,
   });
+  const [employeeState, setEmployeeState] = useState<EmployeeStateModel>({
+    items: [],
+    selectedItem: null,
+    load: true,
+    totalItem: 0,
+    clinicId: resolvedClinicId,
+    openModal: false,
+    isUpdate: false,
+    isDelete: false,
+  });
 
   const canManageUsers = useMemo(
-    () => isClinicWideRole(currentUserRole) || currentUserRole.trim().toLowerCase() === 'branchadmin',
+    () =>
+      isClinicWideRole(currentUserRole) || currentUserRole.trim().toLowerCase() === 'branchadmin',
     [currentUserRole]
   );
 
@@ -310,6 +323,35 @@ const SettingsModule: FunctionComponent<SettingsProps> = (props: SettingsProps):
     }
   };
 
+  const loadEmployees = async (showToast: boolean = false): Promise<void> => {
+    setEmployeeState((prev: EmployeeStateModel) => ({
+      ...prev,
+      load: true,
+      clinicId: resolvedClinicId,
+    }));
+
+    try {
+      await HandleGetEmployees(
+        {
+          ...employeeState,
+          load: true,
+          clinicId: resolvedClinicId,
+        },
+        setEmployeeState,
+        resolvedClinicId
+      );
+
+      if (showToast) {
+        toast.info('Employees have been refreshed.', toastConfig);
+      }
+    } catch {
+      setEmployeeState((prev: EmployeeStateModel) => ({
+        ...prev,
+        load: false,
+      }));
+    }
+  };
+
   useEffect(() => {
     setState((prev: ClinicProfileStateModel) => ({
       ...prev,
@@ -335,6 +377,7 @@ const SettingsModule: FunctionComponent<SettingsProps> = (props: SettingsProps):
     if (activeTab === 'build-up') {
       void loadTemplateForms(false);
       void loadLabProviders(false);
+      void loadEmployees(false);
     }
 
     return () => {
@@ -385,6 +428,8 @@ const SettingsModule: FunctionComponent<SettingsProps> = (props: SettingsProps):
                 setTemplateFormState={setTemplateFormState}
                 labProviderState={labProviderState}
                 setLabProviderState={setLabProviderState}
+                employeeState={employeeState}
+                setEmployeeState={setEmployeeState}
               />
             ) : null}
             {activeTab === 'data-mapping' ? <DataConverter /> : null}

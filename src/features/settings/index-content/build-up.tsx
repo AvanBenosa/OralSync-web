@@ -1,26 +1,43 @@
 import ArticleRoundedIcon from '@mui/icons-material/ArticleRounded';
+import BadgeRoundedIcon from '@mui/icons-material/BadgeRounded';
 import BiotechRoundedIcon from '@mui/icons-material/BiotechRounded';
 import EmailRoundedIcon from '@mui/icons-material/EmailRounded';
 import SmsRoundedIcon from '@mui/icons-material/SmsRounded';
 import { Dispatch, FunctionComponent, JSX, SetStateAction, useMemo, useState } from 'react';
 
+import EmployeeManagement from '../employee';
+import type { EmployeeStateModel } from '../employee/api';
 import LabProviderManagement from '../lab-provider';
 import { LabProviderStateModel } from '../lab-provider/api/types';
 import styles from '../style.scss.module.scss';
 import TemplateFormManagement from '../template-form';
 import { TemplateFormStateModel, TemplateType } from '../template-form/api/types';
 
-type BuildUpTabId = 'form-template' | 'email-template' | 'sms-template' | 'lab-providers';
+type BuildUpTabId =
+  | 'form-template'
+  | 'email-template'
+  | 'sms-template'
+  | 'lab-providers'
+  | 'employee';
 
 type BuildUpProps = {
   templateFormState: TemplateFormStateModel;
   setTemplateFormState: Dispatch<SetStateAction<TemplateFormStateModel>>;
   labProviderState: LabProviderStateModel;
   setLabProviderState: Dispatch<SetStateAction<LabProviderStateModel>>;
+  employeeState: EmployeeStateModel;
+  setEmployeeState: Dispatch<SetStateAction<EmployeeStateModel>>;
 };
 
 const BuildUp: FunctionComponent<BuildUpProps> = (props: BuildUpProps): JSX.Element => {
-  const { templateFormState, setTemplateFormState, labProviderState, setLabProviderState } = props;
+  const {
+    templateFormState,
+    setTemplateFormState,
+    labProviderState,
+    setLabProviderState,
+    employeeState,
+    setEmployeeState,
+  } = props;
   const [activeTab, setActiveTab] = useState<BuildUpTabId>('form-template');
 
   const tabs = useMemo(
@@ -44,6 +61,11 @@ const BuildUp: FunctionComponent<BuildUpProps> = (props: BuildUpProps): JSX.Elem
         id: 'lab-providers' as const,
         label: 'Lab Providers',
         icon: <BiotechRoundedIcon />,
+      },
+      {
+        id: 'employee' as const,
+        label: 'Employee',
+        icon: <BadgeRoundedIcon />,
       },
     ],
     []
@@ -99,6 +121,10 @@ const BuildUp: FunctionComponent<BuildUpProps> = (props: BuildUpProps): JSX.Elem
 
       {activeTab === 'lab-providers' ? (
         <LabProviderManagement state={labProviderState} setState={setLabProviderState} />
+      ) : null}
+
+      {activeTab === 'employee' ? (
+        <EmployeeManagement state={employeeState} setState={setEmployeeState} />
       ) : null}
     </>
   );
