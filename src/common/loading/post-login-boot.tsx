@@ -112,8 +112,11 @@ const PostLoginBootScreen: FunctionComponent<PostLoginBootScreenProps> = ({
             src="/OralSync.png"
             alt="OralSync logo"
             sx={{
+              alignSelf: 'center',
+              display: 'block',
               width: { xs: 180, sm: 220 },
               height: 'auto',
+              mx: 'auto',
               objectFit: 'contain',
               filter: 'drop-shadow(0 16px 30px rgba(37, 61, 44, 0.12))',
             }}

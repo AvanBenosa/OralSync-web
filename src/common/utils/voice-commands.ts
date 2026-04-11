@@ -55,6 +55,8 @@ const createPatientLookupState = (search: string): PatientStateModel => ({
   pageStart: 0,
   pageEnd: 10,
   search,
+  sortBy: 'createdAt',
+  sortDirection: 'desc',
   openModal: false,
   isUpdate: false,
   isDelete: false,

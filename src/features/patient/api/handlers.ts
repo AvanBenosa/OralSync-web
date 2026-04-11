@@ -26,14 +26,19 @@ export const HandleCreatePatient = async (
   state: PatientStateModel,
   setState: Function
 ): Promise<void> => {
-  const response = await CreatePatient(request);
-  setState({
+  await CreatePatient(request);
+
+  const requestState: PatientStateModel = {
     ...state,
+    load: true,
     openModal: false,
     selectedItem: undefined,
-    items: [response, ...state.items],
-    totalItem: state.totalItem + 1,
-  });
+    isUpdate: false,
+    isDelete: false,
+  };
+
+  setState(requestState);
+  await HandleGetPatients(requestState, setState, state.clinicProfileId, true);
 };
 
 export const HandleUpdatePatient = async (
@@ -41,21 +46,19 @@ export const HandleUpdatePatient = async (
   state: PatientStateModel,
   setState: Function
 ): Promise<void> => {
-  const response = await UpdatePatient(request);
-  setState({
+  await UpdatePatient(request);
+
+  const requestState: PatientStateModel = {
     ...state,
-    items: state.items.map((item) =>
-      item.id === response.id ||
-      item.id === state.selectedItem?.id ||
-      item.patientNumber === state.selectedItem?.patientNumber
-        ? response
-        : item
-    ),
+    load: true,
     selectedItem: undefined,
     openModal: false,
     isUpdate: false,
     isDelete: false,
-  });
+  };
+
+  setState(requestState);
+  await HandleGetPatients(requestState, setState, state.clinicProfileId, true);
 };
 
 export const HandleDeletePatient = async (
@@ -65,23 +68,17 @@ export const HandleDeletePatient = async (
 ): Promise<void> => {
   await DeletePatient(request);
 
-  setState((prev: PatientStateModel) => {
-    const selectedId = prev.selectedItem?.id ?? request.id;
-    const selectedPatientNumber = prev.selectedItem?.patientNumber ?? request.patientNumber;
+  const requestState: PatientStateModel = {
+    ...state,
+    load: true,
+    openModal: false,
+    isDelete: false,
+    isUpdate: false,
+    selectedItem: undefined,
+  };
 
-    const nextItems = prev.items.filter(
-      (item) =>
-        (selectedId === undefined || item.id !== selectedId) &&
-        (selectedPatientNumber === undefined || item.patientNumber !== selectedPatientNumber)
-    );
-
-    return {
-      ...prev,
-      items: nextItems,
-      openModal: false,
-      totalItem: Math.max(prev.totalItem - 1, 0),
-    };
-  });
+  setState(requestState);
+  await HandleGetPatients(requestState, setState, state.clinicProfileId, true);
 };
 
 export const HandleUploadPatientXlsx = async (

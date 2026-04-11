@@ -55,6 +55,8 @@ export const GetPatients = async (
     query: query || 'all',
     pageStart,
     pageEnd,
+    sortBy: state.sortBy,
+    sortDirection: state.sortDirection,
   });
 
   if (forceRefresh) {
@@ -80,6 +82,8 @@ export const GetPatients = async (
           Que: query || 'all',
           pageStart,
           pageEnd,
+          SortBy: state.sortBy,
+          SortDirection: state.sortDirection,
         },
       });
 

@@ -21,13 +21,20 @@ export const HandleUpdateClinicLockItem = async (
   setState: Function
 ): Promise<AdminClinicModel> => {
   const response = await updateClinicLockStatus(request);
+  const items = await getAdminClinics(true);
+  const selectedItem =
+    items.find((item) => item.id === request.clinicId || item.id === response.id) || response;
+
   setState((prev: ClinicLockStateModel) => ({
     ...prev,
-    items: prev.items.map((item) => (item.id === response.id ? response : item)),
-    selectedItem: undefined,
+    items,
+    selectedItem,
+    load: false,
+    error: '',
     openModal: false,
     isUpdate: false,
     isHistory: false,
+    isManualPayments: false,
   }));
   return response;
 };

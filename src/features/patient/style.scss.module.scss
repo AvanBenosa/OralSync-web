@@ -200,6 +200,12 @@
   flex: 0 0 36px;
 }
 
+.sortButtonActive {
+  border-color: #7da6d1;
+  background: linear-gradient(180deg, #e8f2fc 0%, #d7e7f7 100%);
+  box-shadow: 0 10px 20px rgba(62, 98, 141, 0.16);
+}
+
 .reloadIcon {
   font-size: 18px !important;
 }
@@ -563,6 +569,128 @@
   text-align: center;
 }
 
+.filterPopoverPaper {
+  width: min(360px, calc(100vw - 24px));
+  border: 1px solid rgba(196, 210, 224, 0.92);
+  border-radius: 18px !important;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(243, 248, 252, 0.99));
+  box-shadow: 0 20px 40px rgba(28, 56, 86, 0.14) !important;
+}
+
+.filterPopoverBody {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px;
+}
+
+.filterPopoverHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.filterPopoverTitle {
+  margin: 0;
+  color: #143a63;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.filterPopoverSubtitle {
+  margin: 0;
+  color: #688199;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.filterSection {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.filterSectionTitle {
+  color: #46627e;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.filterOptionGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.filterOptionButton {
+  min-height: 40px;
+  padding: 0 12px;
+  border: 1px solid rgba(206, 218, 229, 0.95);
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(251, 253, 255, 0.98), rgba(242, 247, 251, 0.98));
+  color: #355b80;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 120ms ease, box-shadow 120ms ease, border-color 120ms ease,
+    background 120ms ease;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 20px rgba(62, 98, 141, 0.12);
+  }
+}
+
+.filterOptionButtonActive {
+  border-color: #78a2cd;
+  background: linear-gradient(180deg, #edf5fd 0%, #dcebf9 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 10px 20px rgba(62, 98, 141, 0.14);
+  color: #1f4f80;
+}
+
+.filterPopoverActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.filterSecondaryButton,
+.filterPrimaryButton {
+  min-height: 36px;
+  padding: 0 14px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 120ms ease, box-shadow 120ms ease, opacity 120ms ease;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-1px);
+  }
+
+  &:disabled {
+    cursor: default;
+    opacity: 0.55;
+    transform: none;
+  }
+}
+
+.filterSecondaryButton {
+  border: 1px solid rgba(196, 210, 224, 0.95);
+  background: linear-gradient(180deg, rgba(252, 253, 255, 0.98), rgba(242, 247, 251, 0.98));
+  color: #46627e;
+}
+
+.filterPrimaryButton {
+  border: 1px solid #284c8f;
+  background: linear-gradient(180deg, #2d58a6 0%, #1f4385 100%);
+  box-shadow: 0 10px 20px rgba(39, 78, 152, 0.2);
+  color: #ffffff;
+}
+
 // ── Tablet (≤1280px): wrap into 2 rows ───────────────────────────────────────
 // Row 1 full-width: title+badge
 // Row 2 full-width: search input | icon buttons | pill buttons
@@ -836,6 +964,10 @@
     gap: 8px;
     padding: 24px 16px;
     border-radius: 16px;
+  }
+
+  .filterOptionGrid {
+    grid-template-columns: 1fr;
   }
 
   .emptyStateIcon {

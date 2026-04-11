@@ -1,18 +1,68 @@
-import React, { FunctionComponent, JSX } from 'react';
+import React, { FunctionComponent, JSX, MouseEvent, useEffect, useState } from 'react';
 import PeopleIcon from '@mui/icons-material/People';
 import AddIcon from '@mui/icons-material/Add';
 import DownloadOutlinedIcon from '@mui/icons-material/DownloadOutlined';
 import FileUploadOutlinedIcon from '@mui/icons-material/FileUploadOutlined';
 import RefreshRoundedIcon from '@mui/icons-material/RefreshRounded';
+import SortRoundedIcon from '@mui/icons-material/SortRounded';
+import { Popover } from '@mui/material';
 
 import styles from '../style.scss.module.scss';
 import { downloadPatientImportTemplate } from '../api/import-template';
-import { PatientStateProps } from '../api/types';
+import { PatientSortDirection, PatientSortField, PatientStateProps } from '../api/types';
 
 const PatientHeader: FunctionComponent<PatientStateProps> = (
   props: PatientStateProps
 ): JSX.Element => {
   const { state, setState, onReload } = props;
+  const [sortAnchorEl, setSortAnchorEl] = useState<HTMLButtonElement | null>(null);
+  const [draftSortBy, setDraftSortBy] = useState<PatientSortField>(state.sortBy);
+  const [draftSortDirection, setDraftSortDirection] = useState<PatientSortDirection>(
+    state.sortDirection
+  );
+  const isSortPopoverOpen = Boolean(sortAnchorEl);
+  const hasCustomSort = state.sortBy !== 'createdAt' || state.sortDirection !== 'desc';
+
+  useEffect(() => {
+    if (isSortPopoverOpen) {
+      return;
+    }
+
+    setDraftSortBy(state.sortBy);
+    setDraftSortDirection(state.sortDirection);
+  }, [state.sortBy, state.sortDirection, isSortPopoverOpen]);
+
+  const handleOpenSortPopover = (event: MouseEvent<HTMLButtonElement>): void => {
+    setDraftSortBy(state.sortBy);
+    setDraftSortDirection(state.sortDirection);
+    setSortAnchorEl(event.currentTarget);
+  };
+
+  const handleCloseSortPopover = (): void => {
+    setSortAnchorEl(null);
+  };
+
+  const handleApplySort = (): void => {
+    setState({
+      ...state,
+      sortBy: draftSortBy,
+      sortDirection: draftSortDirection,
+      pageStart: 0,
+    });
+    handleCloseSortPopover();
+  };
+
+  const handleResetSort = (): void => {
+    setDraftSortBy('createdAt');
+    setDraftSortDirection('desc');
+    setState({
+      ...state,
+      sortBy: 'createdAt',
+      sortDirection: 'desc',
+      pageStart: 0,
+    });
+    handleCloseSortPopover();
+  };
 
   return (
     <div className={styles.listHeader}>
@@ -49,6 +99,20 @@ const PatientHeader: FunctionComponent<PatientStateProps> = (
               })
             }
           />
+          <button
+            type="button"
+            className={`${styles.reloadButton} ${styles.inlineReloadButton} ${
+              hasCustomSort ? styles.sortButtonActive : ''
+            }`}
+            onClick={handleOpenSortPopover}
+            disabled={state.load}
+            title="Sort patients"
+            aria-label="Sort patients"
+            aria-haspopup="dialog"
+            aria-expanded={isSortPopoverOpen}
+          >
+            <SortRoundedIcon className={styles.reloadIcon} />
+          </button>
           <button
             type="button"
             className={`${styles.reloadButton} ${styles.inlineReloadButton}`}
@@ -112,6 +176,100 @@ const PatientHeader: FunctionComponent<PatientStateProps> = (
         </div>
 
       </div>
+
+      <Popover
+        open={isSortPopoverOpen}
+        anchorEl={sortAnchorEl}
+        onClose={handleCloseSortPopover}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+        PaperProps={{
+          className: styles.filterPopoverPaper,
+        }}
+      >
+        <div className={styles.filterPopoverBody}>
+          <div className={styles.filterPopoverHeader}>
+            <h3 className={styles.filterPopoverTitle}>Sort Patients</h3>
+            <p className={styles.filterPopoverSubtitle}>
+              Choose how patient records are ordered in this list.
+            </p>
+          </div>
+
+          <div className={styles.filterSection}>
+            <span className={styles.filterSectionTitle}>Sort by</span>
+            <div className={styles.filterOptionGrid}>
+              <button
+                type="button"
+                className={`${styles.filterOptionButton} ${
+                  draftSortBy === 'lastName' ? styles.filterOptionButtonActive : ''
+                }`}
+                onClick={(): void => {
+                  setDraftSortBy('lastName');
+                }}
+              >
+                Last Name
+              </button>
+              <button
+                type="button"
+                className={`${styles.filterOptionButton} ${
+                  draftSortBy === 'createdAt' ? styles.filterOptionButtonActive : ''
+                }`}
+                onClick={(): void => {
+                  setDraftSortBy('createdAt');
+                }}
+              >
+                Date Created
+              </button>
+            </div>
+          </div>
+
+          <div className={styles.filterSection}>
+            <span className={styles.filterSectionTitle}>Direction</span>
+            <div className={styles.filterOptionGrid}>
+              <button
+                type="button"
+                className={`${styles.filterOptionButton} ${
+                  draftSortDirection === 'asc' ? styles.filterOptionButtonActive : ''
+                }`}
+                onClick={(): void => {
+                  setDraftSortDirection('asc');
+                }}
+              >
+                Ascending
+              </button>
+              <button
+                type="button"
+                className={`${styles.filterOptionButton} ${
+                  draftSortDirection === 'desc' ? styles.filterOptionButtonActive : ''
+                }`}
+                onClick={(): void => {
+                  setDraftSortDirection('desc');
+                }}
+              >
+                Descending
+              </button>
+            </div>
+          </div>
+
+          <div className={styles.filterPopoverActions}>
+            <button
+              type="button"
+              className={styles.filterSecondaryButton}
+              onClick={handleResetSort}
+              disabled={state.sortBy === 'createdAt' && state.sortDirection === 'desc'}
+            >
+              Reset
+            </button>
+            <button
+              type="button"
+              className={styles.filterPrimaryButton}
+              onClick={handleApplySort}
+            >
+              Apply
+            </button>
+          </div>
+        </div>
+      </Popover>
     </div>
   );
 };

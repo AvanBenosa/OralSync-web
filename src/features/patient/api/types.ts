@@ -35,6 +35,10 @@ export type PatientUploadResultModel = {
   errors: string[];
 };
 
+export type PatientSortField = 'createdAt' | 'lastName';
+
+export type PatientSortDirection = 'asc' | 'desc';
+
 export type PatientStateModel = {
   items: PatientModel[];
   load: boolean;
@@ -43,6 +47,8 @@ export type PatientStateModel = {
   pageStart: number;
   pageEnd: number;
   search?: string;
+  sortBy: PatientSortField;
+  sortDirection: PatientSortDirection;
 
   openModal: boolean;
   isUpdate: boolean;

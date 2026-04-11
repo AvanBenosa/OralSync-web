@@ -34,6 +34,8 @@ export const PatientModule: FunctionComponent<PatientProps> = (
     pageStart: 0,
     pageEnd: 25,
     totalItem: 0,
+    sortBy: 'createdAt',
+    sortDirection: 'desc',
     clinicProfileId: resolvedClinicId,
   });
 
@@ -136,7 +138,7 @@ export const PatientModule: FunctionComponent<PatientProps> = (
     };
     // Sync when clinic context, server search, or page offset changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [resolvedClinicId, activeBranchId, state.search, state.pageStart, state.pageEnd]);
+  }, [resolvedClinicId, activeBranchId, state.search, state.pageStart, state.pageEnd, state.sortBy, state.sortDirection]);
 
   const handleCloseDialog = (): void => {
     setState((prev: PatientStateModel) => ({

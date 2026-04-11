@@ -84,6 +84,8 @@ export const PatientList: FunctionComponent<PatientListProps> = (props): JSX.Ele
             pageStart: 0,
             pageEnd: 500,
             totalItem: 0,
+            sortBy: 'createdAt',
+            sortDirection: 'desc',
           },
           clinicId,
           forceRefresh
