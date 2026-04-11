@@ -37,7 +37,7 @@ const InventoryHeader: FunctionComponent<InventoryStateProps> = (
       </div>
 
       <div className={styles.headerActions}>
-        <div className={styles.searchForm}>
+        <div className={styles.searchRow}>
           <input
             className={styles.searchInput}
             type="text"
@@ -51,38 +51,37 @@ const InventoryHeader: FunctionComponent<InventoryStateProps> = (
               })
             }
           />
-          <div className={styles.headerActionControls}>
-            <button
-              type="button"
-              className={styles.reloadButton}
-              onClick={(): void => onReload?.()}
-              disabled={state.load}
-              title="Reload inventory records"
-              aria-label="Reload inventory records"
-            >
-              <RefreshRoundedIcon className={styles.reloadIcon} />
-            </button>
-            <div className={styles.buttonContainer}>
-              <button
-                title="Add inventory item"
-                type="button"
-                className={`${styles.actionPillButton} ${styles.addInventoryButton}`}
-                aria-label="Add inventory item"
-                onClick={(): void => {
-                  setState({
-                    ...state,
-                    openModal: true,
-                    isDelete: false,
-                    isUpdate: false,
-                    selectedItem: undefined,
-                  });
-                }}
-              >
-                <AddRoundedIcon className={styles.pillActionIcon} />
-                <span>Add Item</span>
-              </button>
-            </div>
-          </div>
+          <button
+            type="button"
+            className={`${styles.reloadButton} ${styles.inlineReloadButton}`}
+            onClick={(): void => onReload?.()}
+            disabled={state.load}
+            title="Reload inventory records"
+            aria-label="Reload inventory records"
+          >
+            <RefreshRoundedIcon className={styles.reloadIcon} />
+          </button>
+        </div>
+
+        <div className={styles.actionRow}>
+          <button
+            title="Add inventory item"
+            type="button"
+            className={`${styles.actionPillButton} ${styles.addInventoryButton}`}
+            aria-label="Add inventory item"
+            onClick={(): void => {
+              setState({
+                ...state,
+                openModal: true,
+                isDelete: false,
+                isUpdate: false,
+                selectedItem: undefined,
+              });
+            }}
+          >
+            <AddRoundedIcon className={styles.pillActionIcon} />
+            <span>Add Item</span>
+          </button>
         </div>
       </div>
     </div>

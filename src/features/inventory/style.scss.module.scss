@@ -140,15 +140,35 @@
 }
 
 .headerActions {
+  position: relative;
+  z-index: 1;
+  display: flex;
   justify-content: flex-end;
   flex: 1 1 0;
   min-width: 0;
+  gap: 10px;
 }
 
 .searchForm {
   gap: 10px;
   width: 100%;
   justify-content: flex-end;
+}
+
+.searchRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1 1 auto;
+  min-width: 0;
+  justify-content: flex-end;
+}
+
+.actionRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
 }
 
 .searchInput {
@@ -194,6 +214,13 @@
   border-radius: 12px;
   background: linear-gradient(180deg, #f2f7fc 0%, #dfeaf5 100%);
   color: #2f6db3;
+}
+
+.inlineReloadButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 38px;
 }
 
 .reloadIcon,
@@ -318,11 +345,13 @@
 }
 
 .mobileRowInline {
+  align-items: flex-start;
   justify-content: space-between;
   gap: 10px;
 }
 
 .mobileMain {
+  flex: 1 1 auto;
   min-width: 0;
   display: flex;
   flex-direction: column;
@@ -331,19 +360,22 @@
 
 .mobileMeta {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
 }
 
 .mobileName {
   color: #1f4467 !important;
   font-size: 16px !important;
   font-weight: 700 !important;
+  line-height: 1.2 !important;
 }
 
 .mobileContact {
   color: #6f8297 !important;
   font-size: 12px !important;
+  line-height: 1.2 !important;
 }
 
 .emptyState {
@@ -435,20 +467,29 @@
     padding: 14px;
   }
 
-  .searchInput {
-    width: 100%;
-    min-width: 0;
+  .headerInfo {
+    flex: 1 1 100%;
   }
 
-  .headerActions,
-  .buttonContainer {
-    width: 100%;
+  .headerActions {
+    flex: 1 1 100%;
     justify-content: flex-start;
   }
 
-  .actionPillButton {
+  .searchRow {
+    flex: 1 1 auto;
+    justify-content: flex-start;
+  }
+
+  .searchInput {
+    flex: 1 1 auto;
+    width: auto;
+    max-width: 360px;
     min-width: 0;
-    flex: 1;
+  }
+
+  .actionRow {
+    flex: 0 0 auto;
   }
 
   .legendGroup {
@@ -462,18 +503,35 @@
 }
 
 @media (max-width: 900px) {
-  .searchForm {
-    flex-direction: column;
+  .listHeader {
+    flex-wrap: wrap;
     align-items: stretch;
+    gap: 12px;
   }
 
-  .listHeader,
-  .headerActions,
-  .headerActionControls,
-  .buttonContainer,
-  .actionPillButton,
+  .headerInfo {
+    flex: 1 1 100%;
+  }
+
+  .headerActions {
+    flex: 1 1 100%;
+    justify-content: flex-start;
+  }
+
+  .searchRow {
+    flex: 1 1 auto;
+    justify-content: flex-start;
+  }
+
   .searchInput {
-    width: 100%;
+    flex: 1 1 auto;
+    width: auto;
+    max-width: 360px;
+    min-width: 0;
+  }
+
+  .actionRow {
+    flex: 0 0 auto;
   }
 
   .legendItem {
@@ -487,8 +545,232 @@
     padding: 68px 12px 72px;
   }
 
+  .listHeader {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    padding: 14px;
+    border-radius: 18px;
+  }
+
+  .headerInfo {
+    flex: unset;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .headerIcon {
+    width: 40px;
+    height: 40px;
+    flex: 0 0 40px;
+    border-radius: 12px;
+  }
+
+  .headerIconSvg {
+    font-size: 20px !important;
+  }
+
+  .headerTitle {
+    font-size: 17px;
+  }
+
+  .headerTitleRow {
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .headerActions {
+    flex: unset;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .searchRow {
+    flex: unset;
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    justify-content: flex-start;
+  }
+
+  .searchInput {
+    flex: 1 1 auto;
+    width: auto;
+    max-width: none;
+    height: 40px;
+    min-width: 0;
+  }
+
+  .inlineReloadButton {
+    flex: 0 0 40px;
+    width: 40px;
+    height: 40px;
+  }
+
+  .reloadButton {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+  }
+
+  .actionRow {
+    flex: unset;
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .actionPillButton {
+    flex: 1 1 0;
+    min-width: 0;
+    height: 42px;
+    padding: 0 12px;
+    font-size: 13px;
+    border-radius: 12px;
+    justify-content: center;
+  }
+
+  .pillActionIcon {
+    font-size: 17px !important;
+  }
+
   .listItem {
-    max-height: calc(100vh - 190px);
+    max-height: calc(100vh - 220px);
     padding: 10px;
+  }
+
+  .paginationArea {
+    padding-top: 10px;
+  }
+
+  .tableSurface {
+    border-radius: 16px !important;
+  }
+
+  .tableHeaderCell,
+  .tableBodyCell {
+    padding: 12px 14px !important;
+  }
+
+  .mobileActions {
+    display: flex;
+    justify-content: flex-end;
+    flex: 0 0 auto;
+  }
+
+  .mobileActions .buttonContainer {
+    width: auto;
+    gap: 6px;
+  }
+
+  .mobileActions .tableActionButton {
+    width: 34px;
+    min-width: 34px;
+    height: 34px;
+    border-radius: 10px;
+  }
+
+  .mobileActions .iconEdit,
+  .mobileActions .iconDelete {
+    font-size: 16px !important;
+  }
+}
+
+@media (max-width: 420px) {
+  .wrapper {
+    padding: 68px 10px 72px;
+  }
+
+  .listHeader {
+    padding: 12px;
+    gap: 8px;
+  }
+
+  .headerTitle {
+    font-size: 15px;
+  }
+
+  .headerBadge {
+    min-height: 22px;
+    padding: 0 8px;
+    font-size: 9px;
+  }
+
+  .searchInput {
+    height: 38px;
+    font-size: 13px;
+    padding: 0 10px;
+  }
+
+  .reloadButton {
+    width: 38px;
+    height: 38px;
+  }
+
+  .inlineReloadButton {
+    flex: 0 0 38px;
+    width: 38px;
+    height: 38px;
+  }
+
+  .actionPillButton {
+    height: 38px;
+    font-size: 12px;
+    padding: 0 10px;
+    gap: 5px;
+    border-radius: 10px;
+  }
+
+  .pillActionIcon {
+    font-size: 16px !important;
+  }
+
+  .listItem {
+    max-height: calc(100vh - 230px);
+    padding: 8px;
+  }
+
+  .paginationArea {
+    padding-top: 8px;
+  }
+
+  .tableHeaderCell {
+    padding: 12px !important;
+  }
+
+  .tableBodyCell {
+    padding: 10px 12px !important;
+  }
+
+  .mobileName {
+    font-size: 14px !important;
+  }
+
+  .emptyState {
+    gap: 8px;
+    padding: 24px 16px;
+    border-radius: 16px;
+  }
+
+  .emptyStateIcon {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+  }
+
+  .emptyStateTitle {
+    font-size: 16px !important;
+  }
+
+  .emptyStateText {
+    font-size: 13px !important;
+    line-height: 1.5 !important;
   }
 }
