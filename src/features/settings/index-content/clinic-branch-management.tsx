@@ -439,6 +439,7 @@ const ClinicBranchManagement: FunctionComponent<ClinicBranchManagementProps> = (
           </div>
           {!isAssignedBranchMode && hasPremiumSubscription ? (
             <Button
+              disabled
               type="button"
               variant="contained"
               startIcon={<AddRoundedIcon />}

@@ -3,7 +3,8 @@ import BadgeRoundedIcon from '@mui/icons-material/BadgeRounded';
 import BiotechRoundedIcon from '@mui/icons-material/BiotechRounded';
 import EmailRoundedIcon from '@mui/icons-material/EmailRounded';
 import SmsRoundedIcon from '@mui/icons-material/SmsRounded';
-import { Dispatch, FunctionComponent, JSX, SetStateAction, useMemo, useState } from 'react';
+import { Dispatch, FunctionComponent, JSX, SetStateAction, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 
 import EmployeeManagement from '../employee';
 import type { EmployeeStateModel } from '../employee/api';
@@ -38,7 +39,7 @@ const BuildUp: FunctionComponent<BuildUpProps> = (props: BuildUpProps): JSX.Elem
     employeeState,
     setEmployeeState,
   } = props;
-  const [activeTab, setActiveTab] = useState<BuildUpTabId>('form-template');
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const tabs = useMemo(
     () => [
@@ -71,6 +72,19 @@ const BuildUp: FunctionComponent<BuildUpProps> = (props: BuildUpProps): JSX.Elem
     []
   );
 
+  const validTabs = tabs.map((tab) => tab.id);
+  const defaultTab: BuildUpTabId = 'form-template';
+  const tabFromQuery = searchParams.get('buildUpTab') || '';
+  const activeTab = validTabs.includes(tabFromQuery as BuildUpTabId)
+    ? (tabFromQuery as BuildUpTabId)
+    : defaultTab;
+
+  const handleTabChange = (tabId: BuildUpTabId): void => {
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.set('buildUpTab', tabId);
+    setSearchParams(nextParams);
+  };
+
   return (
     <>
       <section className={styles.converterTabsSection}>
@@ -84,7 +98,7 @@ const BuildUp: FunctionComponent<BuildUpProps> = (props: BuildUpProps): JSX.Elem
               className={`${styles.tabButton} ${
                 activeTab === tab.id ? styles.tabButtonActive : ''
               }`}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => handleTabChange(tab.id)}
             >
               <span className={styles.tabButtonIcon} aria-hidden="true">
                 {tab.icon}
