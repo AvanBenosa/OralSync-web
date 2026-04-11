@@ -120,15 +120,27 @@
   border: 1px solid #95b9d8;
   background: linear-gradient(180deg, #3e7eb9 0%, #2c69a1 100%);
   color: #ffffff;
-  border-radius: 10px;
-  min-height: 25px;
-  padding: 0 12px;
+  border-radius: 12px;
+  min-height: 36px;
+  padding: 0 16px;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  font-size: 12px;
+  gap: 8px;
+  font-size: 13px;
   font-weight: 700;
   cursor: pointer;
+  box-shadow: 0 10px 20px rgba(46, 108, 166, 0.18);
+  transition: transform 120ms ease, box-shadow 120ms ease, filter 120ms ease;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 14px 28px rgba(46, 108, 166, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.22);
+  }
+
+  &:active {
+    transform: translateY(0);
+    filter: saturate(0.96);
+  }
 }
 
 .reloadButton {
@@ -568,6 +580,7 @@
   .addButton {
     width: 100%;
     justify-content: center;
+    min-height: 40px;
   }
 
   .tabReloadButton {

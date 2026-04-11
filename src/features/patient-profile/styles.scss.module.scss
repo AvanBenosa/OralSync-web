@@ -52,12 +52,13 @@
 .tabList {
   display: inline-flex;
   flex-wrap: wrap;
-  gap: 2px;
+  gap: 4px;
   border: 1px solid rgba(207, 220, 231, 0.92);
-  border-radius: 14px;
-  padding: 4px;
+  border-radius: 16px;
+  padding: 6px;
   background: rgba(246, 250, 253, 0.9);
   max-width: 100%;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.92);
 }
 
 .tabButton {
@@ -65,14 +66,22 @@
   background: transparent;
   color: #46627e;
   font-size: 14px;
-  font-weight: 600;
-  padding: 8px 10px;
-  border-radius: 8px;
+  font-weight: 700;
+  min-height: 40px;
+  padding: 0 14px;
+  border-radius: 12px;
   cursor: pointer;
   flex: 0 0 auto;
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  line-height: 1;
+  transition: background-color 120ms ease, color 120ms ease, transform 120ms ease;
+
+  &:hover {
+    transform: translateY(-1px);
+    background: rgba(48, 113, 174, 0.08);
+  }
 }
 
 .tabButtonActive {
@@ -81,17 +90,17 @@
 }
 
 .tabButtonIcon {
-  width: 26px;
-  height: 26px;
+  width: 28px;
+  height: 28px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 9px;
+  border-radius: 10px;
   background: rgba(47, 109, 179, 0.1);
   flex: 0 0 auto;
 
   svg {
-    font-size: 16px !important;
+    font-size: 17px !important;
   }
 }
 
@@ -639,6 +648,8 @@
 
   .tabButton {
     font-size: 13px;
+    min-height: 38px;
+    padding: 0 12px;
   }
 
   .profileTag {
@@ -667,6 +678,22 @@
   .backButton {
     min-height: 34px;
     font-size: 11px;
+  }
+
+  .tabList {
+    padding: 5px;
+    border-radius: 14px;
+  }
+
+  .tabButton {
+    min-height: 36px;
+    padding: 0 11px;
+    border-radius: 10px;
+  }
+
+  .tabButtonIcon {
+    width: 26px;
+    height: 26px;
   }
 
   .maintenancePanel {
