@@ -123,7 +123,7 @@ const PatientTable: FunctionComponent<PatientStateProps> = (
             {!isMobile ? (
               <>
                 <TableCell className={styles.tableHeaderCell}>Patient No.</TableCell>
-                <TableCell className={styles.tableHeaderCell}>Contact No.</TableCell>
+                <TableCell className={styles.tableHeaderCell}>Email Address</TableCell>
                 <TableCell className={styles.tableHeaderCell}>Birth Date</TableCell>
                 <TableCell className={styles.tableHeaderCell} align="right"></TableCell>
               </>
@@ -202,13 +202,18 @@ const PatientTable: FunctionComponent<PatientStateProps> = (
                       <div className={styles.mobileActions}>{renderActionButtons(item)}</div>
                     </div>
                   ) : (
-                    <button
-                      type="button"
-                      className={styles.nameButton}
-                      onClick={(): void => handleOpenPatientProfile(item)}
-                    >
-                      <HighlightText query={state.search} text={formatPatientName(item)} />
-                    </button>
+                    <div className={styles.nameCellStack}>
+                      <button
+                        type="button"
+                        className={styles.nameButton}
+                        onClick={(): void => handleOpenPatientProfile(item)}
+                      >
+                        <HighlightText query={state.search} text={formatPatientName(item)} />
+                      </button>
+                      <Typography component="span" className={styles.nameSecondaryText}>
+                        {item.contactNumber || '--'}
+                      </Typography>
+                    </div>
                   )}
                 </TableCell>
                 {!isMobile ? (
@@ -217,7 +222,7 @@ const PatientTable: FunctionComponent<PatientStateProps> = (
                       {item.patientNumber || '--'}
                     </TableCell>
                     <TableCell className={styles.tableBodyCell}>
-                      {item.contactNumber || '--'}
+                      {item.emailAddress || '--'}
                     </TableCell>
                     <TableCell className={styles.tableBodyCell}>
                       {formatBirthDate(item.birthDate)}

@@ -29,11 +29,10 @@ import { Odontogram, ToothConditionGroup } from 'react-odontogram';
 
 import { PatientModel } from '../../patient/api/types';
 import PatientList from '../../PatientList';
-import { GetClinicUsers } from '../../settings/create-user/api/api';
-import { SettingsUserModel } from '../../settings/create-user/api/types';
+import { GetEmployees } from '../../settings/employee/api/api';
+import { EmployeeModel, EmployeeRole } from '../../settings/employee/api/types';
 import { GetLabProviders } from '../../settings/lab-provider/api/api';
 import { LabProviderModel } from '../../settings/lab-provider/api/types';
-import { RegisterUserRole } from '../../register/api/types';
 import {
   isProtectedStoragePath,
   loadProtectedAssetObjectUrl,
@@ -145,12 +144,12 @@ const buildPatientName = (patient?: PatientModel | null): string => {
   return lastName || givenNames || patient.patientNumber || '';
 };
 
-const buildDentistLabel = (item?: SettingsUserModel | null): string => {
+const buildDentistLabel = (item?: EmployeeModel | null): string => {
   if (!item) {
     return '';
   }
 
-  const displayName = [item.firstName, item.lastName]
+  const displayName = [item.firstName, item.middleName, item.lastName]
     .map((value) => value?.trim())
     .filter(Boolean)
     .join(' ');
@@ -159,7 +158,7 @@ const buildDentistLabel = (item?: SettingsUserModel | null): string => {
     return `Dr. ${displayName}`;
   }
 
-  return item.userName || item.emailAddress || 'Unnamed dentist';
+  return item.emailAddress || 'Unnamed dentist';
 };
 
 const resolveChartKind = (birthDate?: string | Date): DentalChartKind => {
@@ -581,11 +580,9 @@ const DentalLabCasesFormV2: FunctionComponent<DentalLabCaseStateProps> = (
       try {
         setLoadDentists(true);
         setDentistLoadError('');
-        const response = await GetClinicUsers(state.clinicProfileId);
+        const response = await GetEmployees(state.clinicProfileId);
         const dentistItems = (response.items || [])
-          .filter(
-            (item) => item.id && item.role === RegisterUserRole.Dentist && item.isActive !== false
-          )
+          .filter((item) => item.id && item.role === EmployeeRole.Doctor)
           .map((item) => ({
             id: item.id || '',
             label: buildDentistLabel(item),
@@ -594,7 +591,7 @@ const DentalLabCasesFormV2: FunctionComponent<DentalLabCaseStateProps> = (
 
         setDentists(dentistItems);
       } catch {
-        setDentistLoadError('Unable to load dentist users.');
+        setDentistLoadError('Unable to load doctor employees.');
       } finally {
         setLoadDentists(false);
       }
@@ -1010,14 +1007,20 @@ const DentalLabCasesFormV2: FunctionComponent<DentalLabCaseStateProps> = (
                           color="inherit"
                           size="small"
                           endIcon={<OpenInNewRoundedIcon fontSize="small" />}
-                          onClick={() => window.open('/settings', '_blank', 'noopener,noreferrer')}
+                          onClick={() =>
+                            window.open(
+                              '/settings?tab=build-up&buildUpTab=employee',
+                              '_blank',
+                              'noopener,noreferrer'
+                            )
+                          }
                         >
                           Open Settings
                         </Button>
                       }
                     >
-                      No dentist users are available yet. Create a dentist user in Settings before
-                      saving a lab case.
+                      No doctor employees are available yet. Add a doctor in Settings &gt; Build
+                      Up &gt; Employee before saving a lab case.
                     </Alert>
                   ) : null}
 

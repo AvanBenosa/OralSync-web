@@ -28,8 +28,8 @@ import {
   HandleUpdatePatientProgressNoteItem,
 } from '../api/handlers';
 import { progressNoteValidationSchema } from '../api/validation';
-import { GetClinicUsers } from '../../../settings/create-user/api/api';
-import { SettingsUserModel } from '../../../settings/create-user/api/types';
+import { GetEmployees } from '../../../settings/employee/api/api';
+import { EmployeeModel, EmployeeRole } from '../../../settings/employee/api/types';
 
 type PatientProgressNoteFormProps = PatientProgressNoteStateProps & {
   patientLabel?: string;
@@ -52,6 +52,11 @@ type PatientProgressNoteFormValues = {
   totalAmountDue: number | '';
   amountPaid: number | '';
   balance: number | '';
+};
+
+type DoctorOption = {
+  label: string;
+  value: string;
 };
 
 const toDateInputValue = (value?: string | Date): string => {
@@ -142,36 +147,75 @@ const getComputedBalance = (
   return (totalAmountDue === '' ? 0 : totalAmountDue) - (amountPaid === '' ? 0 : amountPaid);
 };
 
+const buildDoctorName = (employee?: EmployeeModel | null): string =>
+  [employee?.firstName, employee?.middleName, employee?.lastName]
+    .map((value) => value?.trim())
+    .filter(Boolean)
+    .join(' ');
+
+const buildDoctorOption = (employee?: EmployeeModel | null): DoctorOption | null => {
+  if (!employee) {
+    return null;
+  }
+
+  const doctorName = buildDoctorName(employee);
+  const doctorValue = doctorName || employee.emailAddress?.trim() || '';
+
+  if (!doctorValue) {
+    return null;
+  }
+
+  return {
+    value: doctorValue,
+    label: doctorName ? `Dr. ${doctorName}` : employee.emailAddress?.trim() || 'Unnamed doctor',
+  };
+};
+
 const PatientProgressNoteForm: FunctionComponent<PatientProgressNoteFormProps> = (
   props: PatientProgressNoteFormProps
 ): JSX.Element => {
   const { state, setState, patientLabel } = props;
-  const [doctorOptions, setDoctorOptions] = useState<SettingsUserModel[]>([]);
+  const [doctorOptions, setDoctorOptions] = useState<DoctorOption[]>([]);
 
   const dialogTitle = useMemo(
     () => (state.isUpdate ? 'Update Progress Note' : 'Add Progress Note'),
     [state.isUpdate]
   );
 
+  const mergedDoctorOptions = useMemo(() => {
+    const selectedDoctor = state.selectedItem?.assignedDoctor?.trim();
+    if (!selectedDoctor) {
+      return doctorOptions;
+    }
+
+    if (doctorOptions.some((option) => option.value === selectedDoctor)) {
+      return doctorOptions;
+    }
+
+    return [
+      {
+        value: selectedDoctor,
+        label: selectedDoctor.startsWith('Dr.') ? selectedDoctor : `Dr. ${selectedDoctor}`,
+      },
+      ...doctorOptions,
+    ];
+  }, [doctorOptions, state.selectedItem?.assignedDoctor]);
+
   useEffect(() => {
     let isMounted = true;
 
-    void GetClinicUsers()
+    void GetEmployees()
       .then((response) => {
         if (!isMounted) {
           return;
         }
 
-        const filteredUsers = (response.items || []).filter((item) => {
-          const normalizedUserName = (item.userName || '').trim().toLowerCase();
-          const normalizedEmail = (item.emailAddress || '').trim().toLowerCase();
-          const isBootstrapSeed =
-            normalizedUserName === 'admin@email.com' || normalizedEmail === 'admin@email.com';
+        const filteredDoctors = (response.items || [])
+          .filter((item) => item.role === EmployeeRole.Doctor)
+          .map((item) => buildDoctorOption(item))
+          .filter((item): item is DoctorOption => Boolean(item));
 
-          return !isBootstrapSeed;
-        });
-
-        setDoctorOptions(filteredUsers);
+        setDoctorOptions(filteredDoctors);
       })
       .catch(() => {
         if (!isMounted) {
@@ -357,24 +401,11 @@ const PatientProgressNoteForm: FunctionComponent<PatientProgressNoteFormProps> =
                         size="small"
                       >
                         <MenuItem value="">Select attending Doctor</MenuItem>
-                        {doctorOptions.map((option) => {
-                          const doctorName = [option.firstName, option.lastName]
-                            .map((value) => value?.trim())
-                            .filter(Boolean)
-                            .join(' ');
-                          const doctorDisplayName = doctorName
-                            ? `Dr. ${doctorName}`
-                            : option.userName || option.emailAddress || 'Unnamed user';
-
-                          return (
-                            <MenuItem
-                              key={option.id || option.userName || doctorName}
-                              value={doctorName || option.userName || option.emailAddress || ''}
-                            >
-                              {doctorDisplayName}
-                            </MenuItem>
-                          );
-                        })}
+                        {mergedDoctorOptions.map((option) => (
+                          <MenuItem key={option.value} value={option.value}>
+                            {option.label}
+                          </MenuItem>
+                        ))}
                       </TextField>
                     </Grid>
                     <Grid size={{ xs: 12, sm: 5 }}>

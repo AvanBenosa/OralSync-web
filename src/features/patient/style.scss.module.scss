@@ -461,6 +461,19 @@
   }
 }
 
+.nameCellStack {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: flex-start;
+}
+
+.nameSecondaryText {
+  color: #719ccd !important;
+  font-size: 12px !important;
+  line-height: 1.2 !important;
+}
+
 .mobileRowInline {
   display: flex;
   align-items: center;
@@ -692,7 +705,7 @@
   }
 
   .actionPillButton {
-    flex: 1 1 0;        // equal half-width each
+    flex: 1 1 0; // equal half-width each
     min-width: 0;
     height: 42px;
     padding: 0 12px;
