@@ -34,10 +34,10 @@ const PatientPerioChartHeader: FunctionComponent<PatientPerioChartHeaderProps> =
           </div>
           <span className={styles.headerBadge}>{state.items.length} recorded teeth</span>
         </div>
-        <p className={localStyles.headerCaption}>
+        {/* <p className={localStyles.headerCaption}>
           Switch between upper and lower periodontal recording views and edit teeth directly on the
           page.
-        </p>
+        </p> */}
         <div className={localStyles.layoutTabs} role="tablist" aria-label="Perio chart arch view">
           <button
             type="button"

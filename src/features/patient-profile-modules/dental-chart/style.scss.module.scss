@@ -1,10 +1,17 @@
 .chartPanel {
   flex: 0 0 auto;
-  padding: 14px;
-  border: 1px solid rgba(206, 218, 229, 0.95);
-  border-radius: 18px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(243, 248, 252, 0.98));
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.92);
+  padding: 16px;
+  border: 1px solid var(--profile-border, rgba(206, 218, 229, 0.95));
+  border-radius: 22px;
+  background: linear-gradient(
+    150deg,
+    rgba(255, 255, 255, 0.98) 0%,
+    rgba(244, 249, 254, 0.98) 54%,
+    rgba(236, 244, 250, 0.98) 100%
+  );
+  box-shadow:
+    0 18px 34px rgba(31, 60, 91, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.92);
 }
 
 .chartPanelHeader {
@@ -58,16 +65,18 @@
   gap: 6px;
   padding: 4px;
   border: 1px solid rgba(194, 208, 220, 0.92);
-  border-radius: 14px;
-  background: linear-gradient(180deg, rgba(250, 252, 254, 0.96), rgba(239, 244, 248, 0.98));
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.92);
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(250, 253, 255, 0.96), rgba(239, 244, 248, 0.98));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.92),
+    0 10px 20px rgba(43, 79, 117, 0.08);
 }
 
 .layoutTabButton {
   border: 0;
   background: transparent;
   color: #54708c;
-  border-radius: 10px;
+  border-radius: 12px;
   min-height: 34px;
   padding: 0 14px;
   font-size: 12px;
@@ -77,9 +86,13 @@
 }
 
 .layoutTabButtonActive {
-  background: linear-gradient(180deg, #3e7eb9 0%, #2c69a1 100%);
+  background: linear-gradient(
+    135deg,
+    var(--profile-accent, #2d79bf) 0%,
+    var(--profile-accent-strong, #205d93) 100%
+  );
   color: #ffffff;
-  box-shadow: 0 8px 14px rgba(60, 106, 150, 0.18);
+  box-shadow: 0 10px 18px rgba(60, 106, 150, 0.2);
 }
 
 .zoomControls {
@@ -88,18 +101,20 @@
   gap: 8px;
   padding: 4px 8px;
   border: 1px solid rgba(194, 208, 220, 0.92);
-  border-radius: 14px;
-  background: linear-gradient(180deg, rgba(250, 252, 254, 0.96), rgba(239, 244, 248, 0.98));
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.92);
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(250, 253, 255, 0.96), rgba(239, 244, 248, 0.98));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.92),
+    0 10px 20px rgba(43, 79, 117, 0.08);
 }
 
 .zoomButton {
   width: 30px;
   height: 30px;
   border: 0;
-  border-radius: 10px;
-  background: rgba(62, 126, 185, 0.1);
-  color: #2c69a1;
+  border-radius: 12px;
+  background: rgba(62, 126, 185, 0.12);
+  color: var(--profile-accent, #2d79bf);
   font-size: 18px;
   font-weight: 700;
   line-height: 1;
@@ -133,10 +148,11 @@
 }
 
 .toothPickerCard {
-  padding: 16px;
+  padding: 18px;
   border: 1px solid rgba(208, 220, 231, 0.95);
-  border-radius: 16px;
-  background: linear-gradient(180deg, #f8fbfd 0%, #eef4f8 100%);
+  border-radius: 20px;
+  background: linear-gradient(160deg, #fbfdff 0%, #eef5fb 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.92);
 }
 
 .toothPickerChart {
@@ -171,10 +187,13 @@
 }
 
 .circleModalFormPane {
-  padding: 14px;
+  padding: 16px;
   border: 1px solid rgba(208, 220, 231, 0.95);
-  border-radius: 16px;
-  background: linear-gradient(180deg, #f8fbfd 0%, #eef4f8 100%);
+  border-radius: 20px;
+  background: linear-gradient(160deg, #fbfdff 0%, #eef5fb 100%);
+  box-shadow:
+    0 16px 30px rgba(31, 60, 91, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.92);
 }
 
 .circleModalChartPane .toothPickerCard {
@@ -227,10 +246,10 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
-  padding: 14px;
+  padding: 16px;
   border: 1px dashed rgba(176, 199, 219, 0.9);
-  border-radius: 14px;
-  background: rgba(244, 249, 253, 0.8);
+  border-radius: 18px;
+  background: linear-gradient(160deg, rgba(247, 251, 255, 0.96), rgba(239, 246, 251, 0.9));
 }
 
 .imageUploadHeader {
@@ -262,9 +281,10 @@
   gap: 10px;
   padding: 10px;
   border: 1px solid rgba(208, 220, 231, 0.95);
-  border-radius: 12px;
-  background: #ffffff;
+  border-radius: 16px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbfe 100%);
   min-width: 0;
+  box-shadow: 0 10px 20px rgba(43, 79, 117, 0.06);
 }
 
 .imageCardEmpty {
@@ -273,9 +293,11 @@
 
 .imagePreviewWrap {
   height: 120px;
-  border-radius: 10px;
+  border-radius: 14px;
   overflow: hidden;
-  background: linear-gradient(180deg, #f2f7fc 0%, #dce9f5 100%);
+  background:
+    radial-gradient(circle at top, rgba(110, 169, 220, 0.22), transparent 54%),
+    linear-gradient(180deg, #f4f9fe 0%, #dce9f5 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -331,8 +353,9 @@
   min-width: 0;
   padding: 10px 10px;
   border: 1px solid rgba(208, 220, 231, 0.95);
-  border-radius: 12px;
-  background: #f8fbfd;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #fbfdff 0%, #f1f7fb 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.92);
 }
 
 .surfaceLabel {

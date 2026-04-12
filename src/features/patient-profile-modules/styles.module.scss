@@ -2,23 +2,34 @@
 
 .rightColumn {
   min-width: 0;
+  position: relative;
+  height: 100%;
+  min-height: 0;
 }
 
 .wrapper {
   width: 100%;
   min-width: 0;
+  height: 100%;
+  min-height: 0;
 }
 
 .bodyWrapper {
   width: 100%;
   min-width: 0;
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .listContainer {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
   min-width: 0;
+  height: 100%;
+  min-height: 0;
 }
 
 .listHeader {
@@ -27,11 +38,43 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 12px 14px;
-  border: 1px solid rgba(194, 208, 220, 0.9);
-  border-radius: 16px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(243, 248, 252, 0.98));
-  box-shadow: 0 12px 26px rgba(28, 56, 86, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  padding: 14px 16px;
+  border: 1px solid var(--profile-border, rgba(194, 208, 220, 0.9));
+  border-radius: 20px;
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.98) 0%,
+    rgba(245, 250, 255, 0.96) 48%,
+    rgba(237, 244, 250, 0.98) 100%
+  );
+  box-shadow:
+    0 18px 36px rgba(25, 54, 83, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.92);
+  overflow: hidden;
+}
+
+.listHeader::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: 180px;
+  height: 180px;
+  background: radial-gradient(circle, rgba(45, 121, 191, 0.14) 0%, transparent 72%);
+  pointer-events: none;
+}
+
+.listHeader::after {
+  content: '';
+  position: absolute;
+  inset: auto 16px 0 16px;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    rgba(45, 121, 191, 0.18),
+    rgba(45, 121, 191, 0),
+    rgba(45, 121, 191, 0.16)
+  );
+  pointer-events: none;
 }
 
 .headerInfo {
@@ -40,6 +83,8 @@
   justify-content: space-between;
   width: 100%;
   gap: 8px;
+  position: relative;
+  z-index: 1;
 }
 
 .headerMeta {
@@ -53,19 +98,29 @@
 .headerTitleWrap {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
+  padding: 6px 10px 6px 6px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.52);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
 }
 
 .headerTitleIcon {
-  font-size: 18px !important;
-  color: #2c6ea8;
+  padding: 6px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(45, 121, 191, 0.16), rgba(45, 121, 191, 0.08));
+  color: var(--profile-accent, #2d79bf);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.92);
+  font-size: 24px !important;
+  flex: 0 0 auto;
 }
 
 .headerTitle {
   margin: 0;
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 800;
   color: #1b4468;
+  letter-spacing: -0.01em;
 }
 
 .headerBadge {
@@ -73,12 +128,13 @@
   align-items: center;
   min-height: 28px;
   padding: 0 10px;
-  border: 1px solid rgba(185, 204, 220, 0.9);
+  border: 1px solid rgba(176, 198, 220, 0.92);
   border-radius: 999px;
-  background: rgba(240, 246, 251, 0.92);
-  color: #3e617f;
+  background: linear-gradient(180deg, rgba(246, 250, 254, 0.98), rgba(233, 241, 249, 0.96));
+  color: #3a617f;
   font-size: 11px;
   font-weight: 700;
+  box-shadow: 0 8px 16px rgba(49, 84, 119, 0.08);
 }
 
 .legendGroup {
@@ -92,6 +148,10 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.62);
+  border: 1px solid rgba(214, 224, 233, 0.85);
 }
 
 .legendSwatch {
@@ -117,19 +177,23 @@
 }
 
 .addButton {
-  border: 1px solid #95b9d8;
-  background: linear-gradient(180deg, #3e7eb9 0%, #2c69a1 100%);
+  border: 1px solid rgba(141, 181, 218, 0.95);
+  background: linear-gradient(
+    135deg,
+    var(--profile-accent, #2d79bf) 0%,
+    var(--profile-accent-strong, #205d93) 100%
+  );
   color: #ffffff;
-  border-radius: 12px;
-  min-height: 36px;
-  padding: 0 16px;
+  border-radius: 14px;
+  min-height: 38px;
+  padding: 0 18px;
   display: inline-flex;
   align-items: center;
   gap: 8px;
   font-size: 13px;
   font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 10px 20px rgba(46, 108, 166, 0.18);
+  box-shadow: 0 14px 24px rgba(46, 108, 166, 0.2);
   transition: transform 120ms ease, box-shadow 120ms ease, filter 120ms ease;
 
   &:hover {
@@ -147,10 +211,10 @@
   width: 36px;
   height: 36px;
   border: 1px solid rgba(174, 198, 218, 0.95);
-  border-radius: 12px;
-  background: linear-gradient(180deg, #f2f7fc 0%, #dfeaf5 100%);
-  box-shadow: 0 10px 20px rgba(62, 98, 141, 0.12);
-  color: #2f6db3;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #f6faff 0%, #e3eef8 100%);
+  box-shadow: 0 12px 20px rgba(62, 98, 141, 0.12);
+  color: var(--profile-accent, #2d79bf);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -182,18 +246,35 @@
 
 .listItem {
   position: relative;
-  height: calc(100vh - 220px);
-  max-height: calc(100vh - 220px);
-  padding: 12px;
+  flex: 1 1 auto;
+  height: auto;
+  max-height: none;
+  padding: 14px;
   min-width: 0;
   min-height: 0;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  border: 1px solid rgba(194, 208, 220, 0.92);
-  border-radius: 18px;
-  background: linear-gradient(180deg, rgba(250, 252, 254, 0.96), rgba(239, 244, 248, 0.98));
-  box-shadow: 0 16px 36px rgba(24, 50, 79, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  border: 1px solid var(--profile-border, rgba(194, 208, 220, 0.92));
+  border-radius: 24px;
+  background: linear-gradient(
+    160deg,
+    rgba(252, 254, 255, 0.98) 0%,
+    rgba(243, 248, 253, 0.98) 54%,
+    rgba(236, 243, 249, 0.98) 100%
+  );
+  box-shadow:
+    0 22px 42px rgba(24, 50, 79, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.92);
+}
+
+.listItem::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 96px;
+  background: linear-gradient(180deg, rgba(45, 121, 191, 0.08), rgba(45, 121, 191, 0));
+  pointer-events: none;
 }
 
 .tableSurface {
@@ -202,10 +283,13 @@
   width: 100%;
   max-width: 100%;
   height: 100%;
-  border: 1px solid rgba(206, 218, 229, 0.95);
-  border-radius: 20px !important;
-  background: rgba(255, 255, 255, 0.88) !important;
-  box-shadow: 0 12px 24px rgba(36, 60, 91, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(201, 216, 229, 0.96);
+  border-radius: 22px !important;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(247, 251, 254, 0.92))
+    !important;
+  box-shadow:
+    0 18px 32px rgba(36, 60, 91, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.94);
   overflow-y: auto;
   overflow-x: hidden;
 
@@ -215,15 +299,15 @@
   }
 
   :global(.MuiTableHead-root .MuiTableCell-root) {
-    border-bottom: 1px solid rgba(220, 228, 236, 0.95);
-    background: linear-gradient(180deg, #f9fbfd 0%, #eef4f8 100%);
+    border-bottom: 1px solid rgba(214, 224, 234, 0.96);
+    background: linear-gradient(180deg, #f9fcff 0%, #eef5fb 100%);
     position: sticky;
     top: 0;
     z-index: 4;
   }
 
   :global(.MuiTableBody-root .MuiTableRow-root:hover) {
-    background: rgba(236, 244, 251, 0.65);
+    background: rgba(233, 243, 252, 0.72);
   }
 
   :global(.MuiTableBody-root .MuiTableRow-root:last-child .MuiTableCell-root) {
@@ -242,19 +326,19 @@
 }
 
 .tableHeaderCell {
-  color: #25486c !important;
+  color: #244d74 !important;
   font-size: 12px !important;
   font-weight: 800 !important;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  padding: 14px 16px !important;
+  padding: 15px 18px !important;
 }
 
 .tableBodyCell {
   color: #314a63 !important;
   font-size: 14px !important;
   font-weight: 500 !important;
-  padding: 12px 16px !important;
+  padding: 13px 18px !important;
   border-bottom: 1px solid rgba(230, 236, 242, 0.92) !important;
 }
 
@@ -425,8 +509,14 @@
   width: 36px;
   height: 36px;
   border: 1px solid transparent;
-  border-radius: 12px;
+  border-radius: 14px;
   cursor: pointer;
+  transition: transform 120ms ease, box-shadow 120ms ease, filter 120ms ease;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 12px 18px rgba(44, 78, 112, 0.14);
+  }
 }
 
 .tableActionButton {
@@ -515,35 +605,43 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 12px;
   max-width: 420px;
   margin: 0 auto;
-  padding: 34px 20px;
-  border: 1px dashed rgba(191, 207, 221, 0.95);
-  border-radius: 22px;
-  background: linear-gradient(180deg, rgba(248, 251, 253, 0.98), rgba(240, 246, 250, 0.98));
+  padding: 38px 24px;
+  border: 1px dashed rgba(179, 202, 223, 0.96);
+  border-radius: 24px;
+  background: linear-gradient(
+    160deg,
+    rgba(250, 252, 255, 0.98),
+    rgba(242, 248, 253, 0.96),
+    rgba(236, 244, 250, 0.98)
+  );
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.94);
 }
 
 .emptyStateIcon {
   position: relative;
-  width: 58px;
-  height: 58px;
+  width: 62px;
+  height: 62px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 18px;
-  background: linear-gradient(180deg, #ebf4fb 0%, #d7e7f4 100%);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  border-radius: 20px;
+  background: linear-gradient(180deg, #eef6ff 0%, #d9e9f7 100%);
+  box-shadow:
+    0 16px 28px rgba(67, 113, 156, 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.92);
 }
 
 .emptyStateGlyph {
-  font-size: 30px !important;
-  color: #5f8db9;
+  font-size: 32px !important;
+  color: #4f7fae;
 }
 
 .emptyStateTitle {
   color: #1f4467 !important;
-  font-size: 20px !important;
+  font-size: 22px !important;
   font-weight: 800 !important;
   line-height: 1.2 !important;
 }
@@ -558,8 +656,9 @@
 
 @media (max-width: 1080px) {
   .listItem {
-    height: calc(100vh - 260px);
-    max-height: calc(100vh - 260px);
+    flex: 1 1 auto;
+    height: auto;
+    max-height: none;
   }
 }
 
@@ -594,8 +693,8 @@
 
   .listItem {
     padding: 10px;
-    height: calc(100vh - 240px);
-    max-height: calc(100vh - 240px);
+    height: auto;
+    max-height: none;
   }
 
   .tableHeaderCell,
