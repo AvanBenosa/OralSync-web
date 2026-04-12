@@ -41,6 +41,7 @@ import { isPendingClinicStatus } from '../../../common/utils/subscription';
 import { getManualPaymentStatus, getManualPaymentTransactions } from '../../subscription/api/api';
 import { syncSubscriptionTransactionToUser } from '../../subscription/api/session';
 import {
+  DEFAULT_SUBSCRIPTION_MONTHS,
   formatCurrency,
   MONTHS_LABEL,
   ManualPaymentMethod,
@@ -87,7 +88,7 @@ const PAYMENT_STEPS = ['Choose Plan', 'Payment', 'Confirm', 'Done'];
 const createInitialPaymentState = (): SubscriptionStateModel => ({
   step: 'plans',
   selectedPlan: null,
-  selectedMonths: 1 as SubscriptionMonths,
+  selectedMonths: DEFAULT_SUBSCRIPTION_MONTHS,
   paymentChannel: PaymentChannel.PayMongo,
   manualPayment: {
     paymentMethod: ManualPaymentMethod.GCash,
@@ -115,7 +116,9 @@ const stepFromState = (step: SubscriptionStateModel['step']): number => {
 };
 
 const resolveSubscriptionMonths = (value?: number | null): SubscriptionMonths =>
-  value === 3 || value === 6 || value === 12 ? value : 1;
+  value === 1 || value === 3 || value === 6 || value === 12
+    ? value
+    : DEFAULT_SUBSCRIPTION_MONTHS;
 
 const buildPendingPaymentState = (
   transaction: PaymentTransactionModel

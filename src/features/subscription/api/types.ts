@@ -39,6 +39,8 @@ export const MANUAL_PAYMENT_METHOD_LABELS: Record<ManualPaymentMethod, string> =
 
 export const SUBSCRIPTION_MONTHS_OPTIONS = [1, 3, 6, 12] as const;
 export type SubscriptionMonths = (typeof SUBSCRIPTION_MONTHS_OPTIONS)[number];
+export const DEFAULT_SUBSCRIPTION_MONTHS: SubscriptionMonths = 3;
+export const SUBSCRIPTION_VISIBLE_MONTHS_OPTIONS: readonly SubscriptionMonths[] = [3, 6, 12];
 
 export const PRICING_TABLE: Record<SubscriptionPlan, Record<SubscriptionMonths, number>> = {
   [SubscriptionPlan.Basic]: { 1: 450, 3: 1200, 6: 2400, 12: 4500 },

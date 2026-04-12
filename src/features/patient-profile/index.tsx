@@ -4,6 +4,7 @@ import PersonRoundedIcon from '@mui/icons-material/PersonRounded';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import MailOutlineRoundedIcon from '@mui/icons-material/MailOutlineRounded';
 import DeleteOutlineRoundedIcon from '@mui/icons-material/DeleteOutlineRounded';
+import KeyboardArrowDownRoundedIcon from '@mui/icons-material/KeyboardArrowDownRounded';
 
 import styles from './styles.scss.module.scss';
 import { useAuthStore } from '../../common/store/authStore';
@@ -169,6 +170,7 @@ export const PatientProfileModule: FunctionComponent<PatientProfileProps> = (
     tabItemType: activeTab,
   });
   const [mobileReload, setMobileReload] = useState<PatientProfileMobileReloadConfig | undefined>();
+  const [isProfileDetailsOpen, setIsProfileDetailsOpen] = useState<boolean>(false);
 
   const loadPatientProfile = async (
     shouldSetLoadingState: boolean = true,
@@ -313,6 +315,10 @@ export const PatientProfileModule: FunctionComponent<PatientProfileProps> = (
     }));
   }, [isBasicPlan, state.isEmail]);
 
+  useEffect(() => {
+    setIsProfileDetailsOpen(false);
+  }, [patientId]);
+
   const handleCloseDialog = (): void => {
     setState((prev: PatientStateModel) => ({
       ...prev,
@@ -372,6 +378,9 @@ export const PatientProfileModule: FunctionComponent<PatientProfileProps> = (
     nextParams.set('tab', tabId);
     setSearchParams(nextParams, { replace: true });
   };
+  const profileDetailsSectionId = patientId
+    ? `patient-profile-details-${patientId}`
+    : 'patient-profile-details';
   const infoItems = [
     { label: 'Age', value: calculateAge(state.profile?.birthDate) },
     { label: 'Birthday', value: formatDateValue(state.profile?.birthDate) },
@@ -492,18 +501,41 @@ export const PatientProfileModule: FunctionComponent<PatientProfileProps> = (
 
               <section className={styles.infoCard}>
                 <div className={styles.infoCardHeader}>
-                  <p className={styles.infoCardEyebrow}>Profile Details</p>
+                  <button
+                    type="button"
+                    className={styles.infoToggleButton}
+                    aria-expanded={isProfileDetailsOpen}
+                    aria-controls={profileDetailsSectionId}
+                    onClick={(): void => setIsProfileDetailsOpen((previousValue) => !previousValue)}
+                  >
+                    <span className={styles.infoCardEyebrow}>Profile Details</span>
+                    <KeyboardArrowDownRoundedIcon
+                      className={`${styles.infoToggleIcon} ${
+                        isProfileDetailsOpen ? styles.infoToggleIconOpen : ''
+                      }`}
+                    />
+                  </button>
                 </div>
-                <div className={styles.infoGrid}>
-                  {infoItems.map((item) => (
-                    <div
-                      key={item.label}
-                      className={`${styles.infoRow} ${item.wide ? styles.infoRowWide : ''}`}
-                    >
-                      <label>{item.label}:</label>
-                      <p>{item.value}</p>
+                <div
+                  id={profileDetailsSectionId}
+                  className={`${styles.infoContent} ${
+                    isProfileDetailsOpen ? styles.infoContentOpen : ''
+                  }`}
+                  aria-hidden={!isProfileDetailsOpen}
+                >
+                  <div className={styles.infoContentInner}>
+                    <div className={styles.infoGrid}>
+                      {infoItems.map((item) => (
+                        <div
+                          key={item.label}
+                          className={`${styles.infoRow} ${item.wide ? styles.infoRowWide : ''}`}
+                        >
+                          <label>{item.label}:</label>
+                          <p>{item.value}</p>
+                        </div>
+                      ))}
                     </div>
-                  ))}
+                  </div>
                 </div>
               </section>
             </aside>

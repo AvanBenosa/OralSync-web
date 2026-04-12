@@ -7,7 +7,11 @@ import { PlanSelector } from './components/PlanSelector';
 import { PollingView } from './components/PollingView';
 import { SuccessView } from './components/SuccessView';
 import type { SubscriptionStateModel } from './api/types';
-import { ManualPaymentMethod, PaymentChannel, SubscriptionMonths } from './api/types';
+import {
+  DEFAULT_SUBSCRIPTION_MONTHS,
+  ManualPaymentMethod,
+  PaymentChannel,
+} from './api/types';
 import { syncSubscriptionTransactionToUser } from './api/session';
 
 export type SubscriptionModuleProps = {
@@ -29,7 +33,7 @@ const stepFromState = (step: SubscriptionStateModel['step']): number => {
 const createInitialState = (): SubscriptionStateModel => ({
   step: 'plans',
   selectedPlan: null,
-  selectedMonths: 1 as SubscriptionMonths,
+  selectedMonths: DEFAULT_SUBSCRIPTION_MONTHS,
   paymentChannel: PaymentChannel.PayMongo,
   manualPayment: {
     paymentMethod: ManualPaymentMethod.GCash,

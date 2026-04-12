@@ -1,54 +1,135 @@
 import type { PatientProfileMobileReloadConfig } from '../../../patient-profile/api/types';
 
-export const MEDICAL_HISTORY_CONDITION_OPTIONS = [
-  'AIDS or HIV Infection',
-  'Anemia',
-  'Angina',
-  'Arthritis / Rheumatism',
-  'Asthma',
-  'Bleeding Problems',
-  'Blood Diseases',
-  'Cancer / Tumor',
-  'Chest Pain',
-  'Diabetes',
-  'Emphysema',
-  'Epilepsy/Convulsions',
-  'Fainting Seizure',
-  'Hay Fever / Allergies',
-  'Head Injuries',
-  'Heart Attack',
-  'Heart Disease',
-  'Heart Murmur',
-  'Heart Surgery',
-  'Hepatitis / Liver Disease',
-  'High Blood Pressure',
-  'Joint Replacement Implant',
-  'Kidney Disease',
-  'Low Blood Pressure',
-  'Radiation Therapy',
-  'Rapid Weight Loss',
-  'Respiratory Problems',
-  'Rheumatic Fever',
-  'Sexually Transmitted Disease (STD)',
-  'Stomach Troubles / Ulcers',
-  'Stroke',
-  'Swollen Ankles',
-  'Thyroid Problem',
-  'Tuberculosis',
+export const MEDICAL_HISTORY_CONDITION_GROUPS = [
+  {
+    title: 'Heart & Blood Pressure',
+    options: [
+      'Heart condition',
+      'Irregular heartbeat',
+      'Chest discomfort',
+      'High blood pressure',
+      'Low blood pressure',
+    ],
+  },
+  {
+    title: 'Breathing & Lungs',
+    options: ['Breathing problem', 'Asthma-like symptoms', 'Chronic cough'],
+  },
+  {
+    title: 'Metabolic & Hormones',
+    options: ['Diabetes or sugar problem', 'Thyroid condition', 'Hormonal imbalance'],
+  },
+  {
+    title: 'Blood & Circulation',
+    options: ['Blood disorder', 'Easy bleeding or bruising'],
+  },
+  {
+    title: 'Brain & Nerves',
+    options: [
+      'Frequent headaches',
+      'Dizziness or fainting',
+      'Seizure history',
+      'Nerve-related condition',
+    ],
+  },
+  {
+    title: 'Bones & Joints',
+    options: ['Joint or bone issue', 'Arthritis-like pain'],
+  },
+  {
+    title: 'Digestive System',
+    options: ['Stomach or digestive issues', 'Acid reflux'],
+  },
+  {
+    title: 'Organs (Liver & Kidney)',
+    options: ['Liver problem', 'Kidney problem'],
+  },
+  {
+    title: 'Allergies & Sensitivities',
+    options: ['Allergies', 'Skin sensitivity'],
+  },
+  {
+    title: 'Infections & Immune',
+    options: ['Ongoing infection', 'Immune system condition'],
+  },
+  {
+    title: 'Medical History',
+    options: ['Past serious illness', 'History of surgery', 'Medical implants or devices'],
+  },
+  {
+    title: 'General Health',
+    options: [
+      'Recent weight changes',
+      'Fatigue or low energy',
+      'Sleep problems',
+      'Mental health condition',
+    ],
+  },
 ] as const;
 
-export type MedicalHistoryCondition = (typeof MEDICAL_HISTORY_CONDITION_OPTIONS)[number];
+export type MedicalHistoryCondition =
+  (typeof MEDICAL_HISTORY_CONDITION_GROUPS)[number]['options'][number];
+
+export const MEDICAL_HISTORY_CONDITION_OPTIONS: readonly MedicalHistoryCondition[] =
+  MEDICAL_HISTORY_CONDITION_GROUPS.reduce<MedicalHistoryCondition[]>(
+    (conditions, group) => [...conditions, ...group.options],
+    []
+  );
+
+const LEGACY_MEDICAL_HISTORY_CONDITION_ALIASES: Record<string, MedicalHistoryCondition> = {
+  'AIDS or HIV Infection': 'Immune system condition',
+  Anemia: 'Blood disorder',
+  Angina: 'Chest discomfort',
+  'Arthritis / Rheumatism': 'Arthritis-like pain',
+  Asthma: 'Asthma-like symptoms',
+  'Bleeding Problems': 'Easy bleeding or bruising',
+  'Blood Diseases': 'Blood disorder',
+  'Cancer / Tumor': 'Past serious illness',
+  'Chest Pain': 'Chest discomfort',
+  Diabetes: 'Diabetes or sugar problem',
+  Emphysema: 'Breathing problem',
+  'Epilepsy/Convulsions': 'Seizure history',
+  'Fainting Seizure': 'Dizziness or fainting',
+  'Hay Fever / Allergies': 'Allergies',
+  'Head Injuries': 'Nerve-related condition',
+  'Heart Attack': 'Heart condition',
+  'Heart Disease': 'Heart condition',
+  'Heart Murmur': 'Irregular heartbeat',
+  'Heart Surgery': 'History of surgery',
+  'Hepatitis / Liver Disease': 'Liver problem',
+  'High Blood Pressure': 'High blood pressure',
+  'Joint Replacement Implant': 'Medical implants or devices',
+  'Kidney Disease': 'Kidney problem',
+  'Low Blood Pressure': 'Low blood pressure',
+  'Radiation Therapy': 'Past serious illness',
+  'Rapid Weight Loss': 'Recent weight changes',
+  'Respiratory Problems': 'Breathing problem',
+  'Rheumatic Fever': 'Past serious illness',
+  'Sexually Transmitted Disease (STD)': 'Ongoing infection',
+  'Stomach Troubles / Ulcers': 'Stomach or digestive issues',
+  Stroke: 'Nerve-related condition',
+  'Swollen Ankles': 'Heart condition',
+  'Thyroid Problem': 'Thyroid condition',
+  Tuberculosis: 'Ongoing infection',
+};
 
 const medicalHistoryConditionOptionSet = new Set<string>(MEDICAL_HISTORY_CONDITION_OPTIONS);
 
 const toMedicalHistoryCondition = (value: string): MedicalHistoryCondition | undefined => {
   const normalizedValue = value.trim();
 
-  if (!normalizedValue || !medicalHistoryConditionOptionSet.has(normalizedValue)) {
+  if (!normalizedValue) {
     return undefined;
   }
 
-  return normalizedValue as MedicalHistoryCondition;
+  const resolvedValue =
+    LEGACY_MEDICAL_HISTORY_CONDITION_ALIASES[normalizedValue] ?? normalizedValue;
+
+  if (!medicalHistoryConditionOptionSet.has(resolvedValue)) {
+    return undefined;
+  }
+
+  return resolvedValue as MedicalHistoryCondition;
 };
 
 const appendMedicalHistoryConditions = (

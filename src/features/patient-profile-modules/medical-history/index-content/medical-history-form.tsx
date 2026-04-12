@@ -21,7 +21,7 @@ import { isAxiosError } from 'axios';
 import {
   normalizeMedicalHistoryConditions,
   MedicalHistoryCondition,
-  MEDICAL_HISTORY_CONDITION_OPTIONS,
+  MEDICAL_HISTORY_CONDITION_GROUPS,
   PatientMedicalHistoryModel,
   PatientMedicalHistoryStateProps,
 } from '../api/types';
@@ -63,23 +63,65 @@ type questionItem = {
 };
 
 const YES_NO_qUESTIONS: questionItem[] = [
-  { key: 'q1', number: 1, label: 'Are you in good health?' },
-  { key: 'q2', number: 2, label: 'Are you under medical treatment now?' },
+  {
+    key: 'q1',
+    number: 1,
+    label: 'How would you describe your current physical condition compared to last year?',
+  },
+  {
+    key: 'q2',
+    number: 2,
+    label: 'Have you noticed any recent changes in your health that concern you?',
+  },
   {
     key: 'q3',
     number: 3,
-    label: 'Have you ever had serious illness or surgical operation?',
+    label: 'Do you live with any long-term health conditions that require ongoing care?',
   },
-  { key: 'q4', number: 4, label: 'Have you ever been hospitalized?' },
-  { key: 'q5', number: 5, label: 'Are you taking any medication?' },
-  { key: 'q6', number: 6, label: 'Do you use tobacco products?' },
-  { key: 'q7', number: 7, label: 'Do you drink alcoholic beverages?' },
+  {
+    key: 'q4',
+    number: 4,
+    label: 'How often do you take medications or supplements?',
+  },
+  {
+    key: 'q5',
+    number: 5,
+    label: 'Have you had any unexpected reactions to treatments or medications in the past?',
+  },
+  {
+    key: 'q6',
+    number: 6,
+    label: 'Do you have any conditions that affect your energy, breathing, or physical activity?',
+  },
+  {
+    key: 'q7',
+    number: 7,
+    label: 'How would you describe your sleep and stress levels?',
+  },
   {
     key: 'q8',
     number: 8,
-    label: 'Do you use cocaine or other dangerous drugs?',
+    label: 'Are there any dietary restrictions or health-related habits you follow?',
   },
-  { key: 'q9', number: 9, label: 'Are you allergic to anything?' },
+  {
+    key: 'q9',
+    number: 9,
+    label: 'Have you undergone any major medical events or procedures in recent years?',
+  },
+];
+
+const PROVIDER_AWARENESS_QUESTION =
+  'Is there anything about your health that you think healthcare providers should always be aware of?';
+
+const WOMEN_ONLY_QUESTIONS = [
+  {
+    key: 'q10Pregnant' as const,
+    label: 'Are you currently pregnant or planning to become pregnant soon?',
+  },
+  {
+    key: 'q10Nursing' as const,
+    label: 'Are you currently breastfeeding or have you recently given birth?',
+  },
 ];
 
 const toRadioValue = (value?: boolean): YesNoValue => {
@@ -344,6 +386,37 @@ const PatientMedicalHistoryForm: FunctionComponent<PatientMedicalHistoryFormProp
                       <Box component="span" sx={questionBadgeSx}>
                         10
                       </Box>
+                      <Box sx={{ flex: 1 }}>
+                        <Typography
+                          sx={{
+                            color: '#1f4467',
+                            fontSize: '15px',
+                            fontWeight: 500,
+                            lineHeight: 1.45,
+                            mb: 1.25,
+                          }}
+                        >
+                          {PROVIDER_AWARENESS_QUESTION}
+                        </Typography>
+                        <TextField
+                          name="remarks"
+                          value={values.remarks}
+                          onChange={handleChange}
+                          fullWidth
+                          size="small"
+                          multiline
+                          minRows={3}
+                          placeholder="Add anything healthcare providers should always know about this patient's health"
+                        />
+                      </Box>
+                    </Box>
+                  </Box>
+
+                  <Box sx={{ ...questionRowSx, alignItems: 'flex-start' }}>
+                    <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'flex-start', flex: 1 }}>
+                      <Box component="span" sx={questionBadgeSx}>
+                        11
+                      </Box>
                       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25, flex: 1 }}>
                         <Typography
                           sx={{
@@ -362,82 +435,47 @@ const PatientMedicalHistoryForm: FunctionComponent<PatientMedicalHistoryFormProp
                             gap: 1,
                           }}
                         >
-                          <Box
-                            sx={{
-                              display: 'flex',
-                              justifyContent: 'space-between',
-                              gap: 1.5,
-                              flexDirection: { xs: 'column', md: 'row' },
-                            }}
-                          >
-                            <Typography
+                          {WOMEN_ONLY_QUESTIONS.map((question) => (
+                            <Box
+                              key={question.key}
                               sx={{
-                                color: '#365675',
-                                fontSize: '14px',
-                                fontWeight: 500,
-                                lineHeight: 1.45,
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                gap: 1.5,
+                                flexDirection: { xs: 'column', md: 'row' },
                               }}
                             >
-                              Are you nursing or breastfeeding?
-                            </Typography>
-                            <RadioGroup
-                              row
-                              name="q10Nursing"
-                              value={values.q10Nursing}
-                              onChange={handleChange}
-                            >
-                              <FormControlLabel
-                                value="yes"
-                                control={<Radio size="small" />}
-                                label="Yes"
-                                sx={yesNoControlSx}
-                              />
-                              <FormControlLabel
-                                value="no"
-                                control={<Radio size="small" />}
-                                label="No"
-                                sx={yesNoControlSx}
-                              />
-                            </RadioGroup>
-                          </Box>
-                          <Box
-                            sx={{
-                              display: 'flex',
-                              justifyContent: 'space-between',
-                              gap: 1.5,
-                              flexDirection: { xs: 'column', md: 'row' },
-                            }}
-                          >
-                            <Typography
-                              sx={{
-                                color: '#365675',
-                                fontSize: '14px',
-                                fontWeight: 500,
-                                lineHeight: 1.45,
-                              }}
-                            >
-                              Are you pregnant?
-                            </Typography>
-                            <RadioGroup
-                              row
-                              name="q10Pregnant"
-                              value={values.q10Pregnant}
-                              onChange={handleChange}
-                            >
-                              <FormControlLabel
-                                value="yes"
-                                control={<Radio size="small" />}
-                                label="Yes"
-                                sx={yesNoControlSx}
-                              />
-                              <FormControlLabel
-                                value="no"
-                                control={<Radio size="small" />}
-                                label="No"
-                                sx={yesNoControlSx}
-                              />
-                            </RadioGroup>
-                          </Box>
+                              <Typography
+                                sx={{
+                                  color: '#365675',
+                                  fontSize: '14px',
+                                  fontWeight: 500,
+                                  lineHeight: 1.45,
+                                }}
+                              >
+                                {question.label}
+                              </Typography>
+                              <RadioGroup
+                                row
+                                name={question.key}
+                                value={values[question.key]}
+                                onChange={handleChange}
+                              >
+                                <FormControlLabel
+                                  value="yes"
+                                  control={<Radio size="small" />}
+                                  label="Yes"
+                                  sx={yesNoControlSx}
+                                />
+                                <FormControlLabel
+                                  value="no"
+                                  control={<Radio size="small" />}
+                                  label="No"
+                                  sx={yesNoControlSx}
+                                />
+                              </RadioGroup>
+                            </Box>
+                          ))}
                         </Box>
                       </Box>
                     </Box>
@@ -455,7 +493,7 @@ const PatientMedicalHistoryForm: FunctionComponent<PatientMedicalHistoryFormProp
 
                   <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'flex-start', mb: 2 }}>
                     <Box component="span" sx={questionBadgeSx}>
-                      11
+                      12
                     </Box>
                     <Box sx={{ flex: 1 }}>
                       <Typography
@@ -469,36 +507,61 @@ const PatientMedicalHistoryForm: FunctionComponent<PatientMedicalHistoryFormProp
                       >
                         Do you have any of the following? Please check all that applies.
                       </Typography>
-                      <Grid container spacing={0.75}>
-                        {MEDICAL_HISTORY_CONDITION_OPTIONS.map((condition) => (
-                          <Grid key={condition} size={{ xs: 12, sm: 6, md: 4 }}>
-                            <FormControlLabel
-                              control={
-                                <Checkbox
-                                  size="small"
-                                  checked={values.q11Conditions.includes(condition)}
-                                  onChange={(): void => toggleCondition(condition)}
-                                />
-                              }
-                              label={condition}
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.75 }}>
+                        {MEDICAL_HISTORY_CONDITION_GROUPS.map((group) => (
+                          <Box key={group.title}>
+                            <Typography
                               sx={{
-                                alignItems: 'flex-start',
-                                mr: 0,
-                                '.MuiFormControlLabel-label': {
-                                  color: '#284764',
-                                  fontSize: '14px',
-                                  lineHeight: 1.4,
-                                },
+                                color: '#315878',
+                                fontSize: '13px',
+                                fontWeight: 800,
+                                letterSpacing: '0.03em',
+                                textTransform: 'uppercase',
+                                mb: 0.75,
                               }}
-                            />
-                          </Grid>
+                            >
+                              {group.title}
+                            </Typography>
+                            <Grid container spacing={0.75}>
+                              {group.options.map((condition) => (
+                                <Grid key={condition} size={{ xs: 12, sm: 6, md: 4 }}>
+                                  <FormControlLabel
+                                    control={
+                                      <Checkbox
+                                        size="small"
+                                        checked={values.q11Conditions.includes(condition)}
+                                        onChange={(): void => toggleCondition(condition)}
+                                      />
+                                    }
+                                    label={condition}
+                                    sx={{
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      width: '100%',
+                                      m: 0,
+                                      '.MuiFormControlLabel-label': {
+                                        color: '#284764',
+                                        fontSize: '14px',
+                                        lineHeight: 1.4,
+                                        display: 'block',
+                                      },
+                                      '.MuiCheckbox-root': {
+                                        p: '4px',
+                                        mr: 0.75,
+                                      },
+                                    }}
+                                  />
+                                </Grid>
+                              ))}
+                            </Grid>
+                          </Box>
                         ))}
-                      </Grid>
+                      </Box>
                     </Box>
                   </Box>
 
                   <Grid container spacing={2}>
-                    <Grid size={{ xs: 12, sm: 6 }}>
+                    <Grid size={{ xs: 12 }}>
                       <TextField
                         label="Others"
                         name="others"
@@ -507,19 +570,6 @@ const PatientMedicalHistoryForm: FunctionComponent<PatientMedicalHistoryFormProp
                         fullWidth
                         size="small"
                         placeholder="Specify other medical conditions if needed"
-                      />
-                    </Grid>
-                    <Grid size={{ xs: 12, sm: 6 }}>
-                      <TextField
-                        label="Remarks"
-                        name="remarks"
-                        value={values.remarks}
-                        onChange={handleChange}
-                        fullWidth
-                        size="small"
-                        multiline
-                        minRows={3}
-                        placeholder="Add relevant notes for this medical history record"
                       />
                     </Grid>
                   </Grid>

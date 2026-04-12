@@ -26,10 +26,10 @@ import { SuccessView } from '../subscription/components/SuccessView';
 import { syncPaidTransactionToUser } from '../subscription/api/session';
 import type { SubscriptionStateModel } from '../subscription/api/types';
 import {
+  DEFAULT_SUBSCRIPTION_MONTHS,
   ManualPaymentMethod,
   PaymentChannel,
   PaymentStatus,
-  SubscriptionMonths,
 } from '../subscription/api/types';
 
 type ClinicLockedDialogProps = {
@@ -47,7 +47,7 @@ const ACTIVATION_CONTACT = {
 const createInitialPaymentState = (): SubscriptionStateModel => ({
   step: 'plans',
   selectedPlan: null,
-  selectedMonths: 1 as SubscriptionMonths,
+  selectedMonths: DEFAULT_SUBSCRIPTION_MONTHS,
   paymentChannel: PaymentChannel.PayMongo,
   manualPayment: {
     paymentMethod: ManualPaymentMethod.GCash,

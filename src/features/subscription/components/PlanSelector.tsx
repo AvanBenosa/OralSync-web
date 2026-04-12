@@ -19,7 +19,7 @@ import {
   getPrice,
   MONTHS_LABEL,
   PLAN_FEATURES,
-  SUBSCRIPTION_MONTHS_OPTIONS,
+  SUBSCRIPTION_VISIBLE_MONTHS_OPTIONS,
   SubscriptionMonths,
   SubscriptionPlan,
   SubscriptionStateModel,
@@ -104,7 +104,7 @@ export const PlanSelector: FunctionComponent<Props> = ({
           onChange={handleMonthsChange}
           size="small"
         >
-          {SUBSCRIPTION_MONTHS_OPTIONS.map((m) => (
+          {SUBSCRIPTION_VISIBLE_MONTHS_OPTIONS.map((m) => (
             <ToggleButton key={m} value={m} sx={{ px: 2 }}>
               {MONTHS_LABEL[m]}
               {m === 12 && (

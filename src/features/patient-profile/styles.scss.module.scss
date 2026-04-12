@@ -458,10 +458,7 @@
 }
 
 .infoCardHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 12px;
+  margin-bottom: 0;
 }
 
 .infoCardEyebrow {
@@ -471,6 +468,63 @@
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+}
+
+.infoToggleButton {
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  cursor: pointer;
+  text-align: left;
+
+  &:hover .infoToggleIcon,
+  &:focus-visible .infoToggleIcon {
+    color: #2f6db3;
+  }
+
+  &:focus-visible {
+    outline: 2px solid rgba(47, 109, 179, 0.22);
+    outline-offset: 4px;
+    border-radius: 10px;
+  }
+}
+
+.infoToggleIcon {
+  flex: 0 0 auto;
+  font-size: 22px !important;
+  color: #6f89a2;
+  transition: transform 160ms ease, color 160ms ease;
+}
+
+.infoToggleIconOpen {
+  transform: rotate(180deg);
+  color: #2f6db3;
+}
+
+.infoContent {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  margin-top: 0;
+  transition: grid-template-rows 180ms ease, opacity 180ms ease, margin-top 180ms ease;
+}
+
+.infoContentOpen {
+  grid-template-rows: 1fr;
+  opacity: 1;
+  margin-top: 12px;
+}
+
+.infoContentInner {
+  min-height: 0;
+  overflow: hidden;
 }
 
 .infoGrid {
