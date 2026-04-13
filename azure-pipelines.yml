@@ -33,6 +33,24 @@ stages:
           - script: npm run build
             displayName: Build React app
 
+          - powershell: |
+              $requiredFiles = @(
+                'build/index.html',
+                'build/manifest.json',
+                'build/service-worker.js',
+                'build/offline.html'
+              )
+
+              $missingFiles = $requiredFiles | Where-Object { -not (Test-Path $_) }
+
+              Write-Host 'Build root contents:'
+              Get-ChildItem build | Select-Object Name, Length
+
+              if ($missingFiles.Count -gt 0) {
+                Write-Error ("Missing required PWA build files: " + ($missingFiles -join ', '))
+              }
+            displayName: Validate PWA build assets
+
           - task: ArchiveFiles@2
             displayName: Archive build output
             inputs:
