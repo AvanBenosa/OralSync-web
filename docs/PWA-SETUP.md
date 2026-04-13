@@ -216,6 +216,8 @@ Recommended rules:
 - `/static/*` files should be long-cache and immutable
 - icons can use shorter public cache
 
+These files apply to Azure Static Web Apps. They do not configure Azure App Service Linux.
+
 ## How To Test Locally
 
 The PWA install flow should be tested using the production build.
@@ -323,6 +325,17 @@ Recommended production setup:
 - keep live API data network-first
 - do not cache sensitive medical/business API responses offline
 - keep service worker and manifest files no-cache so updates roll out correctly
+
+Azure App Service Linux deployment notes:
+
+- deploy the built file contents so `manifest.json`, `service-worker.js`, and `index.html` exist directly under `/home/site/wwwroot`
+- `public/web.config` is only used by IIS on Windows App Service
+- `public/staticwebapp.config.json` is only used by Azure Static Web Apps
+- use a Linux startup command that serves `wwwroot` as an SPA, for example:
+
+```bash
+pm2 serve /home/site/wwwroot --no-daemon --spa --port 8080
+```
 
 ## What To Change Later
 

@@ -12,6 +12,8 @@ variables:
   webAppName: 'oralsync-web' # CHANGE THIS
   artifactName: 'react-build'
   buildFolder: 'build' # CHANGE TO dist IF USING VITE
+  linuxRuntimeStack: 'NODE|20-lts'
+  linuxStartupCommand: 'pm2 serve /home/site/wwwroot --no-daemon --spa --port 8080'
 
 stages:
   - stage: Build
@@ -87,4 +89,6 @@ stages:
                     azureSubscription: '$(azureServiceConnection)'
                     appType: 'webAppLinux'
                     appName: '$(webAppName)'
+                    runtimeStack: '$(linuxRuntimeStack)'
+                    startUpCommand: '$(linuxStartupCommand)'
                     package: '$(Pipeline.Workspace)/$(artifactName)/$(artifactName).zip'
