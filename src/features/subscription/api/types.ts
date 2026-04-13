@@ -18,7 +18,7 @@ export enum PaymentChannel {
 
 export enum ManualPaymentMethod {
   GCash = 'GCash',
-  BankTransfer = 'Bank Transfer',
+  BankTransfer = 'BPI Account',
 }
 
 export const SUBSCRIPTION_PLAN_LABELS: Record<SubscriptionPlan, string> = {
@@ -34,7 +34,7 @@ export const PAYMENT_CHANNEL_LABELS: Record<PaymentChannel, string> = {
 
 export const MANUAL_PAYMENT_METHOD_LABELS: Record<ManualPaymentMethod, string> = {
   [ManualPaymentMethod.GCash]: 'GCash',
-  [ManualPaymentMethod.BankTransfer]: 'Bank Transfer',
+  [ManualPaymentMethod.BankTransfer]: 'BPI Account',
 };
 
 export const SUBSCRIPTION_MONTHS_OPTIONS = [1, 3, 6, 12] as const;

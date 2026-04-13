@@ -21,6 +21,7 @@ import {
   formatCurrency,
   getPrice,
   MANUAL_PAYMENT_METHOD_LABELS,
+  ManualPaymentMethod,
   MONTHS_LABEL,
   PaymentChannel,
   PAYMENT_CHANNEL_LABELS,
@@ -315,6 +316,80 @@ export const CheckoutView: FunctionComponent<Props> = ({ state, setState }): JSX
                 </MenuItem>
               ))}
             </TextField>
+
+            {manualPayment.paymentMethod === ManualPaymentMethod.GCash ? (
+              <Box
+                sx={{
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  borderRadius: 2,
+                  p: 2,
+                  bgcolor: 'background.paper',
+                }}
+              >
+                <Typography variant="subtitle2" gutterBottom>
+                  Scan to Pay via GCash
+                </Typography>
+                <Typography variant="body2" color="text.secondary" mb={2}>
+                  Send the exact amount to this GCash account, then upload your proof of payment
+                  below.
+                </Typography>
+                <Box textAlign="center">
+                  <Box
+                    component="img"
+                    src="/gcash_QR.jpg"
+                    alt="GCash QR code for manual payment"
+                    sx={{
+                      width: '100%',
+                      maxWidth: 280,
+                      borderRadius: 2,
+                      border: '1px solid',
+                      borderColor: 'divider',
+                      bgcolor: '#fff',
+                    }}
+                  />
+                  <Typography variant="subtitle1" fontWeight={700} mt={1.5}>
+                    0921 359 192
+                  </Typography>
+                </Box>
+              </Box>
+            ) : manualPayment.paymentMethod === ManualPaymentMethod.BankTransfer ? (
+              <Box
+                sx={{
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  borderRadius: 2,
+                  p: 2,
+                  bgcolor: 'background.paper',
+                }}
+              >
+                <Typography variant="subtitle2" gutterBottom>
+                  Scan to Pay via BPI
+                </Typography>
+                <Typography variant="body2" color="text.secondary" mb={2}>
+                  Send the exact amount to this BPI account, then upload your proof of payment
+                  below.
+                </Typography>
+                <Box textAlign="center">
+                  <Box
+                    component="img"
+                    src="/bpi_QR.jpg"
+                    alt="BPI QR code for manual payment"
+                    sx={{
+                      width: '100%',
+                      maxWidth: 280,
+                      borderRadius: 2,
+                      border: '1px solid',
+                      borderColor: 'divider',
+                      bgcolor: '#fff',
+                    }}
+                  />
+                  <Typography variant="subtitle1" fontWeight={700} mt={1.5}>
+                    8289392943
+                  </Typography>
+                </Box>
+              </Box>
+            ) : null}
 
             <TextField
               label="Sender Name"
