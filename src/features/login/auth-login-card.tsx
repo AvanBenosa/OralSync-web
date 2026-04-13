@@ -66,6 +66,15 @@ const fieldSx = {
   },
 };
 
+const LOCKOUT_PREFIX = 'LOCKOUT:';
+
+function parseLockoutMessage(raw: string): { isLockout: boolean; displayText: string } {
+  if (raw.startsWith(LOCKOUT_PREFIX)) {
+    return { isLockout: true, displayText: raw.slice(LOCKOUT_PREFIX.length) };
+  }
+  return { isLockout: false, displayText: raw };
+}
+
 const AuthLoginCard: FunctionComponent<AuthLoginCardProps> = ({
   activeSection,
   authMode,
@@ -284,7 +293,21 @@ const AuthLoginCard: FunctionComponent<AuthLoginCardProps> = ({
             )
           ) : (
             <Box component="form" onSubmit={onLoginSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2.25 }}>
-              {errorMessage ? <Alert severity="error">{errorMessage}</Alert> : null}
+              {errorMessage ? (() => {
+                const { isLockout, displayText } = parseLockoutMessage(errorMessage);
+                if (isLockout) {
+                  return (
+                    <Alert
+                      severity="warning"
+                      icon={<LockOutlinedIcon fontSize="inherit" />}
+                      sx={{ alignItems: 'flex-start' }}
+                    >
+                      <strong>{displayText}</strong>
+                    </Alert>
+                  );
+                }
+                return <Alert severity="error">{displayText}</Alert>;
+              })() : null}
               <TextField
                 label="Email or Username"
                 placeholder="Enter your email or username"
