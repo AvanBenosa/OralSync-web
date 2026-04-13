@@ -1,3 +1,4 @@
+import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded';
 import ArrowForwardRoundedIcon from '@mui/icons-material/ArrowForwardRounded';
 import EmailRoundedIcon from '@mui/icons-material/EmailRounded';
 import FacebookRoundedIcon from '@mui/icons-material/FacebookRounded';
@@ -35,13 +36,13 @@ type RegistrationSuccessState = {
 
 type AuthLoginCardProps = {
   activeSection: 'home' | 'documentation' | 'contact';
-  authMode: 'login' | 'register';
+  authMode: 'login' | 'register' | 'forgotPassword';
   emailAddress: string;
   errorMessage: string;
   facebookUrl: string;
   isSubmitting: boolean;
   isMobileView: boolean;
-  onAuthModeChange: (mode: 'login' | 'register') => void;
+  onAuthModeChange: (mode: 'login' | 'register' | 'forgotPassword') => void;
   onBackToLogin: () => void;
   onShowContact: () => void;
   onLoginSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
@@ -57,6 +58,13 @@ type AuthLoginCardProps = {
   showPassword: boolean;
   username: string;
   versionLabel: string;
+  // Forgot password
+  forgotIdentifier: string;
+  setForgotIdentifier: (value: string) => void;
+  forgotSubmitting: boolean;
+  forgotMessage: string;
+  forgotIsError: boolean;
+  onForgotPasswordSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
 };
 
 const fieldSx = {
@@ -99,9 +107,16 @@ const AuthLoginCard: FunctionComponent<AuthLoginCardProps> = ({
   showPassword,
   username,
   versionLabel,
+  forgotIdentifier,
+  setForgotIdentifier,
+  forgotSubmitting,
+  forgotMessage,
+  forgotIsError,
+  onForgotPasswordSubmit,
 }): JSX.Element => {
   const theme = useTheme();
   const isRegisterMode = authMode === 'register';
+  const isForgotPasswordMode = authMode === 'forgotPassword';
   const showMobileContactPanel = isMobileView && activeSection === 'contact';
 
   return (
@@ -228,215 +243,285 @@ const AuthLoginCard: FunctionComponent<AuthLoginCardProps> = ({
             boxShadow: '0 28px 60px rgba(18, 38, 28, 0.12)',
           }}
         >
-          <Typography
-            variant="overline"
-            sx={{
-              display: 'block',
-              textAlign: 'center',
-              color: authPalette.primary,
-              letterSpacing: 2.4,
-              fontWeight: 800,
-            }}
-          >
-            {isRegisterMode ? 'Create Clinic Workspace' : 'Welcome Back'}
-          </Typography>
-          <Typography
-            align="center"
-            sx={{
-              mt: 1.25,
-              mb: 3,
-              color: theme.palette.text.secondary,
-              fontSize: 15,
-            }}
-          >
-            {isRegisterMode
-              ? 'Create a clinic and seed the first super admin account from the public landing page.'
-              : 'Access your clinic management workspace with your account credentials.'}
-          </Typography>
-
-          <Box
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
-              gap: 1,
-              p: 0.75,
-              mb: 3,
-              borderRadius: 3,
-              backgroundColor: alpha(authPalette.primary, 0.08),
-            }}
-          >
-            <Button
-              variant={authMode === 'login' ? 'contained' : 'text'}
-              onClick={() => onAuthModeChange('login')}
-              sx={getModeButtonSx(authMode === 'login')}
-            >
-              Login
-            </Button>
-            <Button
-              variant={authMode === 'register' ? 'contained' : 'text'}
-              onClick={() => onAuthModeChange('register')}
-              sx={getModeButtonSx(authMode === 'register')}
-            >
-              Register Clinic
-            </Button>
-          </Box>
-
-          {isRegisterMode ? (
-            registrationSuccess ? (
-              <RegistrationSuccessPanel
-                clinicName={registrationSuccess.clinicName}
-                userName={registrationSuccess.userName}
-                onBackToLogin={onBackToLogin}
-              />
-            ) : (
-              <ClinicRegistrationForm onSuccess={onRegistrationSuccess} />
-            )
-          ) : (
-            <Box component="form" onSubmit={onLoginSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2.25 }}>
-              {errorMessage ? (() => {
-                const { isLockout, displayText } = parseLockoutMessage(errorMessage);
-                if (isLockout) {
-                  return (
-                    <Alert
-                      severity="warning"
-                      icon={<LockOutlinedIcon fontSize="inherit" />}
-                      sx={{ alignItems: 'flex-start' }}
-                    >
-                      <strong>{displayText}</strong>
-                    </Alert>
-                  );
-                }
-                return <Alert severity="error">{displayText}</Alert>;
-              })() : null}
-              <TextField
-                label="Email or Username"
-                placeholder="Enter your email or username"
-                fullWidth
-                required
-                autoComplete="username"
-                value={username}
-                onChange={(event) => setUsername(event.target.value)}
-                sx={fieldSx}
-                slotProps={{
-                  input: {
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <PersonOutlineRoundedIcon sx={{ color: authPalette.textSoft }} />
-                      </InputAdornment>
-                    ),
-                  },
-                }}
-              />
-
-              <TextField
-                label="Password"
-                placeholder="Enter your password"
-                type={showPassword ? 'text' : 'password'}
-                fullWidth
-                required
-                autoComplete="current-password"
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                sx={fieldSx}
-                slotProps={{
-                  input: {
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <LockOutlinedIcon sx={{ color: authPalette.textSoft }} />
-                      </InputAdornment>
-                    ),
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <IconButton
-                          edge="end"
-                          aria-label={showPassword ? 'Hide password' : 'Show password'}
-                          onClick={() => setShowPassword(!showPassword)}
-                        >
-                          {showPassword ? <VisibilityOff /> : <Visibility />}
-                        </IconButton>
-                      </InputAdornment>
-                    ),
-                  },
-                }}
-              />
-
-              <Stack
-                direction={{ xs: 'column', sm: 'row' }}
-                alignItems={{ xs: 'flex-start', sm: 'center' }}
-                justifyContent="space-between"
-                spacing={1}
-              >
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={rememberMe}
-                      onChange={(event) => setRememberMe(event.target.checked)}
-                      sx={{
-                        color: authPalette.primary,
-                        '&.Mui-checked': {
-                          color: authPalette.primary,
-                        },
-                      }}
-                    />
-                  }
-                  label="Remember me"
-                  sx={{
-                    ml: -0.5,
-                    color: theme.palette.text.secondary,
-                    '& .MuiFormControlLabel-label': {
-                      fontSize: 14,
+          {isForgotPasswordMode ? (
+            <>
+              <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 0.5 }}>
+                <IconButton
+                  size="small"
+                  onClick={() => onAuthModeChange('login')}
+                  sx={{ color: authPalette.primary }}
+                  aria-label="Back to login"
+                >
+                  <ArrowBackRoundedIcon fontSize="small" />
+                </IconButton>
+                <Typography variant="overline" sx={{ color: authPalette.primary, fontWeight: 800, letterSpacing: 2.4 }}>
+                  Reset Password
+                </Typography>
+              </Stack>
+              <Typography sx={{ mb: 2.5, color: theme.palette.text.secondary, fontSize: 15 }}>
+                Enter your email or username and we'll send a temporary password to your registered email address.
+              </Typography>
+              <Box component="form" onSubmit={onForgotPasswordSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                {forgotMessage ? (
+                  <Alert severity={forgotIsError ? 'error' : 'success'}>{forgotMessage}</Alert>
+                ) : null}
+                <TextField
+                  label="Email or Username"
+                  placeholder="Enter your email or username"
+                  fullWidth
+                  required
+                  autoComplete="username"
+                  value={forgotIdentifier}
+                  onChange={(event) => setForgotIdentifier(event.target.value)}
+                  sx={fieldSx}
+                  slotProps={{
+                    input: {
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <PersonOutlineRoundedIcon sx={{ color: authPalette.textSoft }} />
+                        </InputAdornment>
+                      ),
                     },
                   }}
                 />
                 <Button
-                  component={isMobileView ? 'a' : 'button'}
-                  href={isMobileView ? `mailto:${emailAddress}` : undefined}
-                  type={isMobileView ? undefined : 'button'}
-                  onClick={isMobileView ? undefined : onShowContact}
+                  type="submit"
+                  variant="contained"
+                  fullWidth
+                  disabled={forgotSubmitting}
+                  endIcon={!forgotSubmitting ? <ArrowForwardRoundedIcon /> : undefined}
                   sx={{
-                    px: 0,
-                    minWidth: 'auto',
-                    color: authPalette.primary,
-                    fontWeight: 700,
+                    minHeight: 50,
+                    borderRadius: 3,
+                    fontWeight: 800,
+                    fontSize: 16,
                     textTransform: 'none',
+                    background: authPrimaryGradient,
+                    boxShadow: authPalette.buttonShadow,
                   }}
                 >
-                  Forgot password?
+                  {forgotSubmitting ? <CircularProgress size={22} color="inherit" /> : 'Send Temporary Password'}
                 </Button>
-              </Stack>
-
-              <Button
-                type="submit"
-                variant="contained"
-                fullWidth
-                disabled={isSubmitting}
-                endIcon={!isSubmitting ? <ArrowForwardRoundedIcon /> : undefined}
+                <Button
+                  type="button"
+                  onClick={() => onAuthModeChange('login')}
+                  sx={{ color: authPalette.primary, fontWeight: 700, textTransform: 'none' }}
+                >
+                  Back to Login
+                </Button>
+              </Box>
+            </>
+          ) : (
+            <>
+              <Typography
+                variant="overline"
                 sx={{
-                  minHeight: 50,
-                  borderRadius: 3,
+                  display: 'block',
+                  textAlign: 'center',
+                  color: authPalette.primary,
+                  letterSpacing: 2.4,
                   fontWeight: 800,
-                  fontSize: 16,
-                  textTransform: 'none',
-                  background: authPrimaryGradient,
-                  boxShadow: authPalette.buttonShadow,
                 }}
               >
-                {isSubmitting ? <CircularProgress size={22} color="inherit" /> : 'Login'}
-              </Button>
-
+                {isRegisterMode ? 'Create Clinic Workspace' : 'Welcome Back'}
+              </Typography>
               <Typography
                 align="center"
                 sx={{
-                  fontSize: 13,
+                  mt: 1.25,
+                  mb: 3,
                   color: theme.palette.text.secondary,
-                  lineHeight: 1.6,
+                  fontSize: 15,
                 }}
               >
-                {isMobileView
-                  ? 'Need help? Use the menu or email support directly for account assistance.'
-                  : 'Need help? Open the Contact Us panel from the left side for email, phone, and Facebook support details.'}
+                {isRegisterMode
+                  ? 'Create a clinic and seed the first super admin account from the public landing page.'
+                  : 'Access your clinic management workspace with your account credentials.'}
               </Typography>
-            </Box>
+
+              <Box
+                sx={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+                  gap: 1,
+                  p: 0.75,
+                  mb: 3,
+                  borderRadius: 3,
+                  backgroundColor: alpha(authPalette.primary, 0.08),
+                }}
+              >
+                <Button
+                  variant={authMode === 'login' ? 'contained' : 'text'}
+                  onClick={() => onAuthModeChange('login')}
+                  sx={getModeButtonSx(authMode === 'login')}
+                >
+                  Login
+                </Button>
+                <Button
+                  variant={authMode === 'register' ? 'contained' : 'text'}
+                  onClick={() => onAuthModeChange('register')}
+                  sx={getModeButtonSx(authMode === 'register')}
+                >
+                  Register Clinic
+                </Button>
+              </Box>
+
+              {isRegisterMode ? (
+                registrationSuccess ? (
+                  <RegistrationSuccessPanel
+                    clinicName={registrationSuccess.clinicName}
+                    userName={registrationSuccess.userName}
+                    onBackToLogin={onBackToLogin}
+                  />
+                ) : (
+                  <ClinicRegistrationForm onSuccess={onRegistrationSuccess} />
+                )
+              ) : (
+                <Box component="form" onSubmit={onLoginSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2.25 }}>
+                  {errorMessage ? (() => {
+                    const { isLockout, displayText } = parseLockoutMessage(errorMessage);
+                    if (isLockout) {
+                      return (
+                        <Alert
+                          severity="warning"
+                          icon={<LockOutlinedIcon fontSize="inherit" />}
+                          sx={{ alignItems: 'flex-start' }}
+                        >
+                          <strong>{displayText}</strong>
+                        </Alert>
+                      );
+                    }
+                    return <Alert severity="error">{displayText}</Alert>;
+                  })() : null}
+                  <TextField
+                    label="Email or Username"
+                    placeholder="Enter your email or username"
+                    fullWidth
+                    required
+                    autoComplete="username"
+                    value={username}
+                    onChange={(event) => setUsername(event.target.value)}
+                    sx={fieldSx}
+                    slotProps={{
+                      input: {
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <PersonOutlineRoundedIcon sx={{ color: authPalette.textSoft }} />
+                          </InputAdornment>
+                        ),
+                      },
+                    }}
+                  />
+
+                  <TextField
+                    label="Password"
+                    placeholder="Enter your password"
+                    type={showPassword ? 'text' : 'password'}
+                    fullWidth
+                    required
+                    autoComplete="current-password"
+                    value={password}
+                    onChange={(event) => setPassword(event.target.value)}
+                    sx={fieldSx}
+                    slotProps={{
+                      input: {
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <LockOutlinedIcon sx={{ color: authPalette.textSoft }} />
+                          </InputAdornment>
+                        ),
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <IconButton
+                              edge="end"
+                              aria-label={showPassword ? 'Hide password' : 'Show password'}
+                              onClick={() => setShowPassword(!showPassword)}
+                            >
+                              {showPassword ? <VisibilityOff /> : <Visibility />}
+                            </IconButton>
+                          </InputAdornment>
+                        ),
+                      },
+                    }}
+                  />
+
+                  <Stack
+                    direction={{ xs: 'column', sm: 'row' }}
+                    alignItems={{ xs: 'flex-start', sm: 'center' }}
+                    justifyContent="space-between"
+                    spacing={1}
+                  >
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={rememberMe}
+                          onChange={(event) => setRememberMe(event.target.checked)}
+                          sx={{
+                            color: authPalette.primary,
+                            '&.Mui-checked': {
+                              color: authPalette.primary,
+                            },
+                          }}
+                        />
+                      }
+                      label="Remember me"
+                      sx={{
+                        ml: -0.5,
+                        color: theme.palette.text.secondary,
+                        '& .MuiFormControlLabel-label': {
+                          fontSize: 14,
+                        },
+                      }}
+                    />
+                    <Button
+                      type="button"
+                      onClick={() => onAuthModeChange('forgotPassword')}
+                      sx={{
+                        px: 0,
+                        minWidth: 'auto',
+                        color: authPalette.primary,
+                        fontWeight: 700,
+                        textTransform: 'none',
+                      }}
+                    >
+                      Forgot password?
+                    </Button>
+                  </Stack>
+
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    fullWidth
+                    disabled={isSubmitting}
+                    endIcon={!isSubmitting ? <ArrowForwardRoundedIcon /> : undefined}
+                    sx={{
+                      minHeight: 50,
+                      borderRadius: 3,
+                      fontWeight: 800,
+                      fontSize: 16,
+                      textTransform: 'none',
+                      background: authPrimaryGradient,
+                      boxShadow: authPalette.buttonShadow,
+                    }}
+                  >
+                    {isSubmitting ? <CircularProgress size={22} color="inherit" /> : 'Login'}
+                  </Button>
+
+                  <Typography
+                    align="center"
+                    sx={{
+                      fontSize: 13,
+                      color: theme.palette.text.secondary,
+                      lineHeight: 1.6,
+                    }}
+                  >
+                    {isMobileView
+                      ? 'Need help? Use the menu or email support directly for account assistance.'
+                      : 'Need help? Open the Contact Us panel from the left side for email, phone, and Facebook support details.'}
+                  </Typography>
+                </Box>
+              )}
+            </>
           )}
 
         </Paper>

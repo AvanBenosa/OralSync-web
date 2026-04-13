@@ -109,6 +109,7 @@ export interface AuthResponse {
   token: string;
   user: AuthUser;
   requiresRegistration: boolean;
+  mustChangePassword?: boolean;
 }
 
 export interface RegistrationStatusResponse {
@@ -272,6 +273,28 @@ export const acceptClinicBetaTesting = async (): Promise<ClinicDataPrivacyStatus
     data: response.data,
     cachedAt: Date.now(),
   });
+  return response.data;
+};
+
+const FORGOT_PASSWORD_ENDPOINT = '/forgot-password';
+const CHANGE_PASSWORD_ENDPOINT = '/change-password';
+
+export const requestForgotPassword = async (identifier: string): Promise<string> => {
+  const response = await apiClient.post<string>(FORGOT_PASSWORD_ENDPOINT, { identifier });
+  return response.data;
+};
+
+export const changePasswordAfterTemp = async (
+  newPassword: string,
+  confirmPassword: string,
+  token?: string
+): Promise<string> => {
+  const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
+  const response = await apiClient.post<string>(
+    CHANGE_PASSWORD_ENDPOINT,
+    { newPassword, confirmPassword },
+    config
+  );
   return response.data;
 };
 

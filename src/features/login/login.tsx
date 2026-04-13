@@ -1,13 +1,37 @@
-import { Box, useMediaQuery, useTheme } from '@mui/material';
+import {
+  Alert,
+  Box,
+  Button,
+  CircularProgress,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  IconButton,
+  InputAdornment,
+  Stack,
+  TextField,
+  Typography,
+  useMediaQuery,
+  useTheme,
+} from '@mui/material';
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
+import Visibility from '@mui/icons-material/Visibility';
+import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import { isAxiosError } from 'axios';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toastSuccess } from '../../common/api/responses';
 import { queuePostLoginBoot } from '../../common/loading/post-login-boot';
-import { loginUser, type AuthResponse } from '../../common/services/auth-api';
+import {
+  loginUser,
+  requestForgotPassword,
+  changePasswordAfterTemp,
+  type AuthResponse,
+} from '../../common/services/auth-api';
 import { useAuthStore } from '../../common/store/authStore';
 import { getPortalHomePath, getUserPortalType } from '../../common/utils/portal';
 import { DEVOTIONAL_HIDDEN_KEY } from '../dashboard/api/devotional';
+import { authPalette, authPrimaryGradient } from './auth-palette';
 import AuthHeroPanel, {
   authHeroDocumentationItems,
   authHeroDefaultHighlights,
@@ -90,7 +114,7 @@ const topNavItems = [
   { id: 'contact', label: 'Contact Us' },
 ];
 
-type AuthMode = 'login' | 'register';
+type AuthMode = 'login' | 'register' | 'forgotPassword';
 type AuthSection = 'home' | 'documentation' | 'contact';
 
 type RegistrationSuccessState = {
@@ -104,6 +128,7 @@ const Login = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const navigate = useNavigate();
   const setSession = useAuthStore((state) => state.setSession);
+  const user = useAuthStore((state) => state.user);
 
   const [authMode, setAuthMode] = useState<AuthMode>('login');
   const [activeSection, setActiveSection] = useState<AuthSection>('home');
@@ -117,6 +142,21 @@ const Login = () => {
   const [registrationSuccess, setRegistrationSuccess] = useState<RegistrationSuccessState | null>(
     null
   );
+
+  // Forgot password
+  const [forgotIdentifier, setForgotIdentifier] = useState('');
+  const [forgotSubmitting, setForgotSubmitting] = useState(false);
+  const [forgotMessage, setForgotMessage] = useState('');
+  const [forgotIsError, setForgotIsError] = useState(false);
+
+  // Change password modal (after temp login)
+  const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
+  const [pendingAuthResponse, setPendingAuthResponse] = useState<AuthResponse | null>(null);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [changePasswordSubmitting, setChangePasswordSubmitting] = useState(false);
+  const [changePasswordError, setChangePasswordError] = useState('');
 
   useEffect(() => {
     const storedCredentials = window.localStorage.getItem(REMEMBER_ME_STORAGE_KEY);
@@ -160,14 +200,23 @@ const Login = () => {
   };
 
   const handleLoginSuccess = (response: AuthResponse): void => {
-    window.sessionStorage.removeItem(DEVOTIONAL_HIDDEN_KEY);
-    queuePostLoginBoot();
+    if (response.mustChangePassword) {
+      // Don't call setSession yet — doing so would set isLoggedIn=true and trigger
+      // the PublicRoute guard to navigate away before the modal can show.
+      // We store the response and complete the session after the password is changed.
+      setPendingAuthResponse(response);
+      setShowChangePasswordModal(true);
+      return;
+    }
+
     setSession(
       response.token,
       response.user?.name || response.user?.userName || response.user?.email,
       response.requiresRegistration,
       response.user
     );
+    window.sessionStorage.removeItem(DEVOTIONAL_HIDDEN_KEY);
+    queuePostLoginBoot();
     navigate(getPortalHomePath(getUserPortalType(response.user)), { replace: true });
   };
 
@@ -182,6 +231,67 @@ const Login = () => {
   const handleBackToLogin = (): void => {
     setRegistrationSuccess(null);
     setAuthMode('login');
+  };
+
+  const handleForgotPasswordSubmit = async (
+    event: React.FormEvent<HTMLFormElement>
+  ): Promise<void> => {
+    event.preventDefault();
+    setForgotMessage('');
+    setForgotIsError(false);
+    setForgotSubmitting(true);
+
+    try {
+      const message = await requestForgotPassword(forgotIdentifier.trim());
+      setForgotMessage(message);
+    } catch (error) {
+      setForgotIsError(true);
+      if (isAxiosError(error)) {
+        setForgotMessage(
+          typeof error.response?.data === 'string' ? error.response.data : error.message
+        );
+      } else {
+        setForgotMessage('Request failed. Please try again.');
+      }
+    } finally {
+      setForgotSubmitting(false);
+    }
+  };
+
+  const handleChangePasswordSubmit = async (
+    event: React.FormEvent<HTMLFormElement>
+  ): Promise<void> => {
+    event.preventDefault();
+    setChangePasswordError('');
+    setChangePasswordSubmitting(true);
+
+    try {
+      await changePasswordAfterTemp(newPassword, confirmPassword, pendingAuthResponse?.token);
+      // Now it's safe to establish the session — the user has set a real password
+      if (pendingAuthResponse) {
+        setSession(
+          pendingAuthResponse.token,
+          pendingAuthResponse.user?.name || pendingAuthResponse.user?.userName || pendingAuthResponse.user?.email,
+          pendingAuthResponse.requiresRegistration,
+          pendingAuthResponse.user
+        );
+      }
+      setShowChangePasswordModal(false);
+      setPendingAuthResponse(null);
+      window.sessionStorage.removeItem(DEVOTIONAL_HIDDEN_KEY);
+      queuePostLoginBoot();
+      navigate(getPortalHomePath(getUserPortalType(pendingAuthResponse?.user ?? user)), { replace: true });
+    } catch (error) {
+      if (isAxiosError(error)) {
+        setChangePasswordError(
+          typeof error.response?.data === 'string' ? error.response.data : error.message
+        );
+      } else {
+        setChangePasswordError('Failed to change password. Please try again.');
+      }
+    } finally {
+      setChangePasswordSubmitting(false);
+    }
   };
 
   const handleLoginSubmit = async (event: React.FormEvent<HTMLFormElement>): Promise<void> => {
@@ -289,8 +399,149 @@ const Login = () => {
           showPassword={showPassword}
           username={username}
           versionLabel={process.env.REACT_APP_VERSION || 'v0.1.0-beta'}
+          forgotIdentifier={forgotIdentifier}
+          setForgotIdentifier={setForgotIdentifier}
+          forgotSubmitting={forgotSubmitting}
+          forgotMessage={forgotMessage}
+          forgotIsError={forgotIsError}
+          onForgotPasswordSubmit={handleForgotPasswordSubmit}
         />
       </Box>
+
+      <Dialog
+        open={showChangePasswordModal}
+        disableEscapeKeyDown
+        maxWidth="xs"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: 4,
+            p: 1,
+          },
+        }}
+      >
+        <DialogTitle sx={{ pb: 0.5 }}>
+          <Stack direction="row" alignItems="center" spacing={1.25}>
+            <Box
+              sx={{
+                width: 40,
+                height: 40,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderRadius: 2.5,
+                background: authPrimaryGradient,
+                flexShrink: 0,
+              }}
+            >
+              <LockOutlinedIcon sx={{ color: '#fff', fontSize: 20 }} />
+            </Box>
+            <Box>
+              <Typography sx={{ fontWeight: 800, fontSize: 17, lineHeight: 1.2 }}>
+                Set New Password
+              </Typography>
+              <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                Required before you can continue
+              </Typography>
+            </Box>
+          </Stack>
+        </DialogTitle>
+
+        <DialogContent sx={{ pt: 2 }}>
+          <Alert severity="info" sx={{ mb: 2.5, borderRadius: 2 }}>
+            You signed in with a temporary password. Please create a new password to secure your account.
+          </Alert>
+
+          <Box
+            component="form"
+            id="change-password-form"
+            onSubmit={handleChangePasswordSubmit}
+            sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
+          >
+            {changePasswordError ? (
+              <Alert severity="error" sx={{ borderRadius: 2 }}>{changePasswordError}</Alert>
+            ) : null}
+
+            <TextField
+              label="New Password"
+              placeholder="Enter new password (min. 8 characters)"
+              type={showNewPassword ? 'text' : 'password'}
+              fullWidth
+              required
+              autoComplete="new-password"
+              autoFocus
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2.5 } }}
+              slotProps={{
+                input: {
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <LockOutlinedIcon sx={{ color: 'text.disabled', fontSize: 20 }} />
+                    </InputAdornment>
+                  ),
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        edge="end"
+                        size="small"
+                        aria-label={showNewPassword ? 'Hide password' : 'Show password'}
+                        onClick={() => setShowNewPassword(!showNewPassword)}
+                      >
+                        {showNewPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                },
+              }}
+            />
+
+            <TextField
+              label="Confirm New Password"
+              placeholder="Re-enter new password"
+              type={showNewPassword ? 'text' : 'password'}
+              fullWidth
+              required
+              autoComplete="new-password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2.5 } }}
+              slotProps={{
+                input: {
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <LockOutlinedIcon sx={{ color: 'text.disabled', fontSize: 20 }} />
+                    </InputAdornment>
+                  ),
+                },
+              }}
+            />
+
+            <Button
+              type="submit"
+              variant="contained"
+              fullWidth
+              disabled={changePasswordSubmitting}
+              sx={{
+                mt: 0.5,
+                minHeight: 48,
+                borderRadius: 3,
+                fontWeight: 800,
+                fontSize: 15,
+                textTransform: 'none',
+                background: authPrimaryGradient,
+                boxShadow: authPalette.buttonShadow,
+              }}
+            >
+              {changePasswordSubmitting ? (
+                <CircularProgress size={22} color="inherit" />
+              ) : (
+                'Save New Password & Continue'
+              )}
+            </Button>
+          </Box>
+        </DialogContent>
+      </Dialog>
     </Box>
   );
 };
