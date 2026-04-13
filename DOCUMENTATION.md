@@ -727,7 +727,7 @@ dotnet run
 | Environment | Frontend URL | Backend URL | Notes |
 |---|---|---|---|
 | Local Dev | `http://localhost:3000` | `http://localhost:5002` | Dev proxy in `package.json` |
-| Production | Azure Static Web App | Azure App Service | See below |
+| Production | Azure App Service Linux | Azure App Service | See below |
 
 ### 10.2 Backend — Local Development
 
@@ -801,7 +801,7 @@ npm run build
 # Output: /build folder
 ```
 
-Deploy the `build/` folder to **Azure Static Web App** or any static host.
+Deploy the `build/` folder to your static host. For Azure App Service Linux, serve the deployed `/home/site/wwwroot` directory as the SPA root.
 
 **Azure Static Web App hosting rules** (`public/staticwebapp.config.json`):
 - `index.html`, `manifest.json`, `service-worker.js`, `offline.html` → `no-cache`
@@ -814,6 +814,13 @@ npm run build
 npx serve -s build
 # Open http://localhost:3000, log in, check for install banner
 ```
+
+**Azure App Service Linux startup:**
+```bash
+pm2 serve /home/site/wwwroot --no-daemon --spa --port 8080
+```
+
+On App Service Linux, `web.config` and `staticwebapp.config.json` are not used to serve the site.
 
 ---
 
