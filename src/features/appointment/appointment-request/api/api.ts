@@ -23,6 +23,17 @@ const appointmentResponseCache = new Map<
   }
 >();
 const APPOINTMENT_RESPONSE_CACHE_TTL_MS = 5000;
+const createEmptyAppointmentResponse = (
+  pageStart: number,
+  pageEnd: number
+): AppointmentResponseModel => ({
+  items: [],
+  pageStart,
+  pageEnd,
+  totalCount: 0,
+  summaryCount: 0,
+  hasDateFilter: false,
+});
 
 export const parseAppointmentDateValue = (value?: string | Date): Date | undefined => {
   if (!value) {
@@ -137,6 +148,7 @@ export const GetAppointments = async (
   forceRefresh: boolean = false
 ): Promise<AppointmentResponseModel> => {
   const resolvedClinicId = resolveClinicId(state.clinicId);
+  const isClinicLocked = Boolean(useAuthStore.getState().user?.isLocked);
   const query = String(state.search ?? '').trim() || 'all';
   const pageStart = state.pageStart;
   const pageEnd = state.pageEnd;
@@ -152,6 +164,10 @@ export const GetAppointments = async (
     pageStart,
     pageEnd,
   });
+
+  if (isClinicLocked) {
+    return createEmptyAppointmentResponse(pageStart, pageEnd);
+  }
 
   if (forceRefresh) {
     appointmentResponseCache.delete(requestKey);
@@ -185,14 +201,8 @@ export const GetAppointments = async (
       });
 
       const responseData =
-        SuccessResponse(response, ResponseMethod.Fetch, undefined, false) || {
-          items: [],
-          pageStart,
-          pageEnd,
-          totalCount: 0,
-          summaryCount: 0,
-          hasDateFilter: false,
-        };
+        SuccessResponse(response, ResponseMethod.Fetch, undefined, false) ||
+        createEmptyAppointmentResponse(pageStart, pageEnd);
 
       appointmentResponseCache.set(requestKey, {
         data: responseData,

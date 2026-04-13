@@ -10,6 +10,25 @@ import { useAuthStore } from '../../../common/store/authStore';
 import { DashboardResponseModel } from './types';
 
 const DASHBOARD_ENDPOINT = '/api/dmd/dashboard/get-dashboard';
+const createEmptyDashboardResponse = (
+  clinicId?: string | null
+): DashboardResponseModel => ({
+  totalPatients: 0,
+  patientsToday: 0,
+  scheduledAppointments: 0,
+  pendingAppointments: 0,
+  incomeToday: 0,
+  totalIncomeMonthly: 0,
+  totalExpenseMonthly: 0,
+  latestPatients: [],
+  addPatients: false,
+  addAppointment: false,
+  monthlyIncome: [],
+  monthlyRevenue: [],
+  nextDayAppointment: [],
+  todayAppointment: [],
+  clinicId: clinicId ?? null,
+});
 const dashboardRequestCache = new Map<string, Promise<DashboardResponseModel>>();
 const dashboardResponseCache = new Map<
   string,
@@ -25,8 +44,13 @@ export const GetDashboard = async (
   forceRefresh: boolean = false
 ): Promise<DashboardResponseModel> => {
   const resolvedClinicId = resolveClinicId(clinicId);
+  const isClinicLocked = Boolean(useAuthStore.getState().user?.isLocked);
   const branchId = useAuthStore.getState().branchId?.trim() || '';
   const clinicKey = `${String(resolvedClinicId ?? 'current-clinic')}|${branchId || 'all-branches'}`;
+
+  if (isClinicLocked) {
+    return createEmptyDashboardResponse(resolvedClinicId);
+  }
 
   if (forceRefresh) {
     dashboardResponseCache.delete(clinicKey);
@@ -55,23 +79,8 @@ export const GetDashboard = async (
       });
 
       const responseData =
-        SuccessResponse(response, ResponseMethod.Fetch, undefined, false) || {
-          totalPatients: 0,
-          patientsToday: 0,
-          scheduledAppointments: 0,
-          pendingAppointments: 0,
-          incomeToday: 0,
-          totalIncomeMonthly: 0,
-          totalExpenseMonthly: 0,
-          latestPatients: [],
-          addPatients: false,
-          addAppointment: false,
-          monthlyIncome: [],
-          monthlyRevenue: [],
-          nextDayAppointment: [],
-          todayAppointment: [],
-          clinicId: resolvedClinicId,
-        };
+        SuccessResponse(response, ResponseMethod.Fetch, undefined, false) ||
+        createEmptyDashboardResponse(resolvedClinicId);
 
       dashboardResponseCache.set(clinicKey, {
         data: responseData,

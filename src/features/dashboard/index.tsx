@@ -17,6 +17,7 @@ export const DashBoard: FunctionComponent<DashboardProps> = (
   const { clinicId } = props;
   const resolvedClinicId = useClinicId(clinicId);
   const activeBranchId = useAuthStore((store) => store.branchId);
+  const isLocked = useAuthStore((store) => Boolean(store.user?.isLocked));
 
   const reloadTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastLoadedContextKeyRef = useRef<string | null | undefined>(undefined);
@@ -49,6 +50,29 @@ export const DashBoard: FunctionComponent<DashboardProps> = (
         ...prev,
         load: false,
         clinicId: resolvedClinicId,
+      }));
+      return;
+    }
+
+    if (isLocked) {
+      setState((prev: DashboardStateModel) => ({
+        ...prev,
+        load: false,
+        clinicId: resolvedClinicId,
+        totalPatients: 0,
+        patientsToday: 0,
+        scheduledAppointments: 0,
+        pendingAppointments: 0,
+        incomeToday: 0,
+        totalIncomeMonthly: 0,
+        totalExpenseMonthly: 0,
+        latestPatients: [],
+        addPatients: false,
+        addAppointment: false,
+        monthlyIncome: [],
+        monthlyRevenue: [],
+        todayAppointment: [],
+        nextDayAppointment: [],
       }));
       return;
     }
@@ -104,6 +128,34 @@ export const DashBoard: FunctionComponent<DashboardProps> = (
       };
     }
 
+    if (isLocked) {
+      lastLoadedContextKeyRef.current = null;
+      setState((prev: DashboardStateModel) => ({
+        ...prev,
+        load: false,
+        totalPatients: 0,
+        patientsToday: 0,
+        scheduledAppointments: 0,
+        pendingAppointments: 0,
+        incomeToday: 0,
+        totalIncomeMonthly: 0,
+        totalExpenseMonthly: 0,
+        latestPatients: [],
+        addPatients: false,
+        addAppointment: false,
+        monthlyIncome: [],
+        monthlyRevenue: [],
+        todayAppointment: [],
+        nextDayAppointment: [],
+      }));
+
+      return () => {
+        if (reloadTimeoutRef.current) {
+          clearTimeout(reloadTimeoutRef.current);
+        }
+      };
+    }
+
     const contextKey = `${resolvedClinicId ?? 'current-clinic'}:${activeBranchId ?? 'all-branches'}`;
     if (lastLoadedContextKeyRef.current === contextKey) {
       return () => {
@@ -126,7 +178,7 @@ export const DashBoard: FunctionComponent<DashboardProps> = (
     };
     // Fetch when clinic context changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeBranchId, resolvedClinicId]);
+  }, [activeBranchId, isLocked, resolvedClinicId]);
   return (
     <div className={styles.wrapper}>
       <div className={styles.bodyWrapper}>

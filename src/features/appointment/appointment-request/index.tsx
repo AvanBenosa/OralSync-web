@@ -26,6 +26,7 @@ export const AppointmentModule: FunctionComponent<AppointmentProps> = (
   const reloadTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const resolvedClinicId = useClinicId(clinicId);
   const activeBranchId = useAuthStore((store) => store.branchId);
+  const isLocked = useAuthStore((store) => Boolean(store.user?.isLocked));
   const lastLoadedClinicIdRef = useRef<string | null | undefined>(undefined);
   const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [activeTab, setActiveTab] = useState<AppointmentViewTab>('requests');
@@ -54,6 +55,19 @@ export const AppointmentModule: FunctionComponent<AppointmentProps> = (
     forceRefresh: boolean = false
   ): Promise<void> => {
     if (!resolvedClinicId) {
+      setState((prev: AppointmentStateModel) => ({
+        ...prev,
+        load: false,
+        items: [],
+        clinicId: resolvedClinicId,
+        totalItem: 0,
+        summaryCount: 0,
+        hasDateFilter: false,
+      }));
+      return;
+    }
+
+    if (isLocked) {
       setState((prev: AppointmentStateModel) => ({
         ...prev,
         load: false,
@@ -134,6 +148,27 @@ export const AppointmentModule: FunctionComponent<AppointmentProps> = (
       };
     }
 
+    if (isLocked) {
+      lastLoadedClinicIdRef.current = undefined;
+      setState((prev: AppointmentStateModel) => ({
+        ...prev,
+        load: false,
+        items: [],
+        totalItem: 0,
+        summaryCount: 0,
+        hasDateFilter: false,
+      }));
+
+      return () => {
+        if (reloadTimeoutRef.current) {
+          clearTimeout(reloadTimeoutRef.current);
+        }
+        if (searchTimeoutRef.current) {
+          clearTimeout(searchTimeoutRef.current);
+        }
+      };
+    }
+
     const clinicChanged = lastLoadedClinicIdRef.current !== resolvedClinicId;
     lastLoadedClinicIdRef.current = resolvedClinicId;
 
@@ -169,6 +204,7 @@ export const AppointmentModule: FunctionComponent<AppointmentProps> = (
     activeTab,
     isMobile,
     activeBranchId,
+    isLocked,
   ]);
 
   const summaryLabel = state.hasDateFilter ? 'Total Appointments' : 'Appointment Today';
