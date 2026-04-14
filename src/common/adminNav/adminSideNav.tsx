@@ -32,6 +32,8 @@ import { getAdminManualPaymentRequests } from '../../features/admin-portal/api/a
 
 const drawerWidth = 250;
 const collapsedDrawerWidth = 72;
+const sideNavFontFamily =
+  "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif";
 
 const menuItems = [
   { label: 'Dashboard', icon: <DashboardCustomizeRoundedIcon />, path: '/admin/dashboard' },
@@ -145,11 +147,17 @@ const AdminSideNav = () => {
               {drawerOpen ? (
                 <ListItemText
                   primary={item.label}
-                  secondary={
-                    showPendingBadge ? `${pendingRequestCount} pending` : undefined
-                  }
+                  primaryTypographyProps={{
+                    sx: {
+                      fontFamily: sideNavFontFamily,
+                      color: '#fff',
+                      fontWeight: active ? 700 : 600,
+                    },
+                  }}
+                  secondary={showPendingBadge ? `${pendingRequestCount} pending` : undefined}
                   secondaryTypographyProps={{
                     sx: {
+                      fontFamily: sideNavFontFamily,
                       color: 'rgba(255,255,255,0.72)',
                       fontSize: '0.72rem',
                       fontWeight: 700,
@@ -168,18 +176,34 @@ const AdminSideNav = () => {
   if (isMobile) {
     return (
       <>
-        <AppBar position="fixed" color="primary" sx={{ top: 0, height: 56, justifyContent: 'center' }}>
-          <Toolbar sx={{ display: 'flex', justifyContent: 'space-between', minHeight: '56px !important' }}>
+        <AppBar
+          position="fixed"
+          color="primary"
+          sx={{ top: 0, height: 56, justifyContent: 'center' }}
+        >
+          <Toolbar
+            sx={{ display: 'flex', justifyContent: 'space-between', minHeight: '56px !important' }}
+          >
             <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
               {activeItem?.label ?? 'Admin Portal'}
             </Typography>
-            <IconButton onClick={() => setLogoutDialogOpen(true)} color="inherit" aria-label="Logout">
+            <IconButton
+              onClick={() => setLogoutDialogOpen(true)}
+              color="inherit"
+              aria-label="Logout"
+            >
               <LogoutRoundedIcon />
             </IconButton>
           </Toolbar>
         </AppBar>
-        <AppBar position="fixed" color="primary" sx={{ top: 'auto', bottom: 0, height: 56, justifyContent: 'center' }}>
-          <Toolbar sx={{ display: 'flex', justifyContent: 'space-around', minHeight: '56px !important' }}>
+        <AppBar
+          position="fixed"
+          color="primary"
+          sx={{ top: 'auto', bottom: 0, height: 56, justifyContent: 'center' }}
+        >
+          <Toolbar
+            sx={{ display: 'flex', justifyContent: 'space-around', minHeight: '56px !important' }}
+          >
             {menuItems.map((item) => {
               const active = location.pathname.startsWith(item.path);
               const isPaymentRequestItem = item.path === '/admin/payment-requests';
@@ -210,10 +234,26 @@ const AdminSideNav = () => {
           </Toolbar>
         </AppBar>
         <Box sx={{ pt: 7, pb: 7 }} />
-        <Dialog open={logoutDialogOpen} onClose={() => setLogoutDialogOpen(false)} fullWidth maxWidth="xs">
+        <Dialog
+          open={logoutDialogOpen}
+          onClose={() => setLogoutDialogOpen(false)}
+          fullWidth
+          maxWidth="xs"
+        >
           <Box sx={{ px: { xs: 2.5, sm: 3 }, pt: 2.5, pb: 1.5 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, mb: 1.5 }}>
-              <Box sx={{ width: 34, height: 34, borderRadius: '10px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', bgcolor: '#fff1f2', color: '#c62828' }}>
+              <Box
+                sx={{
+                  width: 34,
+                  height: 34,
+                  borderRadius: '10px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  bgcolor: '#fff1f2',
+                  color: '#c62828',
+                }}
+              >
                 <WarningAmberRoundedIcon sx={{ fontSize: 20 }} />
               </Box>
               <Box>
@@ -230,10 +270,28 @@ const AdminSideNav = () => {
             </Typography>
           </Box>
           <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, px: 3, py: 2 }}>
-            <Button onClick={() => setLogoutDialogOpen(false)} color="inherit" variant="text" sx={{ borderRadius: '10px', px: 2, textTransform: 'none', fontWeight: 600 }}>
+            <Button
+              onClick={() => setLogoutDialogOpen(false)}
+              color="inherit"
+              variant="text"
+              sx={{ borderRadius: '10px', px: 2, textTransform: 'none', fontWeight: 600 }}
+            >
               Cancel
             </Button>
-            <Button onClick={confirmLogout} variant="contained" color="error" startIcon={<LogoutRoundedIcon sx={{ fontSize: 18 }} />} sx={{ borderRadius: '10px', px: 2.25, textTransform: 'none', fontWeight: 700, boxShadow: 'none', '&:hover': { boxShadow: 'none' } }}>
+            <Button
+              onClick={confirmLogout}
+              variant="contained"
+              color="error"
+              startIcon={<LogoutRoundedIcon sx={{ fontSize: 18 }} />}
+              sx={{
+                borderRadius: '10px',
+                px: 2.25,
+                textTransform: 'none',
+                fontWeight: 700,
+                boxShadow: 'none',
+                '&:hover': { boxShadow: 'none' },
+              }}
+            >
               Logout
             </Button>
           </Box>
@@ -273,24 +331,74 @@ const AdminSideNav = () => {
                     px: 1.15,
                     py: 0.95,
                     borderRadius: '18px',
-                    background: 'linear-gradient(145deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.05) 100%)',
+                    background:
+                      'linear-gradient(145deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.05) 100%)',
                     border: '1px solid rgba(255,255,255,0.18)',
                     boxShadow: '0 8px 18px rgba(8, 29, 48, 0.16)',
                   }}
                 >
-                  <Box sx={{ width: 44, height: 44, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: '#17344f', fontSize: '0.92rem', fontWeight: 900, letterSpacing: '0.03em', background: 'radial-gradient(circle at 30% 30%, #ffffff 0%, #dfeaf3 100%)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.55)' }}>
+                  <Box
+                    sx={{
+                      width: 44,
+                      height: 44,
+                      borderRadius: '50%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0,
+                      color: '#17344f',
+                      fontSize: '0.92rem',
+                      fontWeight: 900,
+                      letterSpacing: '0.03em',
+                      background: 'radial-gradient(circle at 30% 30%, #ffffff 0%, #dfeaf3 100%)',
+                      boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.55)',
+                    }}
+                  >
                     {portalInitials}
                   </Box>
                   <Box sx={{ minWidth: 0 }}>
-                    <Typography fontWeight={800} title={portalName} sx={{ lineHeight: 1.05, fontSize: portalName.length > 18 ? '0.9rem' : '1rem', letterSpacing: '-0.01em', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', wordBreak: 'break-word', pr: 0.5 }}>
+                    <Typography
+                      fontWeight={800}
+                      title={portalName}
+                      sx={{
+                        lineHeight: 1.05,
+                        fontSize: portalName.length > 18 ? '0.9rem' : '1rem',
+                        letterSpacing: '-0.01em',
+                        display: '-webkit-box',
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical',
+                        overflow: 'hidden',
+                        wordBreak: 'break-word',
+                        pr: 0.5,
+                      }}
+                    >
                       {portalName}
                     </Typography>
                     {userDisplayName ? (
-                      <Typography noWrap title={userDisplayName} sx={{ mt: 0.2, color: '#ffbb76', fontSize: '0.84rem', fontWeight: 700, lineHeight: 1.15 }}>
+                      <Typography
+                        noWrap
+                        title={userDisplayName}
+                        sx={{
+                          mt: 0.2,
+                          color: '#ffbb76',
+                          fontSize: '0.84rem',
+                          fontWeight: 700,
+                          lineHeight: 1.15,
+                        }}
+                      >
                         {userDisplayName}
                       </Typography>
                     ) : null}
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.45, mt: 0.18, color: 'rgba(255,255,255,0.7)', minWidth: 0 }}>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 0.45,
+                        mt: 0.18,
+                        color: 'rgba(255,255,255,0.7)',
+                        minWidth: 0,
+                      }}
+                    >
                       <PersonRoundedIcon sx={{ fontSize: 13, flexShrink: 0 }} />
                       <Typography noWrap sx={{ fontSize: '0.72rem', lineHeight: 1.1 }}>
                         {roleLabel}
@@ -319,7 +427,10 @@ const AdminSideNav = () => {
               </Box>
             ) : (
               <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-                <Tooltip title={`${portalName}${userDisplayName ? ` - ${userDisplayName}` : ''}`} placement="right">
+                <Tooltip
+                  title={`${portalName}${userDisplayName ? ` - ${userDisplayName}` : ''}`}
+                  placement="right"
+                >
                   <IconButton
                     size="small"
                     onClick={() => setDrawerOpen((current) => !current)}
@@ -328,7 +439,8 @@ const AdminSideNav = () => {
                       height: 42,
                       color: '#fff',
                       border: '1px solid rgba(255,255,255,0.12)',
-                      background: 'linear-gradient(145deg, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0.07) 100%)',
+                      background:
+                        'linear-gradient(145deg, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0.07) 100%)',
                       boxShadow: '0 10px 18px rgba(8, 29, 48, 0.16)',
                       fontSize: '0.95rem',
                       fontWeight: 900,
@@ -373,10 +485,26 @@ const AdminSideNav = () => {
         </Box>
       </Box>
 
-      <Dialog open={logoutDialogOpen} onClose={() => setLogoutDialogOpen(false)} fullWidth maxWidth="xs">
+      <Dialog
+        open={logoutDialogOpen}
+        onClose={() => setLogoutDialogOpen(false)}
+        fullWidth
+        maxWidth="xs"
+      >
         <Box sx={{ px: { xs: 2.5, sm: 3 }, pt: 2.5, pb: 1.5 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, mb: 1.5 }}>
-            <Box sx={{ width: 34, height: 34, borderRadius: '10px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', bgcolor: '#fff1f2', color: '#c62828' }}>
+            <Box
+              sx={{
+                width: 34,
+                height: 34,
+                borderRadius: '10px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                bgcolor: '#fff1f2',
+                color: '#c62828',
+              }}
+            >
               <WarningAmberRoundedIcon sx={{ fontSize: 20 }} />
             </Box>
             <Box>
@@ -393,10 +521,28 @@ const AdminSideNav = () => {
           </Typography>
         </Box>
         <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, px: 3, py: 2 }}>
-          <Button onClick={() => setLogoutDialogOpen(false)} color="inherit" variant="text" sx={{ borderRadius: '10px', px: 2, textTransform: 'none', fontWeight: 600 }}>
+          <Button
+            onClick={() => setLogoutDialogOpen(false)}
+            color="inherit"
+            variant="text"
+            sx={{ borderRadius: '10px', px: 2, textTransform: 'none', fontWeight: 600 }}
+          >
             Cancel
           </Button>
-          <Button onClick={confirmLogout} variant="contained" color="error" startIcon={<LogoutRoundedIcon sx={{ fontSize: 18 }} />} sx={{ borderRadius: '10px', px: 2.25, textTransform: 'none', fontWeight: 700, boxShadow: 'none', '&:hover': { boxShadow: 'none' } }}>
+          <Button
+            onClick={confirmLogout}
+            variant="contained"
+            color="error"
+            startIcon={<LogoutRoundedIcon sx={{ fontSize: 18 }} />}
+            sx={{
+              borderRadius: '10px',
+              px: 2.25,
+              textTransform: 'none',
+              fontWeight: 700,
+              boxShadow: 'none',
+              '&:hover': { boxShadow: 'none' },
+            }}
+          >
             Logout
           </Button>
         </Box>

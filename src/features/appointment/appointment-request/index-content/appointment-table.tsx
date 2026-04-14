@@ -22,12 +22,7 @@ import styles from '../style.scss.module.scss';
 import { AppointmentModel, AppointmentStateProps } from '../api/types';
 import HighlightText from '../../../../common/components/Highlight';
 
-type AppointmentStatusTone =
-  | 'pending'
-  | 'scheduled'
-  | 'completed'
-  | 'cancelled'
-  | 'noShow';
+type AppointmentStatusTone = 'pending' | 'scheduled' | 'completed' | 'cancelled' | 'noShow';
 
 const formatAppointmentDate = (value?: string | Date, format: string = 'MMM DD, YYYY, hh:mm A') =>
   toValidDateDisplay(value, format);
@@ -64,7 +59,10 @@ const getAppointmentStatusTone = (status?: string): AppointmentStatusTone | unde
     return undefined;
   }
 
-  const normalizedValue = status.trim().toLowerCase().replace(/[\s-]+/g, '');
+  const normalizedValue = status
+    .trim()
+    .toLowerCase()
+    .replace(/[\s-]+/g, '');
 
   if (normalizedValue === 'pending') {
     return 'pending';
@@ -227,7 +225,7 @@ const AppointmentTable: FunctionComponent<AppointmentStateProps> = (
               }}
             />
           ) : state.items.length === 0 ? (
-            <TableRow>
+            <TableRow className={styles.noHoverRow}>
               <TableCell colSpan={columnCount} align="center" sx={{ borderBottom: 0, py: 9 }}>
                 <Box className={styles.emptyState}>
                   <div className={styles.emptyStateIcon}>

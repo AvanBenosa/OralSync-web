@@ -8,7 +8,6 @@ import {
   Button,
   Card,
   CardContent,
-  Chip,
   CircularProgress,
   Divider,
   FormControlLabel,
@@ -179,12 +178,6 @@ const SmsGatewaySettings: FunctionComponent = (): JSX.Element => {
       setTesting(false);
     }
   };
-
-  const gatewayStatusLabel = loadingConfiguration
-    ? 'Loading settings'
-    : form.isEnabled
-    ? 'Gateway enabled'
-    : 'Gateway disabled';
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, maxWidth: 960 }}>

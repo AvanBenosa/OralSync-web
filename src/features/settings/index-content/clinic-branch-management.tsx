@@ -426,6 +426,10 @@ const ClinicBranchManagement: FunctionComponent<ClinicBranchManagementProps> = (
 
   const dialogBannerSrc = bannerPreviewUrl || resolveClinicBannerSrc(formValues.bannerImagePath);
 
+  if (!isAssignedBranchMode && !hasPremiumSubscription) {
+    return <></>;
+  }
+
   return (
     <>
       <section className={styles.formPanel} style={{ marginTop: 20 }}>
@@ -451,7 +455,7 @@ const ClinicBranchManagement: FunctionComponent<ClinicBranchManagementProps> = (
           ) : null}
         </div>
 
-        {isAssignedBranchMode ? (
+        {isAssignedBranchMode && hasPremiumSubscription ? (
           <Alert severity="info" sx={{ mb: 2 }}>
             {assignedBranchName
               ? `You can only manage your assigned branch: ${assignedBranchName}.`

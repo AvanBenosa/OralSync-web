@@ -242,7 +242,7 @@ const DentalLabCasesTable: FunctionComponent<DentalLabCaseStateProps> = (
                 }}
               />
             ) : state.items.length === 0 ? (
-              <TableRow>
+              <TableRow className={styles.noHoverRow}>
                 <TableCell
                   colSpan={columnCount}
                   align="center"

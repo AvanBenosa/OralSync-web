@@ -13,6 +13,7 @@ import { toastConfig } from '../../common/api/responses';
 import { useClinicId } from '../../common/components/ClinicId';
 import { useAuthStore } from '../../common/store/authStore';
 import { isClinicWideRole } from '../../common/utils/branch-access';
+import { isBasicSubscription } from '../../common/utils/subscription';
 import { HandleGetCurrentClinicProfile } from './clinic-profile/api/handlers';
 import { ClinicProfileStateModel } from './clinic-profile/api/types';
 import { HandleGetClinicUsers } from './create-user/api/handlers';
@@ -57,6 +58,7 @@ const SettingsModule: FunctionComponent<SettingsProps> = (props: SettingsProps):
   const { clinicId } = props;
   const [searchParams, setSearchParams] = useSearchParams();
   const currentUserRole = useAuthStore((store) => store.user?.role || '');
+  const currentSubscriptionType = useAuthStore((store) => store.user?.subscriptionType || '');
   const reloadTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const resolvedClinicId = useClinicId(clinicId);
   const lastLoadedClinicProfileIdRef = useRef<string | null | undefined>(undefined);
@@ -113,6 +115,10 @@ const SettingsModule: FunctionComponent<SettingsProps> = (props: SettingsProps):
     () =>
       isClinicWideRole(currentUserRole) || currentUserRole.trim().toLowerCase() === 'branchadmin',
     [currentUserRole]
+  );
+  const canAccessSmsGateway = useMemo(
+    () => !isBasicSubscription(state.item?.subscriptionType || currentSubscriptionType),
+    [currentSubscriptionType, state.item?.subscriptionType]
   );
 
   const settingsTabs = useMemo(
@@ -176,16 +182,18 @@ const SettingsModule: FunctionComponent<SettingsProps> = (props: SettingsProps):
           description:
             'Review the clinic subscription type, assigned validity date, and current access status.',
         },
-        {
-          id: 'sms-gateway' as const,
-          label: 'SMS Gateway',
-          icon: <SmsRoundedIcon />,
-          title: 'SMS Gateway',
-          description:
-            'Configure and test the Android SMS Gateway for sending clinic SMS messages without an external provider.',
-        },
+        canAccessSmsGateway
+          ? {
+              id: 'sms-gateway' as const,
+              label: 'SMS Gateway',
+              icon: <SmsRoundedIcon />,
+              title: 'SMS Gateway',
+              description:
+                'Configure and test the Android SMS Gateway for sending clinic SMS messages without an external provider.',
+            }
+          : null,
       ].filter((tab): tab is SettingsTabConfig => Boolean(tab)),
-    [canManageUsers]
+    [canAccessSmsGateway, canManageUsers]
   );
 
   const validTabs = settingsTabs.map((tab) => tab.id);

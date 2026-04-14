@@ -10,7 +10,7 @@ export const lightTheme = createTheme({
     text: {
       primary: palettes.$primaryTextColor,
       secondary: palettes.$secondaryTextColor,
-      disabled: palettes.$placeholderTextColor
+      disabled: palettes.$placeholderTextColor,
     },
     success: { main: palettes.$success },
     warning: { main: palettes.$warning },
@@ -18,20 +18,21 @@ export const lightTheme = createTheme({
     info: { main: palettes.$info },
   },
   typography: {
-    fontFamily: 'Poppins, Arial, sans-serif',
+    fontFamily:
+      "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
   },
 
   //** OVERRIDES
   components: {
     MuiCheckbox: {
       defaultProps: {
-        color: 'secondary'
-      }
+        color: 'secondary',
+      },
     },
     MuiRadio: {
       defaultProps: {
-        color: 'secondary'
-      }
-    }
-  }
+        color: 'secondary',
+      },
+    },
+  },
 });

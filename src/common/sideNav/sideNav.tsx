@@ -49,6 +49,8 @@ import { GetAppointments } from '../../features/appointment/appointment-request/
 import { AppointmentStateModel } from '../../features/appointment/appointment-request/api/types';
 const drawerWidth = 240;
 const collapsedDrawerWidth = 72;
+const sideNavFontFamily =
+  "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif";
 const navPalette = {
   main: '#2E6F40',
   mid: '#68BA7F',
@@ -130,8 +132,7 @@ const SideNav = () => {
   const userDisplayName = user?.name?.trim() || username || user?.email || '';
   const defaultBranchName = user?.defaultBranchName?.trim() || '';
   const isBranchScopedUser = user?.currentScope?.trim().toLowerCase() === 'branch';
-  const contextDisplayName =
-    (isBranchScopedUser ? defaultBranchName : clinicName) || clinicName;
+  const contextDisplayName = (isBranchScopedUser ? defaultBranchName : clinicName) || clinicName;
   const clinicInitials = getInitials(contextDisplayName);
   const roleLabel = formatRoleLabel(user?.roleLabel);
   const clinicEmailAddress = clinicProfile?.emailAddress?.trim() || '';
@@ -873,12 +874,14 @@ const SideNav = () => {
                         }
                         primaryTypographyProps={{
                           sx: {
+                            fontFamily: sideNavFontFamily,
                             color: active ? navPalette.light : '#fff',
                             fontWeight: active ? 700 : 600,
                           },
                         }}
                         secondaryTypographyProps={{
                           sx: {
+                            fontFamily: sideNavFontFamily,
                             color: 'rgba(255,255,255,0.76)',
                             fontSize: '0.72rem',
                             fontWeight: 700,
@@ -985,6 +988,7 @@ const SideNav = () => {
                         primary={item.label}
                         primaryTypographyProps={{
                           sx: {
+                            fontFamily: sideNavFontFamily,
                             color: active ? navPalette.light : '#fff',
                             fontWeight: active ? 700 : 600,
                           },

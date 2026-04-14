@@ -37,7 +37,8 @@ const reportStyle: CSSProperties = {
   boxSizing: 'border-box',
   background: '#ffffff',
   color: '#19324a',
-  fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+  fontFamily:
+    "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
 };
 
 const headerStyle: CSSProperties = {
@@ -404,10 +405,7 @@ const DentalLabCaseReportPreview: FunctionComponent<DentalLabCaseReportPreviewPr
     [item.teeth]
   );
   const selectedToothIds = useMemo(
-    () =>
-      sortedTeeth
-        .map((tooth) => getToothIdFromStoredValue(tooth.toothNumber))
-        .filter(Boolean),
+    () => sortedTeeth.map((tooth) => getToothIdFromStoredValue(tooth.toothNumber)).filter(Boolean),
     [sortedTeeth]
   );
   const workTypeConditionGroups = useMemo(
@@ -431,8 +429,8 @@ const DentalLabCaseReportPreview: FunctionComponent<DentalLabCaseReportPreviewPr
             <p style={eyebrowStyle}>Dental Lab Summary</p>
             <h2 style={titleStyle}>Dental Lab Case Report</h2>
             <p style={subtitleStyle}>
-              Printable case summary with selected teeth, work details, and the odontogram
-              reference used by the clinic.
+              Printable case summary with selected teeth, work details, and the odontogram reference
+              used by the clinic.
             </p>
           </div>
           <div style={metaGridStyle}>
@@ -483,7 +481,9 @@ const DentalLabCaseReportPreview: FunctionComponent<DentalLabCaseReportPreviewPr
           <div style={summaryCardStyle}>
             <span style={summaryLabelStyle}>Balance</span>
             <strong style={summaryValueStyle}>
-              {formatCurrency((item.totalCost || 0) - (item.discount || 0) - (item.paidAmount || 0))}
+              {formatCurrency(
+                (item.totalCost || 0) - (item.discount || 0) - (item.paidAmount || 0)
+              )}
             </strong>
           </div>
         </div>
@@ -584,9 +584,7 @@ const DentalLabCaseReportPreview: FunctionComponent<DentalLabCaseReportPreviewPr
         <section style={sectionStyle}>
           <div style={sectionHeaderStyle}>
             <h3 style={sectionTitleStyle}>Tooth Work Summary</h3>
-            <span style={sectionMetaStyle}>
-              Material, shade, surfaces, and technician notes
-            </span>
+            <span style={sectionMetaStyle}>Material, shade, surfaces, and technician notes</span>
           </div>
 
           {sortedTeeth.length ? (
@@ -605,7 +603,9 @@ const DentalLabCaseReportPreview: FunctionComponent<DentalLabCaseReportPreviewPr
                 <tbody>
                   {sortedTeeth.map((tooth, index) => (
                     <tr key={`lab-case-pdf-row-${tooth.toothNumber || index}`}>
-                      <td style={cellStyle}>{getToothLabelFromStoredValue(tooth.toothNumber, chartKind)}</td>
+                      <td style={cellStyle}>
+                        {getToothLabelFromStoredValue(tooth.toothNumber, chartKind)}
+                      </td>
                       <td style={cellStyle}>{getDentalLabWorkTypeLabel(tooth.workType)}</td>
                       <td style={cellStyle}>{tooth.material?.trim() || '--'}</td>
                       <td style={cellStyle}>{tooth.shade?.trim() || '--'}</td>
@@ -646,7 +646,9 @@ const DentalLabCaseReportPreview: FunctionComponent<DentalLabCaseReportPreviewPr
           <div style={notesCardStyle}>
             {item.attachments?.length
               ? item.attachments
-                  .map((attachment) => attachment.originalFileName || attachment.fileName || 'Image')
+                  .map(
+                    (attachment) => attachment.originalFileName || attachment.fileName || 'Image'
+                  )
                   .join('\n')
               : 'No reference images uploaded.'}
           </div>
