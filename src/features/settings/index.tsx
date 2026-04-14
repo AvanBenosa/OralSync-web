@@ -5,6 +5,7 @@ import FactCheckRoundedIcon from '@mui/icons-material/FactCheckRounded';
 import FileDownloadRoundedIcon from '@mui/icons-material/FileDownloadRounded';
 import MapRoundedIcon from '@mui/icons-material/MapRounded';
 import PersonAddAlt1RoundedIcon from '@mui/icons-material/PersonAddAlt1Rounded';
+import SmsRoundedIcon from '@mui/icons-material/SmsRounded';
 import WorkspacePremiumRoundedIcon from '@mui/icons-material/WorkspacePremiumRounded';
 import { useSearchParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
@@ -30,6 +31,7 @@ import AuditLogs from './index-content/audit-logs';
 import ExportData from './index-content/export-data';
 import SettingsHeader from './index-content/settings-header';
 import Subscriptions from './index-content/subscriptions';
+import SmsGatewaySettings from './sms-gateway';
 import styles from './style.scss.module.scss';
 import { SettingsProps } from './types';
 
@@ -40,7 +42,8 @@ type SettingsTabId =
   | 'data-mapping'
   | 'audit-logs'
   | 'export-data'
-  | 'subscriptions';
+  | 'subscriptions'
+  | 'sms-gateway';
 
 type SettingsTabConfig = {
   id: SettingsTabId;
@@ -172,6 +175,14 @@ const SettingsModule: FunctionComponent<SettingsProps> = (props: SettingsProps):
           title: 'Subscriptions',
           description:
             'Review the clinic subscription type, assigned validity date, and current access status.',
+        },
+        {
+          id: 'sms-gateway' as const,
+          label: 'SMS Gateway',
+          icon: <SmsRoundedIcon />,
+          title: 'SMS Gateway',
+          description:
+            'Configure and test the Android SMS Gateway for sending clinic SMS messages without an external provider.',
         },
       ].filter((tab): tab is SettingsTabConfig => Boolean(tab)),
     [canManageUsers]
@@ -438,6 +449,7 @@ const SettingsModule: FunctionComponent<SettingsProps> = (props: SettingsProps):
             {activeTab === 'subscriptions' ? (
               <Subscriptions state={state} onReload={() => loadClinicProfile(false)} />
             ) : null}
+            {activeTab === 'sms-gateway' ? <SmsGatewaySettings /> : null}
           </section>
         </div>
       </div>

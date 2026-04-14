@@ -27,6 +27,7 @@ import { HandleUpdateClinicProfile } from '../clinic-profile/api/handlers';
 import { UploadClinicBanner } from '../clinic-profile/api/api';
 import { ClinicProfileStateProps } from '../clinic-profile/api/types';
 import ClinicBranchManagement from './clinic-branch-management';
+import AndroidSmsGatewayPanel from './android-sms-gateway-panel';
 import styles from '../style.scss.module.scss';
 
 const workingDayOptions = [
@@ -506,6 +507,8 @@ const ClinicProfileForm: FunctionComponent<ClinicProfileStateProps> = (
         clinicId={state.item?.id ?? state.clinicProfileId}
         subscriptionType={state.item?.subscriptionType}
       />
+
+      <AndroidSmsGatewayPanel />
 
       <div className={styles.formActions}>
         {bannerUploadError ? (
