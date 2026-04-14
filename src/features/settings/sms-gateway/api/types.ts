@@ -3,6 +3,14 @@ export type SmsGatewayPhoneValidationResult = {
   errorMessage: string;
 };
 
+export type SmsGatewayConfigurationModel = {
+  isEnabled: boolean;
+  baseUrl: string;
+  sendEndpoint: string;
+  apiKey: string | null;
+  timeoutMilliseconds: number;
+};
+
 export type SmsGatewaySendRequest = {
   phoneNumber: string;
   message: string;
@@ -11,3 +19,11 @@ export type SmsGatewaySendRequest = {
 export type SmsGatewayTestRequest = {
   phoneNumber: string;
 };
+
+export const createDefaultSmsGatewayConfiguration = (): SmsGatewayConfigurationModel => ({
+  isEnabled: false,
+  baseUrl: '',
+  sendEndpoint: '/message',
+  apiKey: null,
+  timeoutMilliseconds: 30000,
+});

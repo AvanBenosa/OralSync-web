@@ -1,5 +1,6 @@
-import { FunctionComponent, JSX, useState } from 'react';
+import { ChangeEvent, FunctionComponent, JSX, useEffect, useState } from 'react';
 import PhoneAndroidRoundedIcon from '@mui/icons-material/PhoneAndroidRounded';
+import SaveRoundedIcon from '@mui/icons-material/SaveRounded';
 import SendRoundedIcon from '@mui/icons-material/SendRounded';
 import {
   Alert,
@@ -10,24 +11,121 @@ import {
   Chip,
   CircularProgress,
   Divider,
+  FormControlLabel,
+  Grid,
+  Switch,
   TextField,
   Typography,
 } from '@mui/material';
 import { useAuthStore } from '../../../common/store/authStore';
 import { isClinicWideRole } from '../../../common/utils/branch-access';
 import {
-  HandleSendSmsGateway,
-  HandleSendSmsGatewayTest,
-  ValidateSmsGatewayPhone,
-} from './api/handlers';
+  GetSmsGatewayConfiguration,
+  SaveSmsGatewayConfiguration,
+  SendSmsGatewayTest,
+} from './api/api';
+import { ValidateSmsGatewayPhone } from './api/handlers';
+import {
+  createDefaultSmsGatewayConfiguration,
+  type SmsGatewayConfigurationModel,
+} from './api/types';
 
 const SmsGatewaySettings: FunctionComponent = (): JSX.Element => {
   const currentUserRole = useAuthStore((store) => store.user?.role || '');
-  const canTest = isClinicWideRole(currentUserRole);
+  const canManageGateway = isClinicWideRole(currentUserRole);
 
+  const [form, setForm] = useState<SmsGatewayConfigurationModel>(
+    createDefaultSmsGatewayConfiguration()
+  );
+  const [loadingConfiguration, setLoadingConfiguration] = useState(canManageGateway);
+  const [saving, setSaving] = useState(false);
+  const [testing, setTesting] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState('');
-  const [isSending, setIsSending] = useState(false);
   const [phoneError, setPhoneError] = useState('');
+  const [statusMessage, setStatusMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+
+  useEffect(() => {
+    if (!canManageGateway) {
+      setLoadingConfiguration(false);
+      return;
+    }
+
+    let isMounted = true;
+
+    GetSmsGatewayConfiguration()
+      .then((configuration) => {
+        if (!isMounted) {
+          return;
+        }
+
+        setForm(configuration);
+      })
+      .catch(() => {
+        if (!isMounted) {
+          return;
+        }
+
+        setForm(createDefaultSmsGatewayConfiguration());
+        setErrorMessage('Failed to load gateway settings. You can save them again from this tab.');
+      })
+      .finally(() => {
+        if (isMounted) {
+          setLoadingConfiguration(false);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [canManageGateway]);
+
+  const clearFeedback = (): void => {
+    setStatusMessage('');
+    setErrorMessage('');
+  };
+
+  const handleFieldChange = (event: ChangeEvent<HTMLInputElement>): void => {
+    const { name, value } = event.target;
+
+    setForm((prev) => {
+      if (name === 'baseUrl') {
+        return {
+          ...prev,
+          baseUrl: value,
+        };
+      }
+
+      if (name === 'sendEndpoint') {
+        return {
+          ...prev,
+          sendEndpoint: value,
+        };
+      }
+
+      if (name === 'apiKey') {
+        return {
+          ...prev,
+          apiKey: value,
+        };
+      }
+
+      return {
+        ...prev,
+        timeoutMilliseconds: value === '' ? 0 : Number(value),
+      };
+    });
+
+    clearFeedback();
+  };
+
+  const handleToggle = (_: ChangeEvent<HTMLInputElement>, checked: boolean): void => {
+    setForm((prev) => ({
+      ...prev,
+      isEnabled: checked,
+    }));
+    clearFeedback();
+  };
 
   const validatePhone = (value: string): boolean => {
     const validationResult = ValidateSmsGatewayPhone(value);
@@ -35,46 +133,61 @@ const SmsGatewaySettings: FunctionComponent = (): JSX.Element => {
     return validationResult.isValid;
   };
 
+  const handleSave = async (): Promise<void> => {
+    clearFeedback();
+    setSaving(true);
+
+    try {
+      const savedConfiguration = await SaveSmsGatewayConfiguration({
+        ...form,
+        baseUrl: form.baseUrl.trim(),
+        sendEndpoint: form.sendEndpoint.trim() || '/message',
+        apiKey: form.apiKey?.trim() || null,
+        timeoutMilliseconds:
+          Number.isFinite(form.timeoutMilliseconds) && form.timeoutMilliseconds > 0
+            ? form.timeoutMilliseconds
+            : 30000,
+      });
+
+      setForm(savedConfiguration);
+      setStatusMessage('Android SMS Gateway settings saved.');
+    } catch {
+      setErrorMessage('Failed to save Android SMS Gateway settings.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const handleSendTest = async (): Promise<void> => {
     if (!validatePhone(phoneNumber)) {
       return;
     }
 
-    setIsSending(true);
+    clearFeedback();
+    setTesting(true);
+
     try {
-      await HandleSendSmsGatewayTest({
-        phoneNumber,
+      await SendSmsGatewayTest({
+        phoneNumber: phoneNumber.trim(),
       });
+      setStatusMessage('Test SMS sent successfully.');
     } catch {
-      // API and handler layers surface the error toast.
+      setErrorMessage(
+        'Test SMS failed. Check the gateway settings and make sure the device is reachable.'
+      );
     } finally {
-      setIsSending(false);
+      setTesting(false);
     }
   };
 
-  const handleSendSms = async (number: string, message: string): Promise<void> => {
-    if (!validatePhone(number)) {
-      return;
-    }
-
-    setIsSending(true);
-    try {
-      await HandleSendSmsGateway({
-        phoneNumber: number,
-        message,
-      });
-    } catch {
-      // API and handler layers surface the error toast.
-    } finally {
-      setIsSending(false);
-    }
-  };
-
-  void handleSendSms;
+  const gatewayStatusLabel = loadingConfiguration
+    ? 'Loading settings'
+    : form.isEnabled
+    ? 'Gateway enabled'
+    : 'Gateway disabled';
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, maxWidth: 640 }}>
-      {/* Info card */}
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, maxWidth: 960 }}>
       <Card variant="outlined">
         <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -89,31 +202,134 @@ const SmsGatewaySettings: FunctionComponent = (): JSX.Element => {
             server. The Android device must have the <strong>SMS Gateway API</strong> app installed
             and be accessible on the same network as this server.
           </Typography>
-          <Alert severity="info" sx={{ mt: 0.5 }}>
-            Configure your gateway URL in{' '}
-            <strong>Settings → Clinic Profile → Android SMS Gateway</strong> section. Each clinic
-            stores its own gateway URL in the database.
-          </Alert>
-
-          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mt: 0.5 }}>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-              <Typography variant="caption" color="text.secondary">
-                Status
-              </Typography>
-              <Chip label="Configured per clinic in database" size="small" variant="outlined" />
-            </Box>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-              <Typography variant="caption" color="text.secondary">
-                Endpoint
-              </Typography>
-              <Chip label="POST /api/dmd/android-sms/send" size="small" variant="outlined" />
-            </Box>
-          </Box>
         </CardContent>
       </Card>
 
-      {/* Test SMS card */}
-      {canTest ? (
+      {!canManageGateway ? (
+        <Alert severity="warning">
+          Only clinic-wide administrators can configure and test gateway settings.
+        </Alert>
+      ) : null}
+
+      {statusMessage ? (
+        <Alert severity="success" onClose={() => setStatusMessage('')}>
+          {statusMessage}
+        </Alert>
+      ) : null}
+
+      {errorMessage ? (
+        <Alert severity="error" onClose={() => setErrorMessage('')}>
+          {errorMessage}
+        </Alert>
+      ) : null}
+
+      {canManageGateway ? (
+        <Card variant="outlined">
+          <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <SaveRoundedIcon fontSize="small" color="action" />
+              <Typography variant="subtitle1" fontWeight={600}>
+                Gateway Settings
+              </Typography>
+            </Box>
+            <Typography variant="body2" color="text.secondary">
+              Save the Android device URL, endpoint, and optional API key used by this clinic when
+              sending SMS messages.
+            </Typography>
+
+            {loadingConfiguration ? (
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, py: 1 }}>
+                <CircularProgress size={18} />
+                <Typography variant="body2" color="text.secondary">
+                  Loading gateway settings...
+                </Typography>
+              </Box>
+            ) : (
+              <Grid container spacing={2}>
+                <Grid size={{ xs: 12 }}>
+                  <FormControlLabel
+                    control={
+                      <Switch checked={form.isEnabled} onChange={handleToggle} color="primary" />
+                    }
+                    label={form.isEnabled ? 'Gateway Enabled' : 'Gateway Disabled'}
+                  />
+                </Grid>
+                <Grid size={{ xs: 12, md: 8 }}>
+                  <TextField
+                    label="Base URL"
+                    name="baseUrl"
+                    value={form.baseUrl}
+                    onChange={handleFieldChange}
+                    placeholder="http://192.168.1.10:8082"
+                    fullWidth
+                    size="small"
+                    helperText="IP address and port of the SMS Gateway API app"
+                  />
+                </Grid>
+                <Grid size={{ xs: 12, md: 4 }}>
+                  <TextField
+                    label="Send Endpoint"
+                    name="sendEndpoint"
+                    value={form.sendEndpoint}
+                    onChange={handleFieldChange}
+                    placeholder="/message"
+                    fullWidth
+                    size="small"
+                    helperText="Path appended to the base URL"
+                  />
+                </Grid>
+                <Grid size={{ xs: 12, md: 8 }}>
+                  <TextField
+                    label="API Key (optional)"
+                    name="apiKey"
+                    value={form.apiKey ?? ''}
+                    onChange={handleFieldChange}
+                    placeholder="Leave blank if not required"
+                    fullWidth
+                    size="small"
+                    type="password"
+                    helperText="Sent as the Authorization header when provided"
+                  />
+                </Grid>
+                <Grid size={{ xs: 12, md: 4 }}>
+                  <TextField
+                    label="Timeout (ms)"
+                    name="timeoutMilliseconds"
+                    value={form.timeoutMilliseconds}
+                    onChange={handleFieldChange}
+                    fullWidth
+                    size="small"
+                    type="number"
+                    inputProps={{ min: 1000 }}
+                    helperText="Default: 30000"
+                  />
+                </Grid>
+                <Grid size={{ xs: 12 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
+                    <Button
+                      variant="contained"
+                      disableElevation
+                      startIcon={
+                        saving ? (
+                          <CircularProgress size={16} color="inherit" />
+                        ) : (
+                          <SaveRoundedIcon fontSize="small" />
+                        )
+                      }
+                      disabled={saving}
+                      onClick={() => void handleSave()}
+                    >
+                      {saving ? 'Saving...' : 'Save Gateway Settings'}
+                    </Button>
+                  </Box>
+                </Grid>
+              </Grid>
+            )}
+          </CardContent>
+        </Card>
+      ) : null}
+
+      {canManageGateway ? (
         <Card variant="outlined">
           <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -130,9 +346,11 @@ const SmsGatewaySettings: FunctionComponent = (): JSX.Element => {
               label="Phone Number"
               placeholder="09171234567"
               value={phoneNumber}
-              onChange={(e) => {
-                setPhoneNumber(e.target.value);
-                if (phoneError) validatePhone(e.target.value);
+              onChange={(event) => {
+                setPhoneNumber(event.target.value);
+                if (phoneError) {
+                  validatePhone(event.target.value);
+                }
               }}
               error={Boolean(phoneError)}
               helperText={phoneError || 'Enter a Philippine mobile number'}
@@ -145,27 +363,22 @@ const SmsGatewaySettings: FunctionComponent = (): JSX.Element => {
                 variant="contained"
                 disableElevation
                 startIcon={
-                  isSending ? (
+                  testing ? (
                     <CircularProgress size={16} color="inherit" />
                   ) : (
                     <SendRoundedIcon fontSize="small" />
                   )
                 }
-                disabled={isSending}
+                disabled={testing || loadingConfiguration}
                 onClick={() => void handleSendTest()}
               >
-                {isSending ? 'Sending…' : 'Send Test SMS'}
+                {testing ? 'Sending...' : 'Send Test SMS'}
               </Button>
             </Box>
           </CardContent>
         </Card>
-      ) : (
-        <Alert severity="warning">
-          Only clinic-wide administrators can send test SMS messages.
-        </Alert>
-      )}
+      ) : null}
 
-      {/* Setup guide */}
       <Card variant="outlined">
         <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
           <Typography variant="subtitle1" fontWeight={600}>
@@ -184,9 +397,8 @@ const SmsGatewaySettings: FunctionComponent = (): JSX.Element => {
               <code>http://192.168.1.10:8080</code>).
             </Typography>
             <Typography component="li" variant="body2">
-              Go to <strong>Settings → Clinic Profile</strong>, scroll to the{' '}
-              <strong>Android SMS Gateway</strong> section, enter the Base URL, enable the gateway,
-              and click <em>Save Gateway Settings</em>.
+              Go to <strong>Settings -&gt; SMS Gateway</strong>, enter the Base URL, enable the
+              gateway, and click <em>Save Gateway Settings</em>.
             </Typography>
             <Typography component="li" variant="body2">
               Ensure the Android device and server are on the same network (or exposed via a public

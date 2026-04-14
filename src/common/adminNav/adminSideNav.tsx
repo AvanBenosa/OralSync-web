@@ -21,6 +21,7 @@ import {
 import DashboardCustomizeRoundedIcon from '@mui/icons-material/DashboardCustomizeRounded';
 import LockPersonRoundedIcon from '@mui/icons-material/LockPersonRounded';
 import ReceiptLongRoundedIcon from '@mui/icons-material/ReceiptLongRounded';
+import TuneRoundedIcon from '@mui/icons-material/TuneRounded';
 import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded';
 import WarningAmberRoundedIcon from '@mui/icons-material/WarningAmberRounded';
 import PersonRoundedIcon from '@mui/icons-material/PersonRounded';
@@ -36,6 +37,7 @@ const menuItems = [
   { label: 'Dashboard', icon: <DashboardCustomizeRoundedIcon />, path: '/admin/dashboard' },
   { label: 'Clinic Locks', icon: <LockPersonRoundedIcon />, path: '/admin/clinic-locks' },
   { label: 'Payment Request', icon: <ReceiptLongRoundedIcon />, path: '/admin/payment-requests' },
+  { label: 'Setup', icon: <TuneRoundedIcon />, path: '/admin/setup' },
 ];
 
 const getInitials = (value: string): string =>

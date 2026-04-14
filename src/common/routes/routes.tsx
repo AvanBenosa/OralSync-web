@@ -18,6 +18,7 @@ import SubscriptionModule from '../../features/subscription';
 import AdminDashboard from '../../features/admin-portal/dashboard';
 import ClinicLockModule from '../../features/admin-portal/clinic-locks';
 import PaymentRequestsModule from '../../features/admin-portal/payment-requests';
+import SetupModule from '../../features/admin-portal/setup';
 import PublicRegistrationPage from '../../features/public-registration';
 import { useAuthStore } from '../store/authStore';
 import { canAccessSettingsModule } from '../utils/branch-access';
@@ -99,6 +100,7 @@ const AppRoutes = () => {
           <Route path="/admin/dashboard" element={<AdminDashboard currentUser={user} />} />
           <Route path="/admin/clinic-locks" element={<ClinicLockModule />} />
           <Route path="/admin/payment-requests" element={<PaymentRequestsModule />} />
+          <Route path="/admin/setup" element={<SetupModule />} />
         </Route>
       </Route>
 
