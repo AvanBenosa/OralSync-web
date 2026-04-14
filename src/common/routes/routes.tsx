@@ -15,6 +15,7 @@ import FinanceOverview from '../../features/finance-overview';
 import InvoiceGeneratorModule from '../../features/invoice-generator';
 import SettingsModule from '../../features/settings';
 import SubscriptionModule from '../../features/subscription';
+import ReportsModule from '../../features/reports';
 import AdminDashboard from '../../features/admin-portal/dashboard';
 import ClinicLockModule from '../../features/admin-portal/clinic-locks';
 import PaymentRequestsModule from '../../features/admin-portal/payment-requests';
@@ -87,6 +88,10 @@ const AppRoutes = () => {
           <Route
             path="/subscription"
             element={<SubscriptionModule clinicId={user?.clinicId ?? undefined} />}
+          />
+          <Route
+            path="/reports"
+            element={<ReportsModule clinicId={user?.clinicId ?? undefined} />}
           />
           <Route
             path="/patient-profile/:patientId"

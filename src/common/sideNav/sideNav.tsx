@@ -39,6 +39,7 @@ import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
+import AssessmentRoundedIcon from '@mui/icons-material/AssessmentRounded';
 import { isBasicSubscription } from '../utils/subscription';
 import { canAccessSettingsModule } from '../utils/branch-access';
 import SideNavAssistant from './side-nav-assistant';
@@ -68,6 +69,7 @@ const menuItems = [
   { label: 'Billing & Finance', icon: <MonetizationOnIcon />, path: '/finance-overview' },
   { label: 'Invoice Generator', icon: <ReceiptLongRoundedIcon />, path: '/invoice-generator' },
   { label: 'Dental Lab Cases', icon: <BiotechRoundedIcon />, path: '/dental-lab-cases' },
+  { label: 'Reports', icon: <AssessmentRoundedIcon />, path: '/reports' },
 ];
 
 const footerMenuItems = [{ label: 'Settings', icon: <SettingsRoundedIcon />, path: '/settings' }];
