@@ -55,6 +55,7 @@ export interface AuthUser {
   subscriptionType?: string;
   validityDate?: string;
   status?: string;
+  trialExpiry?: string;
 }
 
 export interface RegisterPayload {

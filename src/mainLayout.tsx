@@ -486,7 +486,9 @@ const MainLayout = () => {
       <ClinicLockedDialog
         open={showClinicLockedDialog}
         clinicName={user?.clinicName}
+        trialExpiry={user?.trialExpiry}
         onLogout={logout}
+        onTrial={() => setShowClinicLockedDialog(false)}
       />
       {/* Hidden for now: keep bootstrap modal code available, but do not show it after login. */}
       {/* <RegisterBootstrapModal open={requiresRegistration} /> */}

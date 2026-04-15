@@ -35,7 +35,9 @@ import {
 type ClinicLockedDialogProps = {
   open: boolean;
   clinicName?: string;
+  trialExpiry?: string;
   onLogout: () => void;
+  onTrial: () => void;
 };
 
 const PAYMENT_STEPS = ['Choose Plan', 'Payment', 'Confirm', 'Done'];
@@ -77,8 +79,14 @@ const stepFromState = (step: SubscriptionStateModel['step']): number => {
 const ClinicLockedDialog: FunctionComponent<ClinicLockedDialogProps> = ({
   open,
   clinicName,
+  trialExpiry,
   onLogout,
+  onTrial,
 }): JSX.Element => {
+  const now = new Date();
+  const trialExpiryDate = trialExpiry ? new Date(trialExpiry) : null;
+  const isTrialActive = trialExpiryDate !== null && trialExpiryDate > now;
+  const isTrialExpired = trialExpiryDate !== null && trialExpiryDate <= now;
   const user = useAuthStore((state) => state.user);
   const updateUser = useAuthStore((state) => state.updateUser);
   const [showPaymentFlow, setShowPaymentFlow] = useState(false);
@@ -258,6 +266,18 @@ const ClinicLockedDialog: FunctionComponent<ClinicLockedDialogProps> = ({
                     Pay via PayMongo for instant confirmation, or submit a manual payment proof for
                     admin review. Manual payments stay pending until the status is marked as paid.
                   </Alert>
+                  {isTrialActive && (
+                    <Alert severity="info" sx={{ mb: 1.5 }}>
+                      Your 3-day trial is active until{' '}
+                      <strong>{trialExpiryDate!.toLocaleDateString()}</strong>. You can try the
+                      system for free until then.
+                    </Alert>
+                  )}
+                  {isTrialExpired && (
+                    <Alert severity="error" sx={{ mb: 1.5 }}>
+                      Your free trial has expired. Please subscribe to continue.
+                    </Alert>
+                  )}
                   <Typography variant="body2" sx={{ color: 'text.secondary' }}>
                     You can settle the subscription here. Access resumes once a payment is confirmed
                     as paid.
@@ -313,6 +333,11 @@ const ClinicLockedDialog: FunctionComponent<ClinicLockedDialogProps> = ({
           <Button variant="contained" color="error" onClick={onLogout}>
             Logout
           </Button>
+          {isTrialActive && (
+            <Button variant="outlined" color="success" onClick={onTrial}>
+              Try Trial
+            </Button>
+          )}
           <Button
             variant="contained"
             startIcon={<CreditCardRoundedIcon />}
