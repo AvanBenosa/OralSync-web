@@ -21,6 +21,8 @@ const ACCEPT_CLINIC_CONTRACT_POLICY_ENDPOINT =
 const ACCEPT_CLINIC_BETA_TESTING_ENDPOINT =
   process.env.REACT_APP_ACCEPT_CLINIC_BETA_TESTING_ENDPOINT ||
   '/api/dmd/clinic/accept-beta-testing';
+const START_CLINIC_TRIAL_ENDPOINT =
+  process.env.REACT_APP_START_CLINIC_TRIAL_ENDPOINT || '/api/dmd/clinic/start-trial';
 const AUTH_RESPONSE_CACHE_TTL_MS = 5000;
 
 export interface LoginPayload {
@@ -133,6 +135,7 @@ export interface ClinicDataPrivacyStatusResponse {
   forBetaTestingAccepted?: boolean;
   isContractPolicyAccepted?: boolean;
   isLocked: boolean;
+  trialExpiry?: string;
 }
 
 const registrationStatusRequestCache = new Map<string, Promise<RegistrationStatusResponse>>();
@@ -277,6 +280,15 @@ export const acceptClinicBetaTesting = async (): Promise<ClinicDataPrivacyStatus
   return response.data;
 };
 
+export const startClinicTrial = async (): Promise<ClinicDataPrivacyStatusResponse> => {
+  const response = await apiClient.post<ClinicDataPrivacyStatusResponse>(START_CLINIC_TRIAL_ENDPOINT);
+  clinicDataPrivacyResponseCache.set('clinic-data-privacy-status', {
+    data: response.data,
+    cachedAt: Date.now(),
+  });
+  return response.data;
+};
+
 const FORGOT_PASSWORD_ENDPOINT = '/forgot-password';
 const CHANGE_PASSWORD_ENDPOINT = '/change-password';
 
@@ -307,4 +319,5 @@ export const getAuthEndpoints = () => ({
   registerClinic: REGISTER_CLINIC_ENDPOINT,
   //clinicDataPrivacyStatus: CLINIC_DATA_PRIVACY_STATUS_ENDPOINT, // UNCOMMENT THIS
   acceptClinicDataPrivacy: ACCEPT_CLINIC_DATA_PRIVACY_ENDPOINT,
+  startClinicTrial: START_CLINIC_TRIAL_ENDPOINT,
 });

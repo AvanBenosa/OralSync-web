@@ -14,7 +14,9 @@ OralSync is a cloud-based dental clinic management system focused on day-to-day 
 - Appointment scheduling and public appointment registration
 - Dental chart and perio chart records
 - Finance, invoice generation, subscription payments, and manual payment review
+- Reports and analytics dashboards for finance, patients, and appointments
 - Dental inventory and lab case tracking
+- Android SMS Gateway configuration for supported clinics
 - File uploads and protected clinic storage
 - AI assistant with patient-aware context
 - PWA install support
@@ -58,14 +60,14 @@ The clinic workspace navigation currently includes:
 - Billing and Finance
 - Invoice Generator
 - Dental Lab Cases
+- Reports
 - Settings
-- Subscription
 
 Notes:
 
 - On `Basic` subscription, the `Inventories` module is hidden and `/inventory` redirects to `/dashboard`.
 - `Settings` is only available when the logged-in role passes the frontend gate for that module.
-- On mobile, the main navigation is rendered as a bottom app bar instead of the desktop side drawer.
+- On mobile, the main navigation is rendered through a top app bar with a slide-out drawer instead of the desktop side drawer.
 
 ### 3.2 Branch selector
 
@@ -169,7 +171,27 @@ The dental lab cases module supports:
 - Attachment upload
 - Summary download
 
-### 4.9 Settings
+### 4.9 Reports & Analytics
+
+The Reports module is available at `/reports` and currently includes these tabs:
+
+- Finance
+- Patients
+- Appointments
+
+Verified current behavior from the frontend and backend:
+
+- Date filtering supports presets and custom date ranges.
+- Finance reports are role-gated in the frontend and shown only to `SuperAdmin`, `BranchAdmin`, or `Accountant`.
+- Branch context is included automatically when a branch-scoped session or active branch filter is present.
+
+Current report datasets:
+
+- `Finance`: revenue summary, expense breakdown, outstanding balances, and profit/loss
+- `Patients`: patient growth and demographics
+- `Appointments`: appointment volume and appointment funnel
+
+### 4.10 Settings
 
 The current Settings module is divided into these tabs:
 
@@ -180,6 +202,7 @@ The current Settings module is divided into these tabs:
 - Audit Logs
 - Export Data
 - Subscriptions
+- SMS Gateway
 
 What each section is used for:
 
@@ -190,8 +213,16 @@ What each section is used for:
 - `Audit Logs`: review change history and operational trace data
 - `Export Data`: download clinic datasets as CSV
 - `Subscriptions`: review current plan, validity, and related status
+- `SMS Gateway`: configure and test the Android SMS Gateway used by the clinic when the plan and role allow access
 
-### 4.10 Subscription and Payments
+SMS Gateway notes from the current implementation:
+
+- The tab is hidden for `Basic` subscription clinics.
+- Only clinic-wide administrators can configure and test gateway settings.
+- Clinics save a per-clinic Android device `Base URL`, send endpoint, optional API key, timeout, and enabled state.
+- The UI includes an in-app test SMS action for validating device connectivity.
+
+### 4.11 Subscription and Payments
 
 The subscription module uses a 4-step flow:
 
@@ -226,7 +257,7 @@ Current plan features in code:
 | Standard | Up to 5 users, up to 1,000 patients, up to 1,000 patient files/photos, SMS reminders, email notifications, inventory |
 | Premium | Up to 10 users, up to 2,000 patients, up to 2,000 patient files/photos, SMS reminders, email notifications, inventory, clinic branch management |
 
-### 4.11 AI Assistant
+### 4.12 AI Assistant
 
 The AI assistant is available inside the clinic workspace and changes behavior depending on where the user is.
 
@@ -240,7 +271,7 @@ Current behavior from the frontend:
 
 The assistant is explicitly presented as a helper. The UI warns users that AI can be wrong and that clinical content should be reviewed before acting on it.
 
-### 4.12 About and feedback
+### 4.13 About and feedback
 
 The clinic side navigation includes an About/Feedback dialog that lets a clinic send feature suggestions, bug reports, billing concerns, and general feedback to the OralSync team.
 
@@ -306,6 +337,10 @@ The backend and Hangfire worker currently support:
 - Birthday greeting SMS
 - Trial ending reminders
 - Automatic clinic locking when validity expires
+
+Current SMS delivery note:
+
+- Patient-facing and scheduled SMS delivery can use either the Android SMS Gateway or Semaphore depending on the active backend SMS provider setup.
 
 Default job schedules are documented in [development-architecture.md](development-architecture.md).
 

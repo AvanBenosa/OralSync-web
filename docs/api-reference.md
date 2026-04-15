@@ -30,7 +30,7 @@ Hangfire worker endpoints:
 | Area | Base route | Example actions |
 |---|---|---|
 | Auth | root routes such as `/login`, `/register/...`, `/forgot-password` | login, register clinic, register bootstrap user, registration status, forgot password, change password |
-| Clinic | `/api/dmd/clinic` | create clinic, get current clinic profile, get audit logs, upload banner, update clinic profile, send feedback, data privacy status, accept policies |
+| Clinic | `/api/dmd/clinic` | create clinic, get current clinic profile, get audit logs, upload banner, update clinic profile, send feedback, data privacy status, accept policies, get/save Android SMS Gateway |
 | Clinic Branch | `/api/dmd/clinic-branch` | get branches, create branch, update branch, delete branch, upload banner |
 | Dashboard | `/api/dmd/dashboard` | get dashboard summary |
 | Patient | `/api/dmd/patient` | get patients, create patient, update patient, delete patient, upload profile picture, upload XLSX |
@@ -55,6 +55,8 @@ Hangfire worker endpoints:
 | Employee | `/api/dmd/employee` | get, create, update, delete, upload profile picture |
 | User Profile | `/api/dmd/user-profile` | get user profiles, create, update, delete |
 | Export Data | `/api/dmd/export-data` | get export datasets, download CSV |
+| Reports | `/api/dmd/reports` | revenue summary, expense breakdown, outstanding balances, profit/loss, patient growth, patient demographics, appointment volume, appointment funnel |
+| Android SMS | `/api/dmd/android-sms` | send direct SMS, send test SMS |
 | Payments | `/api/dmd/payments` | create payment link, upload manual proof, create manual payment, get manual status, get transactions, poll status, simulate paid, webhook |
 | AI | `/api/dmd/ai` | chat |
 | Storage | `/api/dmd/storage` and `/storage/...` | protected file fetch, public banner fetch, SAS URL |
@@ -101,7 +103,36 @@ Current storage routes:
 - `/api/dmd/storage/{*filePath}`: protected file access
 - `/api/dmd/storage/sas/{*filePath}`: SAS URL generation where supported
 
-## 7. Notes for Developers
+## 7. Reports Routes
+
+Current reports and analytics routes:
+
+- `/api/dmd/reports/revenue-summary`
+- `/api/dmd/reports/expense-breakdown`
+- `/api/dmd/reports/outstanding-balances`
+- `/api/dmd/reports/profit-loss`
+- `/api/dmd/reports/patient-growth`
+- `/api/dmd/reports/patient-demographics`
+- `/api/dmd/reports/appointment-volume`
+- `/api/dmd/reports/appointment-funnel`
+
+Common query parameters used by the reports surface:
+
+- `ClinicId`
+- `BranchId`
+- `DateFrom`
+- `DateTo`
+
+## 8. Android SMS Routes
+
+Current Android SMS Gateway routes:
+
+- `GET /api/dmd/clinic/android-sms-gateway`
+- `PUT /api/dmd/clinic/android-sms-gateway`
+- `POST /api/dmd/android-sms/send`
+- `POST /api/dmd/android-sms/test`
+
+## 9. Notes for Developers
 
 - Locked clinics are blocked at the filter level for most API actions and receive `423 Locked`.
 - Storage and clinic data are scoped by `clinicId`.

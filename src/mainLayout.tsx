@@ -10,8 +10,9 @@ import {
   acceptClinicBetaTesting,
   getClinicDataPrivacyStatus,
   getRegistrationStatus,
+  startClinicTrial,
 } from './common/services/auth-api';
-import { toastSuccess } from './common/api/responses';
+import { toastError, toastSuccess } from './common/api/responses';
 import { useAuthStore } from './common/store/authStore';
 import { isPendingClinicStatus, isPremiumSubscription } from './common/utils/subscription';
 import ClinicLockedDialog from './features/login/clinic-locked-dialog';
@@ -54,6 +55,7 @@ const MainLayout = () => {
   const [isSubmittingDataPrivacy, setIsSubmittingDataPrivacy] = useState(false);
   const [isSubmittingContractPolicy, setIsSubmittingContractPolicy] = useState(false);
   const [isSubmittingBetaTesting, setIsSubmittingBetaTesting] = useState(false);
+  const [isStartingTrial, setIsStartingTrial] = useState(false);
   const [dataPrivacyError, setDataPrivacyError] = useState('');
   const [contractPolicyError, setContractPolicyError] = useState('');
   const [betaTestingError, setBetaTestingError] = useState('');
@@ -195,6 +197,7 @@ const MainLayout = () => {
                 forBetaTestingAccepted:
                   response.forBetaTestingAccepted ?? currentUser.forBetaTestingAccepted,
                 isLocked: response.isLocked,
+                trialExpiry: response.trialExpiry ?? currentUser.trialExpiry,
                 subscriptionType:
                   clinicProfile?.subscriptionType || currentUser.subscriptionType,
                 validityDate: clinicProfile?.validityDate || currentUser.validityDate,
@@ -282,6 +285,7 @@ const MainLayout = () => {
                 isContractPolicyAccepted: response.isContractPolicyAccepted,
                 forBetaTestingAccepted: response.forBetaTestingAccepted,
                 isLocked: response.isLocked,
+                trialExpiry: response.trialExpiry ?? currentUser.trialExpiry,
               }
             : currentUser
         );
@@ -328,6 +332,7 @@ const MainLayout = () => {
               isContractPolicyAccepted: response.isContractPolicyAccepted,
               forBetaTestingAccepted: response.forBetaTestingAccepted,
               isLocked: response.isLocked,
+              trialExpiry: response.trialExpiry ?? currentUser.trialExpiry,
             }
           : currentUser
       );
@@ -361,6 +366,7 @@ const MainLayout = () => {
               isContractPolicyAccepted: response.isContractPolicyAccepted,
               forBetaTestingAccepted: response.forBetaTestingAccepted,
               isLocked: response.isLocked,
+              trialExpiry: response.trialExpiry ?? currentUser.trialExpiry,
             }
           : currentUser
       );
@@ -393,6 +399,7 @@ const MainLayout = () => {
               isContractPolicyAccepted: response.isContractPolicyAccepted,
               forBetaTestingAccepted: response.forBetaTestingAccepted,
               isLocked: response.isLocked,
+              trialExpiry: response.trialExpiry ?? currentUser.trialExpiry,
             }
           : currentUser
       );
@@ -406,6 +413,62 @@ const MainLayout = () => {
       );
     } finally {
       setIsSubmittingBetaTesting(false);
+    }
+  };
+
+  const handleStartTrial = async (): Promise<void> => {
+    if (!clinicId) {
+      toastError('Authenticated clinic was not found.');
+      return;
+    }
+
+    setIsStartingTrial(true);
+
+    try {
+      const response = await startClinicTrial();
+      let clinicProfile = null;
+
+      try {
+        clinicProfile = await GetCurrentClinicProfile(clinicId, true);
+      } catch {
+        clinicProfile = null;
+      }
+
+      const currentUser = useAuthStore.getState().user;
+      updateUser(
+        currentUser
+          ? {
+              ...currentUser,
+              clinicName:
+                response.clinicName || clinicProfile?.clinicName || currentUser.clinicName,
+              isDataPrivacyAccepted: response.isDataPrivacyAccepted,
+              isContractPolicyAccepted:
+                response.isContractPolicyAccepted ?? currentUser.isContractPolicyAccepted,
+              forBetaTestingAccepted:
+                response.forBetaTestingAccepted ?? currentUser.forBetaTestingAccepted,
+              isLocked: response.isLocked,
+              trialExpiry: response.trialExpiry ?? currentUser.trialExpiry,
+              subscriptionType:
+                clinicProfile?.subscriptionType || currentUser.subscriptionType,
+              validityDate: clinicProfile?.validityDate || currentUser.validityDate,
+              status: clinicProfile?.status || 'Active',
+            }
+          : currentUser
+      );
+      setShowClinicLockedDialog(Boolean(response.isLocked));
+      toastSuccess(
+        response.trialExpiry
+          ? `Trial access activated until ${new Date(response.trialExpiry).toLocaleDateString()}.`
+          : 'Trial access activated.'
+      );
+    } catch (error: any) {
+      toastError(
+        typeof error?.response?.data === 'string'
+          ? error.response.data
+          : 'Unable to start the clinic trial.'
+      );
+    } finally {
+      setIsStartingTrial(false);
     }
   };
 
@@ -487,8 +550,9 @@ const MainLayout = () => {
         open={showClinicLockedDialog}
         clinicName={user?.clinicName}
         trialExpiry={user?.trialExpiry}
+        isStartingTrial={isStartingTrial}
         onLogout={logout}
-        onTrial={() => setShowClinicLockedDialog(false)}
+        onTrial={() => void handleStartTrial()}
       />
       {/* Hidden for now: keep bootstrap modal code available, but do not show it after login. */}
       {/* <RegisterBootstrapModal open={requiresRegistration} /> */}

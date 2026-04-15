@@ -75,6 +75,7 @@ External integrations currently wired into runtime:
 
 - OpenAI Responses API
 - Semaphore SMS
+- Android phone running SMS Gateway API
 - Gmail SMTP
 - PayMongo
 - Local storage or Azure Blob Storage
@@ -103,6 +104,11 @@ The backend appsettings files currently include sections for:
 - `Storage`
 - `PayMongo`
 
+The backend also relies on database-backed setup for:
+
+- global `ActiveSMSConfig` selection from the admin setup screen
+- per-clinic Android SMS Gateway configuration stored in the application database
+
 The Hangfire worker currently includes sections for:
 
 - `ConnectionStrings`
@@ -112,6 +118,10 @@ The Hangfire worker currently includes sections for:
 - `ClinicAutoLockSettings`
 - `TrialEndingReminderSettings`
 - `BirthdayGreetingSettings`
+
+Important SMS note:
+
+- Android SMS Gateway does not require a dedicated appsettings section because gateway connection details are saved per clinic through the OralSync settings UI.
 
 ## 5. Storage Deployment Notes
 
@@ -164,7 +174,9 @@ Operational note:
 - Configure backend connection strings
 - Configure JWT settings
 - Configure SMTP settings
-- Configure Semaphore SMS settings if enabled
+- Configure the active SMS provider
+- Configure Semaphore SMS settings if Semaphore is enabled
+- Configure each clinic's Android SMS Gateway settings if Android SMS Gateway is enabled
 - Configure OpenAI settings if AI is enabled
 - Configure PayMongo settings if subscription billing is enabled
 - Configure storage provider settings

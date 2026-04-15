@@ -17,7 +17,11 @@ import {
 import LockRoundedIcon from '@mui/icons-material/LockRounded';
 import CreditCardRoundedIcon from '@mui/icons-material/CreditCardRounded';
 import { useAuthStore } from '../../common/store/authStore';
-import { isPendingClinicStatus } from '../../common/utils/subscription';
+import {
+  formatSubscriptionValidityDate,
+  getSubscriptionDaysRemaining,
+  isPendingClinicStatus,
+} from '../../common/utils/subscription';
 import { getManualPaymentStatus } from '../subscription/api/api';
 import { CheckoutView } from '../subscription/components/CheckoutView';
 import { PlanSelector } from '../subscription/components/PlanSelector';
@@ -36,6 +40,7 @@ type ClinicLockedDialogProps = {
   open: boolean;
   clinicName?: string;
   trialExpiry?: string;
+  isStartingTrial?: boolean;
   onLogout: () => void;
   onTrial: () => void;
 };
@@ -80,13 +85,14 @@ const ClinicLockedDialog: FunctionComponent<ClinicLockedDialogProps> = ({
   open,
   clinicName,
   trialExpiry,
+  isStartingTrial = false,
   onLogout,
   onTrial,
 }): JSX.Element => {
-  const now = new Date();
-  const trialExpiryDate = trialExpiry ? new Date(trialExpiry) : null;
-  const isTrialActive = trialExpiryDate !== null && trialExpiryDate > now;
-  const isTrialExpired = trialExpiryDate !== null && trialExpiryDate <= now;
+  const trialDaysRemaining = getSubscriptionDaysRemaining(trialExpiry);
+  const isTrialActive = trialDaysRemaining !== null && trialDaysRemaining >= 0;
+  const isTrialExpired = trialDaysRemaining !== null && trialDaysRemaining < 0;
+  const formattedTrialExpiryDate = formatSubscriptionValidityDate(trialExpiry);
   const user = useAuthStore((state) => state.user);
   const updateUser = useAuthStore((state) => state.updateUser);
   const [showPaymentFlow, setShowPaymentFlow] = useState(false);
@@ -269,7 +275,7 @@ const ClinicLockedDialog: FunctionComponent<ClinicLockedDialogProps> = ({
                   {isTrialActive && (
                     <Alert severity="info" sx={{ mb: 1.5 }}>
                       Your 3-day trial is active until{' '}
-                      <strong>{trialExpiryDate!.toLocaleDateString()}</strong>. You can try the
+                      <strong>{formattedTrialExpiryDate}</strong>. You can try the
                       system for free until then.
                     </Alert>
                   )}
@@ -334,8 +340,13 @@ const ClinicLockedDialog: FunctionComponent<ClinicLockedDialogProps> = ({
             Logout
           </Button>
           {isTrialActive && (
-            <Button variant="outlined" color="success" onClick={onTrial}>
-              Try Trial
+            <Button
+              variant="outlined"
+              color="success"
+              onClick={onTrial}
+              disabled={isStartingTrial}
+            >
+              {isStartingTrial ? 'Starting Trial...' : 'Try Trial'}
             </Button>
           )}
           <Button

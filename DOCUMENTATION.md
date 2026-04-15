@@ -22,6 +22,12 @@ This documentation set is based on the current codebase:
 - Frontend repo: `OralSync`
 - Backend repo: `../OralSync-API`
 
+Current feature areas covered in this documentation set include:
+
+- Reports & Analytics (`/reports`)
+- Android SMS Gateway settings (`Settings > SMS Gateway`)
+- AI assistant, PWA behavior, subscriptions, and background SMS workflows
+
 ## Existing Related Docs
 
 - [PWA Setup](docs/PWA-SETUP.md)

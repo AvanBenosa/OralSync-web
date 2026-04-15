@@ -59,6 +59,7 @@ export const applySubscriptionTransactionToUser = (
     validityDate: baseDate.toISOString(),
     status: 'Active',
     isLocked: false,
+    trialExpiry: undefined,
   };
 };
 

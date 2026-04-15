@@ -57,15 +57,21 @@ const DashBoardAnnouncement: FunctionComponent = (): JSX.Element | null => {
   const navigate = useNavigate();
   const clinicStatus = useAuthStore((store) => store.user?.status);
   const validityDate = useAuthStore((store) => store.user?.validityDate);
+  const trialExpiry = useAuthStore((store) => store.user?.trialExpiry);
   const daysRemaining = getSubscriptionDaysRemaining(validityDate);
+  const trialDaysRemaining = getSubscriptionDaysRemaining(trialExpiry);
   const isPaymentValidationPending = isPendingClinicStatus(clinicStatus);
+  const hasPaidSubscription = Boolean(validityDate?.trim());
+  const isTrialAnnouncementActive =
+    trialDaysRemaining !== null && trialDaysRemaining >= 0 && !hasPaidSubscription;
   const isSubscriptionWarningActive =
     daysRemaining !== null &&
     daysRemaining >= 0 &&
     daysRemaining <= SUBSCRIPTION_WARNING_WINDOW_DAYS;
   const isPriorityAnnouncementActive =
-    isPaymentValidationPending || isSubscriptionWarningActive;
+    isPaymentValidationPending || isTrialAnnouncementActive || isSubscriptionWarningActive;
   const formattedValidityDate = formatSubscriptionValidityDate(validityDate);
+  const formattedTrialExpiryDate = formatSubscriptionValidityDate(trialExpiry);
   const [isDismissed, setIsDismissed] = useState<boolean>(
     () => window.sessionStorage.getItem(DEVOTIONAL_HIDDEN_KEY) === 'true'
   );
@@ -125,11 +131,17 @@ const DashBoardAnnouncement: FunctionComponent = (): JSX.Element | null => {
 
   const announcementEyebrow = isPaymentValidationPending
     ? 'Payment Validation'
+    : isTrialAnnouncementActive
+      ? 'Trial Only'
     : isSubscriptionWarningActive
       ? 'Subscription Reminder'
     : 'Daily Devotional';
   const announcementTitle = isPaymentValidationPending
     ? 'Manual payment is under review'
+    : isTrialAnnouncementActive
+      ? trialDaysRemaining === 0
+        ? 'Free trial ends today'
+        : `Free trial ends on ${formattedTrialExpiryDate}`
     : isSubscriptionWarningActive
       ? getSubscriptionAnnouncementTitle(daysRemaining)
     : isLoading
@@ -137,11 +149,18 @@ const DashBoardAnnouncement: FunctionComponent = (): JSX.Element | null => {
       : devotional?.reference ?? fallbackDevotional.reference;
   const announcementMessage = isPaymentValidationPending
     ? 'We received your manual payment. Your selected plan and updated validity date will be applied once the payment is marked as paid in the admin portal.'
+    : isTrialAnnouncementActive
+      ? `Your clinic is currently running on trial access only. Trial access ends on ${formattedTrialExpiryDate}. Subscribe before the expiry date to avoid the clinic being locked again.`
     : isSubscriptionWarningActive
       ? getSubscriptionAnnouncementMessage(daysRemaining, formattedValidityDate)
     : isLoading
       ? 'Fetching a fresh Bible verse for today.'
       : devotional?.message ?? fallbackDevotional.message;
+  const announcementActionLabel = isPaymentValidationPending
+    ? 'Validating Your Payment'
+    : isTrialAnnouncementActive
+      ? 'Pay Subscription'
+      : 'Renew Subscription';
 
   const handleRenewSubscription = (): void => {
     navigate('/subscription');
@@ -154,7 +173,7 @@ const DashBoardAnnouncement: FunctionComponent = (): JSX.Element | null => {
         <div className={styles.announcementIcon}>
           {isPaymentValidationPending ? (
             <HourglassTopRoundedIcon className={styles.announcementIconSvg} />
-          ) : isSubscriptionWarningActive ? (
+          ) : isTrialAnnouncementActive || isSubscriptionWarningActive ? (
             <WarningAmberRoundedIcon className={styles.announcementIconSvg} />
           ) : (
             <AutoStoriesRoundedIcon className={styles.announcementIconSvg} />
@@ -173,7 +192,7 @@ const DashBoardAnnouncement: FunctionComponent = (): JSX.Element | null => {
               aria-label={
                 isPaymentValidationPending
                   ? 'Your manual payment is being validated'
-                  : 'Renew your clinic subscription'
+                  : 'Pay your clinic subscription'
               }
             >
               {isPaymentValidationPending ? (
@@ -181,7 +200,7 @@ const DashBoardAnnouncement: FunctionComponent = (): JSX.Element | null => {
               ) : (
                 <AutorenewRoundedIcon fontSize="small" />
               )}
-              {isPaymentValidationPending ? 'Validating Your Payment' : 'Renew Subscription'}
+              {announcementActionLabel}
             </button>
           )}
         </div>

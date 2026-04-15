@@ -59,7 +59,7 @@ DMD.HANGFIRE/             background worker host
     +--> SQL Server Hangfire DB
     +--> Local storage or Azure Blob storage
     +--> OpenAI Responses API
-    +--> Semaphore SMS
+    +--> Semaphore SMS or Android SMS Gateway
     +--> Gmail SMTP
     +--> PayMongo
 
@@ -67,7 +67,7 @@ DMD.HANGFIRE/             background worker host
     |
     +--> SQL Server Hangfire DB
     +--> SQL Server application DB
-    +--> Semaphore SMS
+    +--> Semaphore SMS or Android SMS Gateway
     +--> Gmail SMTP
 ```
 
@@ -95,6 +95,7 @@ The frontend uses feature folders under `src/features/`. Major modules currently
 - `dental-lab-cases`
 - `finance-overview`
 - `invoice-generator`
+- `reports`
 - `settings`
 - `subscription`
 - `public-registration`
@@ -358,9 +359,95 @@ PayMongo is registered through `AddDmdPayMongoServices`. The current implementat
 
 Admin manual payment review is handled from the admin controller group and surfaced in the admin portal payment request UI.
 
-## 9. Background Jobs (Hangfire)
+## 9. SMS Delivery Architecture
 
-### 9.1 Worker host
+### 9.1 Provider selection
+
+The current backend supports two SMS delivery paths:
+
+- `Semaphore`: configured from `SemaphoreSmsSettings`
+- `Android SMS Gateway`: configured per clinic from the clinic settings screen
+
+The active provider is selected from the admin setup record through `ActiveSMSConfig`.
+
+### 9.2 Android SMS Gateway flow
+
+Verified flow across the frontend and backend:
+
+- Clinic-wide admins configure gateway settings in `src/features/settings/sms-gateway`
+- The frontend saves the per-clinic configuration to `/api/dmd/clinic/android-sms-gateway`
+- Test SMS requests are sent through `/api/dmd/android-sms/test`
+- The Android gateway service posts JSON to the configured Android device endpoint using `{ "to": "...", "message": "..." }`
+- Phone numbers are normalized to Philippine mobile format before the request is sent
+
+Per-clinic Android gateway settings currently include:
+
+- `BaseUrl`
+- `SendEndpoint`
+- optional `ApiKey`
+- `TimeoutMilliseconds`
+- `IsEnabled`
+
+### 9.3 Patient and scheduled SMS behavior
+
+Verified current behavior:
+
+- Patient SMS from the patient profile chooses Android SMS Gateway or Semaphore based on `ActiveSMSConfig`
+- Hangfire jobs for appointment reminders, birthday greetings, and trial-ending reminders also branch on the same provider setting
+- Android SMS and provider failures are written to notification logs
+
+## 10. Reports & Analytics Architecture
+
+### 10.1 Frontend module
+
+The Reports module lives in `src/features/reports` and is routed from `/reports`.
+
+Current frontend tabs:
+
+- `Finance`
+- `Patients`
+- `Appointments`
+
+The frontend report filter currently supports:
+
+- `DateFrom`
+- `DateTo`
+- inferred branch context from the active authenticated branch selection
+
+### 10.2 Backend routes and query structure
+
+The backend exposes the report surface through `../OralSync-API/DMD/Controllers/Reports/ReportsController.cs`.
+
+Current route set:
+
+- `/api/dmd/reports/revenue-summary`
+- `/api/dmd/reports/expense-breakdown`
+- `/api/dmd/reports/outstanding-balances`
+- `/api/dmd/reports/profit-loss`
+- `/api/dmd/reports/patient-growth`
+- `/api/dmd/reports/patient-demographics`
+- `/api/dmd/reports/appointment-volume`
+- `/api/dmd/reports/appointment-funnel`
+
+Report queries currently accept combinations of:
+
+- `ClinicId`
+- `BranchId`
+- `DateFrom`
+- `DateTo`
+
+### 10.3 Data sources
+
+From the application-layer handlers, the reports aggregate clinic-scoped data from:
+
+- patient records
+- appointment requests
+- income and expense records
+- outstanding patient balances
+
+## 11. Background Jobs (Hangfire)
+
+### 11.1 Worker host
 
 `../OralSync-API/DMD.HANGFIRE/Program.cs` runs a separate Hangfire server and exposes:
 
@@ -369,7 +456,7 @@ Admin manual payment review is handled from the admin controller group and surfa
 
 It also verifies or creates the Hangfire database before starting recurring jobs.
 
-### 9.2 Current recurring jobs
+### 11.2 Current recurring jobs
 
 Verified recurring job IDs and their default schedules from `DMD.HANGFIRE/appsettings.json`:
 
@@ -386,7 +473,7 @@ Extra verified trial-ending settings:
 - Reminder days before end: `7`, `3`, `1`
 - Subscription type filter includes `Basic`
 
-## 10. Conventions and Current Implementation Notes
+## 12. Conventions and Current Implementation Notes
 
 Verified conventions in the current code:
 
