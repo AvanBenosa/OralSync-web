@@ -124,8 +124,7 @@ type RegistrationSuccessState = {
 
 const Login = () => {
   const theme = useTheme();
-  const isCompact = useMediaQuery(theme.breakpoints.down('md'));
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isTabletLayout = useMediaQuery(theme.breakpoints.down('lg'));
   const navigate = useNavigate();
   const setSession = useAuthStore((state) => state.setSession);
   const user = useAuthStore((state) => state.user);
@@ -180,7 +179,7 @@ const Login = () => {
   }, []);
 
   useEffect(() => {
-    if (isCompact) {
+    if (isTabletLayout) {
       return undefined;
     }
 
@@ -189,7 +188,7 @@ const Login = () => {
     }, 5000);
 
     return () => window.clearInterval(interval);
-  }, [isCompact]);
+  }, [isTabletLayout]);
 
   const handlePreviousSlide = (): void => {
     setActiveSlide((current) => (current === 0 ? heroSlides.length - 1 : current - 1));
@@ -271,7 +270,9 @@ const Login = () => {
       if (pendingAuthResponse) {
         setSession(
           pendingAuthResponse.token,
-          pendingAuthResponse.user?.name || pendingAuthResponse.user?.userName || pendingAuthResponse.user?.email,
+          pendingAuthResponse.user?.name ||
+            pendingAuthResponse.user?.userName ||
+            pendingAuthResponse.user?.email,
           pendingAuthResponse.requiresRegistration,
           pendingAuthResponse.user
         );
@@ -280,7 +281,9 @@ const Login = () => {
       setPendingAuthResponse(null);
       window.sessionStorage.removeItem(DEVOTIONAL_HIDDEN_KEY);
       queuePostLoginBoot();
-      navigate(getPortalHomePath(getUserPortalType(pendingAuthResponse?.user ?? user)), { replace: true });
+      navigate(getPortalHomePath(getUserPortalType(pendingAuthResponse?.user ?? user)), {
+        replace: true,
+      });
     } catch (error) {
       if (isAxiosError(error)) {
         setChangePasswordError(
@@ -350,13 +353,13 @@ const Login = () => {
       <Box
         sx={{
           display: 'grid',
-          gridTemplateColumns: isMobile
+          gridTemplateColumns: isTabletLayout
             ? '1fr'
             : { xs: '1fr', md: 'minmax(0, 1.02fr) minmax(420px, 0.98fr)' },
-          minHeight: { md: 'calc(100vh - 85px)' },
+          minHeight: { lg: 'calc(100vh - 85px)' },
         }}
       >
-        {!isMobile ? (
+        {!isTabletLayout ? (
           <AuthHeroPanel
             activeSlide={activeSlide}
             activeSection={activeSection}
@@ -382,7 +385,7 @@ const Login = () => {
           errorMessage={errorMessage}
           facebookUrl={CONTACT_FACEBOOK_URL}
           isSubmitting={isSubmitting}
-          isMobileView={isMobile}
+          isMobileView={isTabletLayout}
           onAuthModeChange={setAuthMode}
           onBackToLogin={handleBackToLogin}
           onShowContact={() => setActiveSection('contact')}
@@ -449,7 +452,8 @@ const Login = () => {
 
         <DialogContent sx={{ pt: 2 }}>
           <Alert severity="info" sx={{ mb: 2.5, borderRadius: 2 }}>
-            You signed in with a temporary password. Please create a new password to secure your account.
+            You signed in with a temporary password. Please create a new password to secure your
+            account.
           </Alert>
 
           <Box
@@ -459,7 +463,9 @@ const Login = () => {
             sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
           >
             {changePasswordError ? (
-              <Alert severity="error" sx={{ borderRadius: 2 }}>{changePasswordError}</Alert>
+              <Alert severity="error" sx={{ borderRadius: 2 }}>
+                {changePasswordError}
+              </Alert>
             ) : null}
 
             <TextField
@@ -488,7 +494,11 @@ const Login = () => {
                         aria-label={showNewPassword ? 'Hide password' : 'Show password'}
                         onClick={() => setShowNewPassword(!showNewPassword)}
                       >
-                        {showNewPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
+                        {showNewPassword ? (
+                          <VisibilityOff fontSize="small" />
+                        ) : (
+                          <Visibility fontSize="small" />
+                        )}
                       </IconButton>
                     </InputAdornment>
                   ),

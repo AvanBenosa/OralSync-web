@@ -383,7 +383,7 @@ const SmsGatewaySettings: FunctionComponent = (): JSX.Element => {
             sx={{ m: 0, pl: 2.5, display: 'flex', flexDirection: 'column', gap: 0.75 }}
           >
             <Typography component="li" variant="body2">
-              Install <strong>SMS Gateway API</strong> from Google Play on your Android device.
+              Install <strong>Traccar SMS Gateway</strong> from Google Play on your Android device.
             </Typography>
             <Typography component="li" variant="body2">
               Launch the app and note the displayed IP address and port (e.g.{' '}

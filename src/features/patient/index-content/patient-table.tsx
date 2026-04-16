@@ -67,44 +67,44 @@ const PatientTable: FunctionComponent<PatientStateProps> = (
     navigate('/patient');
   };
 
-  const renderActionButtons = (item: PatientModel): JSX.Element => (
-    <div className={`${styles.buttonContainer} ${styles.tableButtonContainer}`}>
-      <button
-        type="button"
-        title="Edit"
-        aria-label="Edit patient"
-        className={`${styles.buttonItem} ${styles.tableActionButton} ${styles.editButton}`}
-        onClick={(): void =>
-          setState({
-            ...state,
-            selectedItem: item,
-            isUpdate: true,
-            isDelete: false,
-            openModal: true,
-          })
-        }
-      >
-        <EditOutlinedIcon className={styles.iconEdit} />
-      </button>
-      <button
-        type="button"
-        title="Delete"
-        aria-label="Delete patient"
-        className={`${styles.buttonItem} ${styles.tableActionButton} ${styles.deleteButton}`}
-        onClick={(): void =>
-          setState({
-            ...state,
-            selectedItem: item,
-            isUpdate: false,
-            isDelete: true,
-            openModal: true,
-          })
-        }
-      >
-        <DeleteOutlineOutlinedIcon className={styles.iconDelete} />
-      </button>
-    </div>
-  );
+  // const renderActionButtons = (item: PatientModel): JSX.Element => (
+  //   <div className={`${styles.buttonContainer} ${styles.tableButtonContainer}`}>
+  //     <button
+  //       type="button"
+  //       title="Edit"
+  //       aria-label="Edit patient"
+  //       className={`${styles.buttonItem} ${styles.tableActionButton} ${styles.editButton}`}
+  //       onClick={(): void =>
+  //         setState({
+  //           ...state,
+  //           selectedItem: item,
+  //           isUpdate: true,
+  //           isDelete: false,
+  //           openModal: true,
+  //         })
+  //       }
+  //     >
+  //       <EditOutlinedIcon className={styles.iconEdit} />
+  //     </button>
+  //     <button
+  //       type="button"
+  //       title="Delete"
+  //       aria-label="Delete patient"
+  //       className={`${styles.buttonItem} ${styles.tableActionButton} ${styles.deleteButton}`}
+  //       onClick={(): void =>
+  //         setState({
+  //           ...state,
+  //           selectedItem: item,
+  //           isUpdate: false,
+  //           isDelete: true,
+  //           openModal: true,
+  //         })
+  //       }
+  //     >
+  //       <DeleteOutlineOutlinedIcon className={styles.iconDelete} />
+  //     </button>
+  //   </div>
+  // );
 
   return (
     <TableContainer
@@ -199,7 +199,7 @@ const PatientTable: FunctionComponent<PatientStateProps> = (
                           {item.contactNumber || '--'}
                         </Typography>
                       </div>
-                      <div className={styles.mobileActions}>{renderActionButtons(item)}</div>
+                      {/* <div className={styles.mobileActions}>{renderActionButtons(item)}</div> */}
                     </div>
                   ) : (
                     <div className={styles.nameCellStack}>
@@ -228,7 +228,7 @@ const PatientTable: FunctionComponent<PatientStateProps> = (
                       {formatBirthDate(item.birthDate)}
                     </TableCell>
                     <TableCell className={styles.tableBodyCell} align="right">
-                      {renderActionButtons(item)}
+                      {/* {renderActionButtons(item)} */}
                     </TableCell>
                   </>
                 ) : null}

@@ -132,7 +132,7 @@ const ExportData: FunctionComponent = (): JSX.Element => {
       ) : null}
 
       <div className={styles.exportSurface}>
-        <section className={styles.exportHeroCard}>
+        {/* <section className={styles.exportHeroCard}>
           <div className={styles.exportHeroContent}>
             <Typography className={styles.exportHeroEyebrow}>Clinic Data Export</Typography>
             <Typography className={styles.exportHeroTitle}>CSV Export Center</Typography>
@@ -161,7 +161,7 @@ const ExportData: FunctionComponent = (): JSX.Element => {
               </span>
             </div>
           </div>
-        </section>
+        </section> */}
 
         <Alert severity="info">
           Exports include the database columns saved for each dataset. You can download only the

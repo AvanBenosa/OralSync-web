@@ -205,8 +205,17 @@ const ReportsCommunications: FunctionComponent<ReportsCommunicationsProps> = ({
   const pageSize = data?.pageSize ?? 50;
 
   return (
-    <Box>
-      <Stack direction="row" spacing={1} mb={2} flexWrap="wrap" useFlexGap>
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 2,
+        height: { xs: 'auto', lg: '100%' },
+        minHeight: { xs: 'auto', lg: '100%' },
+        maxHeight: { xs: 'none', lg: '100%' },
+      }}
+    >
+      <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
         {CHANNEL_FILTERS.map((item) => (
           <Chip
             key={item.value}
@@ -221,92 +230,118 @@ const ReportsCommunications: FunctionComponent<ReportsCommunicationsProps> = ({
       </Stack>
 
       {error && (
-        <Typography color="#b23b57" variant="body2" mb={2} fontWeight={700}>
+        <Typography color="#b23b57" variant="body2" fontWeight={700}>
           {error}
         </Typography>
       )}
 
-      <TableContainer component={Paper} elevation={0} sx={reportTableContainerSx}>
-        <Table size="small">
-          <TableHead>
-            <TableRow>
-              <TableCell sx={reportTableHeaderCellSx}>Date / Time</TableCell>
-              <TableCell sx={reportTableHeaderCellSx}>Type</TableCell>
-              <TableCell sx={reportTableHeaderCellSx}>Channel</TableCell>
-              <TableCell sx={reportTableHeaderCellSx}>Recipient</TableCell>
-              <TableCell sx={reportTableHeaderCellSx}>Message</TableCell>
-              <TableCell sx={reportTableHeaderCellSx}>Status</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {loading &&
-              Array.from({ length: 8 }).map((_, rowIndex) => (
-                <TableRow key={rowIndex}>
-                  {Array.from({ length: 6 }).map((__, cellIndex) => (
-                    <TableCell key={cellIndex} sx={reportTableBodyCellSx}>
-                      <Skeleton variant="text" width="80%" />
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))}
-
-            {!loading && items.length === 0 && (
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          flex: 1,
+          minHeight: { xs: 'auto', lg: 0 },
+          maxHeight: { xs: 'none', lg: '100%' },
+        }}
+      >
+        <TableContainer
+          component={Paper}
+          elevation={0}
+          sx={{
+            ...reportTableContainerSx,
+            flex: 1,
+            minHeight: { xs: 0, lg: 0 },
+            maxHeight: { xs: 'none', lg: '100%' },
+            overflowX: 'auto',
+            overflowY: { xs: 'visible', lg: 'auto' },
+          }}
+        >
+          <Table size="small">
+            <TableHead>
               <TableRow>
-                <TableCell colSpan={6} align="center" sx={{ borderBottom: 0, py: 4 }}>
-                  <ReportsEmptyState
-                    label="No communication logs found for the selected filters."
-                    minHeight={160}
-                  />
-                </TableCell>
+                <TableCell sx={reportTableHeaderCellSx}>Date / Time</TableCell>
+                <TableCell sx={reportTableHeaderCellSx}>Type</TableCell>
+                <TableCell sx={reportTableHeaderCellSx}>Channel</TableCell>
+                <TableCell sx={reportTableHeaderCellSx}>Recipient</TableCell>
+                <TableCell sx={reportTableHeaderCellSx}>Message</TableCell>
+                <TableCell sx={reportTableHeaderCellSx}>Status</TableCell>
               </TableRow>
-            )}
+            </TableHead>
+            <TableBody>
+              {loading &&
+                Array.from({ length: 8 }).map((_, rowIndex) => (
+                  <TableRow key={rowIndex}>
+                    {Array.from({ length: 6 }).map((__, cellIndex) => (
+                      <TableCell key={cellIndex} sx={reportTableBodyCellSx}>
+                        <Skeleton variant="text" width="80%" />
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))}
 
-            {!loading &&
-              items.map((item) => (
-                <TableRow key={item.id} hover>
-                  <TableCell sx={{ ...reportTableBodyCellSx, whiteSpace: 'nowrap' }}>
-                    {moment(item.createdAt).format('MMM D, YYYY h:mm A')}
-                  </TableCell>
-                  <TableCell sx={reportTableBodyCellSx}>
-                    {formatNotificationType(item.notificationType)}
-                  </TableCell>
-                  <TableCell sx={reportTableBodyCellSx}>
-                    <ChannelChip channel={item.channel} />
-                  </TableCell>
-                  <TableCell sx={reportTableBodyCellSx}>{item.recipientAddress}</TableCell>
-                  <TableCell
-                    sx={{
-                      ...reportTableBodyCellSx,
-                      maxWidth: 320,
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
-                    }}
-                  >
-                    <Tooltip title={item.message} placement="top-start">
-                      <span>{item.message}</span>
-                    </Tooltip>
-                  </TableCell>
-                  <TableCell sx={reportTableBodyCellSx}>
-                    <StatusChip
-                      isSent={item.isSent}
-                      isFailed={item.isFailed}
-                      failureReason={item.failureReason}
+              {!loading && items.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={6} align="center" sx={{ borderBottom: 0, py: 4 }}>
+                    <ReportsEmptyState
+                      label="No communication logs found for the selected filters."
+                      minHeight={160}
                     />
                   </TableCell>
                 </TableRow>
-              ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+              )}
 
-      <Box mt={2}>
-        <RoundedPagination
-          page={page}
-          pageSize={pageSize}
-          totalItems={totalCount}
-          onChange={(nextPage) => setPage(nextPage)}
-        />
+              {!loading &&
+                items.map((item) => (
+                  <TableRow key={item.id} hover>
+                    <TableCell sx={{ ...reportTableBodyCellSx, whiteSpace: 'nowrap' }}>
+                      {moment(item.createdAt).format('MMM D, YYYY h:mm A')}
+                    </TableCell>
+                    <TableCell sx={reportTableBodyCellSx}>
+                      {formatNotificationType(item.notificationType)}
+                    </TableCell>
+                    <TableCell sx={reportTableBodyCellSx}>
+                      <ChannelChip channel={item.channel} />
+                    </TableCell>
+                    <TableCell sx={reportTableBodyCellSx}>{item.recipientAddress}</TableCell>
+                    <TableCell
+                      sx={{
+                        ...reportTableBodyCellSx,
+                        maxWidth: 320,
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      <Tooltip title={item.message} placement="top-start">
+                        <span>{item.message}</span>
+                      </Tooltip>
+                    </TableCell>
+                    <TableCell sx={reportTableBodyCellSx}>
+                      <StatusChip
+                        isSent={item.isSent}
+                        isFailed={item.isFailed}
+                        failureReason={item.failureReason}
+                      />
+                    </TableCell>
+                  </TableRow>
+                ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+
+        <Box
+          sx={{
+            mt: 'auto',
+            flex: '0 0 auto',
+          }}
+        >
+          <RoundedPagination
+            page={page}
+            pageSize={pageSize}
+            totalItems={totalCount}
+            onChange={(nextPage) => setPage(nextPage)}
+          />
+        </Box>
       </Box>
     </Box>
   );

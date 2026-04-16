@@ -116,7 +116,7 @@ const AuditLogs: FunctionComponent = (): JSX.Element => {
         </div>
       </div>
 
-      <div className={styles.auditSummaryGrid}>
+      {/* <div className={styles.auditSummaryGrid}>
         <Paper className={styles.auditSummaryCard} elevation={0}>
           <div className={styles.auditSummaryIcon}>
             <PolicyRoundedIcon />
@@ -161,7 +161,7 @@ const AuditLogs: FunctionComponent = (): JSX.Element => {
             </Typography>
           </div>
         </Paper>
-      </div>
+      </div> */}
 
       <div className={styles.auditPanelGrid}>
         <section className={styles.auditSurface}>
