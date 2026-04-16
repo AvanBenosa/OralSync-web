@@ -94,6 +94,30 @@ export type PatientDemographicsModel = {
   byTag: DemographicBreakdownItem[];
 };
 
+// ── Communications ────────────────────────────────────────────────────────
+
+export type NotificationLogItem = {
+  id: number;
+  channel: string;
+  notificationType: string;
+  recipientAddress: string;
+  subject: string;
+  message: string;
+  scheduledFor: string;
+  sentAt?: string | null;
+  isSent: boolean;
+  isFailed: boolean;
+  failureReason?: string | null;
+  createdAt: string;
+};
+
+export type NotificationLogsModel = {
+  totalCount: number;
+  pageNumber: number;
+  pageSize: number;
+  items: NotificationLogItem[];
+};
+
 // ── Appointment ───────────────────────────────────────────────────────────
 
 export type AppointmentVolumeByMonthModel = {

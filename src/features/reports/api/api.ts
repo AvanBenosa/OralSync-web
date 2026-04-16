@@ -7,6 +7,7 @@ import type {
   AppointmentFunnelModel,
   AppointmentVolumeModel,
   ExpenseBreakdownModel,
+  NotificationLogsModel,
   OutstandingBalancesModel,
   PatientDemographicsModel,
   PatientGrowthModel,
@@ -141,3 +142,23 @@ export const GetAppointmentFunnel = (
   forceRefresh = false
 ): Promise<AppointmentFunnelModel> =>
   fetchReport<AppointmentFunnelModel>(`${BASE}/appointment-funnel`, buildParams(clinicId, filter), forceRefresh);
+
+// ── Communications ────────────────────────────────────────────────────────
+
+export const GetNotificationLogs = (
+  clinicId?: string | null,
+  filter?: ReportFilter,
+  page = 1,
+  channel?: number,
+  forceRefresh = false
+): Promise<NotificationLogsModel> =>
+  fetchReport<NotificationLogsModel>(
+    `${BASE}/notification-logs`,
+    {
+      ...buildParams(clinicId, filter),
+      PageNumber: String(page),
+      PageSize: '50',
+      Channel: channel !== undefined ? String(channel) : undefined,
+    },
+    forceRefresh
+  );

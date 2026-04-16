@@ -1,66 +1,89 @@
-import { FunctionComponent, JSX, MouseEvent, useState } from 'react';
+import { FunctionComponent, JSX, MouseEvent, useEffect, useState } from 'react';
 import AssessmentRoundedIcon from '@mui/icons-material/AssessmentRounded';
 import AttachMoneyRoundedIcon from '@mui/icons-material/AttachMoneyRounded';
-import GroupRoundedIcon from '@mui/icons-material/GroupRounded';
-import EventNoteRoundedIcon from '@mui/icons-material/EventNoteRounded';
 import DateRangeRoundedIcon from '@mui/icons-material/DateRangeRounded';
+import EventNoteRoundedIcon from '@mui/icons-material/EventNoteRounded';
+import GroupRoundedIcon from '@mui/icons-material/GroupRounded';
+import MarkEmailReadRoundedIcon from '@mui/icons-material/MarkEmailReadRounded';
 import RefreshRoundedIcon from '@mui/icons-material/RefreshRounded';
-import {
-  Box,
-  Chip,
-  Divider,
-  Popover,
-  Stack,
-  Tab,
-  Tabs,
-  Typography,
-} from '@mui/material';
+import { Popover } from '@mui/material';
 
 import { useAuthStore } from '../../common/store/authStore';
 import type { ReportFilter, ReportsProps } from './api/types';
+import ReportsAppointments from './index-content/reports-appointments';
+import ReportsCommunications from './index-content/reports-communications';
 import ReportsFinance from './index-content/reports-finance';
 import ReportsPatients from './index-content/reports-patients';
-import ReportsAppointments from './index-content/reports-appointments';
+import styles from './style.scss.module.scss';
 
-type ReportTab = 'finance' | 'patients' | 'appointments';
+type ReportTab = 'finance' | 'patients' | 'appointments' | 'communications';
 
 const TABS: { value: ReportTab; label: string; icon: JSX.Element }[] = [
   { value: 'finance', label: 'Finance', icon: <AttachMoneyRoundedIcon fontSize="small" /> },
   { value: 'patients', label: 'Patients', icon: <GroupRoundedIcon fontSize="small" /> },
   { value: 'appointments', label: 'Appointments', icon: <EventNoteRoundedIcon fontSize="small" /> },
+  {
+    value: 'communications',
+    label: 'Communications',
+    icon: <MarkEmailReadRoundedIcon fontSize="small" />,
+  },
 ];
 
 const DATE_PRESETS = [
-  { label: 'This Month', getRange: () => {
-    const now = new Date();
-    return {
-      from: new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10),
-      to: new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().slice(0, 10),
-    };
-  }},
-  { label: 'This Quarter', getRange: () => {
-    const now = new Date();
-    const q = Math.floor(now.getMonth() / 3);
-    return {
-      from: new Date(now.getFullYear(), q * 3, 1).toISOString().slice(0, 10),
-      to: new Date(now.getFullYear(), q * 3 + 3, 0).toISOString().slice(0, 10),
-    };
-  }},
-  { label: 'This Year', getRange: () => {
-    const now = new Date();
-    return {
-      from: new Date(now.getFullYear(), 0, 1).toISOString().slice(0, 10),
-      to: new Date(now.getFullYear(), 11, 31).toISOString().slice(0, 10),
-    };
-  }},
-  { label: 'Last Year', getRange: () => {
-    const year = new Date().getFullYear() - 1;
-    return {
-      from: new Date(year, 0, 1).toISOString().slice(0, 10),
-      to: new Date(year, 11, 31).toISOString().slice(0, 10),
-    };
-  }},
+  {
+    label: 'This Month',
+    getRange: () => {
+      const now = new Date();
+      return {
+        from: new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10),
+        to: new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().slice(0, 10),
+      };
+    },
+  },
+  {
+    label: 'This Quarter',
+    getRange: () => {
+      const now = new Date();
+      const q = Math.floor(now.getMonth() / 3);
+      return {
+        from: new Date(now.getFullYear(), q * 3, 1).toISOString().slice(0, 10),
+        to: new Date(now.getFullYear(), q * 3 + 3, 0).toISOString().slice(0, 10),
+      };
+    },
+  },
+  {
+    label: 'This Year',
+    getRange: () => {
+      const now = new Date();
+      return {
+        from: new Date(now.getFullYear(), 0, 1).toISOString().slice(0, 10),
+        to: new Date(now.getFullYear(), 11, 31).toISOString().slice(0, 10),
+      };
+    },
+  },
+  {
+    label: 'Last Year',
+    getRange: () => {
+      const year = new Date().getFullYear() - 1;
+      return {
+        from: new Date(year, 0, 1).toISOString().slice(0, 10),
+        to: new Date(year, 11, 31).toISOString().slice(0, 10),
+      };
+    },
+  },
 ];
+
+const formatDateLabel = (value?: string): string => {
+  if (!value) {
+    return '';
+  }
+
+  return new Date(`${value}T00:00:00`).toLocaleDateString('en-US', {
+    month: 'short',
+    day: '2-digit',
+    year: 'numeric',
+  });
+};
 
 const ReportsModule: FunctionComponent<ReportsProps> = ({ clinicId }): JSX.Element => {
   const user = useAuthStore((s) => s.user);
@@ -70,6 +93,7 @@ const ReportsModule: FunctionComponent<ReportsProps> = ({ clinicId }): JSX.Eleme
     if (tab.value === 'finance') {
       return role === 'superadmin' || role === 'branchadmin' || role === 'accountant';
     }
+
     return true;
   });
 
@@ -86,19 +110,27 @@ const ReportsModule: FunctionComponent<ReportsProps> = ({ clinicId }): JSX.Eleme
 
   const isFilterOpen = Boolean(filterAnchorEl);
   const isInvalidRange = Boolean(draftFrom && draftTo && draftFrom > draftTo);
+  const hasFilter = Boolean(filter.dateFrom || filter.dateTo);
 
-  const filterLabel = filter.dateFrom && filter.dateTo
-    ? `${filter.dateFrom} → ${filter.dateTo}`
-    : filter.dateFrom
-    ? `From ${filter.dateFrom}`
-    : filter.dateTo
-    ? `To ${filter.dateTo}`
-    : 'All time';
+  const filterLabel =
+    filter.dateFrom && filter.dateTo
+      ? `${formatDateLabel(filter.dateFrom)} - ${formatDateLabel(filter.dateTo)}`
+      : filter.dateFrom
+      ? `From ${formatDateLabel(filter.dateFrom)}`
+      : filter.dateTo
+      ? `To ${formatDateLabel(filter.dateTo)}`
+      : 'All time';
 
-  const handleOpenFilter = (e: MouseEvent<HTMLButtonElement>): void => {
+  useEffect(() => {
+    if (!visibleTabs.some((tab) => tab.value === activeTab)) {
+      setActiveTab(visibleTabs[0]?.value ?? 'patients');
+    }
+  }, [activeTab, visibleTabs]);
+
+  const handleOpenFilter = (event: MouseEvent<HTMLButtonElement>): void => {
     setDraftFrom(filter.dateFrom ?? '');
     setDraftTo(filter.dateTo ?? '');
-    setFilterAnchorEl(e.currentTarget);
+    setFilterAnchorEl(event.currentTarget);
   };
 
   const handleCloseFilter = (): void => {
@@ -106,15 +138,26 @@ const ReportsModule: FunctionComponent<ReportsProps> = ({ clinicId }): JSX.Eleme
   };
 
   const handleApply = (): void => {
-    if (isInvalidRange) return;
-    setFilter((prev) => ({ ...prev, dateFrom: draftFrom || undefined, dateTo: draftTo || undefined }));
+    if (isInvalidRange) {
+      return;
+    }
+
+    setFilter((prev) => ({
+      ...prev,
+      dateFrom: draftFrom || undefined,
+      dateTo: draftTo || undefined,
+    }));
     handleCloseFilter();
   };
 
   const handleClear = (): void => {
     setDraftFrom('');
     setDraftTo('');
-    setFilter((prev) => ({ ...prev, dateFrom: undefined, dateTo: undefined }));
+    setFilter((prev) => ({
+      ...prev,
+      dateFrom: undefined,
+      dateTo: undefined,
+    }));
     handleCloseFilter();
   };
 
@@ -125,178 +168,182 @@ const ReportsModule: FunctionComponent<ReportsProps> = ({ clinicId }): JSX.Eleme
   };
 
   const handleRefresh = (): void => {
-    setRefreshKey((k) => k + 1);
+    setRefreshKey((prev) => prev + 1);
   };
 
-  const activeFilter: ReportFilter = { ...filter, _key: String(refreshKey) } as ReportFilter & { _key: string };
+  const activeFilter = {
+    ...filter,
+    _key: String(refreshKey),
+  } as ReportFilter & { _key: string };
 
   return (
-    <Box sx={{ p: { xs: 2, md: 3 } }}>
-      {/* Page Header */}
-      <Stack direction="row" alignItems="center" spacing={1.5} mb={2}>
-        <AssessmentRoundedIcon sx={{ color: '#2E6F40', fontSize: 28 }} />
-        <Box>
-          <Typography variant="h6" fontWeight={700} lineHeight={1.2}>
-            Reports & Analytics
-          </Typography>
-          <Typography variant="caption" color="text.secondary">
-            Clinic performance summary
-          </Typography>
-        </Box>
-      </Stack>
+    <div className={styles.wrapper}>
+      <div className={styles.bodyWrapper}>
+        <div className={styles.listContainer}>
+          <div className={styles.listHeader}>
+            <div className={styles.headerInfo}>
+              <div className={styles.headerIcon} aria-hidden="true">
+                <AssessmentRoundedIcon className={styles.headerIconSvg} />
+              </div>
+              <div className={styles.headerText}>
+                <div className={styles.headerTitleRow}>
+                  <h2 className={styles.headerTitle}>Reports & Analytics</h2>
+                  <span className={styles.headerBadge}>
+                    {visibleTabs.length} {visibleTabs.length === 1 ? 'view' : 'views'}
+                  </span>
+                </div>
+                <p className={styles.headerSubtitle}>Clinic performance summary</p>
+              </div>
+            </div>
 
-      {/* Filter Bar */}
-      <Stack
-        direction="row"
-        alignItems="center"
-        spacing={1.5}
-        mb={2}
-        flexWrap="wrap"
-        useFlexGap
-      >
-        <Chip
-          icon={<DateRangeRoundedIcon fontSize="small" />}
-          label={filterLabel}
-          onClick={handleOpenFilter as unknown as () => void}
-          variant={filter.dateFrom || filter.dateTo ? 'filled' : 'outlined'}
-          color={filter.dateFrom || filter.dateTo ? 'primary' : 'default'}
-          size="small"
-          clickable
-        />
-        <button
-          type="button"
-          onClick={handleRefresh}
-          title="Refresh reports"
-          aria-label="Refresh reports"
-          style={{
-            background: 'none',
-            border: 'none',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            padding: '4px',
-            borderRadius: '50%',
-          }}
-        >
-          <RefreshRoundedIcon fontSize="small" />
-        </button>
-      </Stack>
+            <div className={styles.headerActions}>
+              <div className={styles.actionGroup}>
+                <button
+                  type="button"
+                  className={`${styles.filterTrigger} ${
+                    hasFilter ? styles.filterTriggerActive : ''
+                  }`}
+                  onClick={handleOpenFilter}
+                  aria-label="Open report date filter"
+                >
+                  <span className={styles.filterIcon} aria-hidden="true">
+                    <DateRangeRoundedIcon className={styles.filterIconSvg} />
+                  </span>
+                  <span className={styles.filterText}>
+                    <span className={styles.filterLabel}>Reporting Period</span>
+                    <span className={styles.filterValue}>{filterLabel}</span>
+                  </span>
+                </button>
 
-      {/* Date Range Filter Popover */}
+                <button
+                  type="button"
+                  className={`${styles.reloadButton} ${styles.inlineReloadButton}`}
+                  onClick={handleRefresh}
+                  title="Refresh reports"
+                  aria-label="Refresh reports"
+                >
+                  <RefreshRoundedIcon className={styles.reloadIcon} />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div className={styles.listItem}>
+            <div className={styles.reportTabs}>
+              {visibleTabs.map((tab) => (
+                <button
+                  key={tab.value}
+                  type="button"
+                  className={`${styles.reportTab} ${
+                    activeTab === tab.value ? styles.reportTabActive : ''
+                  }`}
+                  onClick={(): void => setActiveTab(tab.value)}
+                  aria-pressed={activeTab === tab.value}
+                >
+                  <span className={styles.reportTabIcon} aria-hidden="true">
+                    {tab.icon}
+                  </span>
+                  <span>{tab.label}</span>
+                </button>
+              ))}
+            </div>
+
+            <div className={styles.reportContent}>
+              {activeTab === 'finance' && (
+                <ReportsFinance clinicId={clinicId} filter={activeFilter} />
+              )}
+              {activeTab === 'patients' && (
+                <ReportsPatients clinicId={clinicId} filter={activeFilter} />
+              )}
+              {activeTab === 'appointments' && (
+                <ReportsAppointments clinicId={clinicId} filter={activeFilter} />
+              )}
+              {activeTab === 'communications' && (
+                <ReportsCommunications clinicId={clinicId} filter={activeFilter} />
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
       <Popover
         open={isFilterOpen}
         anchorEl={filterAnchorEl}
         onClose={handleCloseFilter}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
         transformOrigin={{ vertical: 'top', horizontal: 'left' }}
-        PaperProps={{ sx: { p: 2, minWidth: 300 } }}
+        PaperProps={{
+          sx: {
+            p: 2,
+            minWidth: { xs: 280, sm: 360 },
+            borderRadius: '20px',
+            border: '1px solid rgba(194, 208, 220, 0.92)',
+            background:
+              'linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(244, 248, 252, 0.99))',
+            boxShadow: '0 18px 34px rgba(24, 50, 79, 0.12)',
+          },
+        }}
       >
-        <Typography variant="subtitle2" fontWeight={600} mb={1}>
-          Date Range
-        </Typography>
+        <div className={styles.filterPopover}>
+          <h3 className={styles.popoverTitle}>Date Range</h3>
 
-        {/* Presets */}
-        <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap mb={2}>
-          {DATE_PRESETS.map((preset) => (
-            <Chip
-              key={preset.label}
-              label={preset.label}
-              size="small"
-              onClick={() => handlePreset(preset.getRange)}
-              variant="outlined"
-              clickable
-            />
-          ))}
-        </Stack>
+          <div className={styles.presetGrid}>
+            {DATE_PRESETS.map((preset) => (
+              <button
+                key={preset.label}
+                type="button"
+                className={styles.presetButton}
+                onClick={(): void => handlePreset(preset.getRange)}
+              >
+                {preset.label}
+              </button>
+            ))}
+          </div>
 
-        <Divider sx={{ mb: 2 }} />
+          <div className={styles.dateFieldGrid}>
+            <label className={styles.dateField}>
+              <span className={styles.dateFieldLabel}>From</span>
+              <input
+                className={styles.dateInput}
+                type="date"
+                value={draftFrom}
+                max={draftTo || undefined}
+                onChange={(event) => setDraftFrom(event.target.value)}
+              />
+            </label>
 
-        <Stack spacing={1.5}>
-          <Box>
-            <Typography variant="caption" color="text.secondary" display="block" mb={0.5}>
-              From
-            </Typography>
-            <input
-              type="date"
-              value={draftFrom}
-              max={draftTo || undefined}
-              onChange={(e) => setDraftFrom(e.target.value)}
-              style={{ width: '100%', padding: '6px 8px', borderRadius: 4, border: '1px solid #ccc' }}
-            />
-          </Box>
-          <Box>
-            <Typography variant="caption" color="text.secondary" display="block" mb={0.5}>
-              To
-            </Typography>
-            <input
-              type="date"
-              value={draftTo}
-              min={draftFrom || undefined}
-              onChange={(e) => setDraftTo(e.target.value)}
-              style={{ width: '100%', padding: '6px 8px', borderRadius: 4, border: '1px solid #ccc' }}
-            />
-          </Box>
+            <label className={styles.dateField}>
+              <span className={styles.dateFieldLabel}>To</span>
+              <input
+                className={styles.dateInput}
+                type="date"
+                value={draftTo}
+                min={draftFrom || undefined}
+                onChange={(event) => setDraftTo(event.target.value)}
+              />
+            </label>
+          </div>
+
           {isInvalidRange && (
-            <Typography variant="caption" color="error">
-              "From" date must be before "To" date.
-            </Typography>
+            <p className={styles.dateError}>"From" date must be before "To" date.</p>
           )}
-        </Stack>
 
-        <Stack direction="row" justifyContent="flex-end" spacing={1} mt={2}>
-          <button
-            type="button"
-            onClick={handleClear}
-            style={{ padding: '4px 12px', cursor: 'pointer', borderRadius: 4, border: '1px solid #ccc', background: 'none' }}
-          >
-            Clear
-          </button>
-          <button
-            type="button"
-            onClick={handleApply}
-            disabled={isInvalidRange}
-            style={{
-              padding: '4px 12px',
-              cursor: isInvalidRange ? 'not-allowed' : 'pointer',
-              borderRadius: 4,
-              border: 'none',
-              background: '#2E6F40',
-              color: '#fff',
-              opacity: isInvalidRange ? 0.5 : 1,
-            }}
-          >
-            Apply
-          </button>
-        </Stack>
+          <div className={styles.popoverActions}>
+            <button type="button" onClick={handleClear} className={styles.secondaryButton}>
+              Clear
+            </button>
+            <button
+              type="button"
+              onClick={handleApply}
+              disabled={isInvalidRange}
+              className={`${styles.primaryButton} ${isInvalidRange ? styles.disabledButton : ''}`}
+            >
+              Apply
+            </button>
+          </div>
+        </div>
       </Popover>
-
-      {/* Tabs */}
-      <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
-        <Tabs
-          value={activeTab}
-          onChange={(_e, v: ReportTab) => setActiveTab(v)}
-          textColor="primary"
-          indicatorColor="primary"
-          variant="scrollable"
-          scrollButtons="auto"
-        >
-          {visibleTabs.map((tab) => (
-            <Tab
-              key={tab.value}
-              value={tab.value}
-              label={tab.label}
-              icon={tab.icon}
-              iconPosition="start"
-            />
-          ))}
-        </Tabs>
-      </Box>
-
-      {/* Tab Content */}
-      {activeTab === 'finance' && <ReportsFinance clinicId={clinicId} filter={activeFilter} />}
-      {activeTab === 'patients' && <ReportsPatients clinicId={clinicId} filter={activeFilter} />}
-      {activeTab === 'appointments' && <ReportsAppointments clinicId={clinicId} filter={activeFilter} />}
-    </Box>
+    </div>
   );
 };
 

@@ -1,35 +1,24 @@
 import { FunctionComponent, JSX, useEffect, useState } from 'react';
 import GroupRoundedIcon from '@mui/icons-material/GroupRounded';
 import PersonAddRoundedIcon from '@mui/icons-material/PersonAddRounded';
-import {
-  Box,
-  Card,
-  CardContent,
-  CircularProgress,
-  Stack,
-  Typography,
-} from '@mui/material';
+import { Box, Card, CardContent, Stack, Typography } from '@mui/material';
 import { BarChart, PieChart } from '@mui/x-charts';
 
 import { HandleGetPatientDemographics, HandleGetPatientGrowth } from '../api/handlers';
 import type { PatientDemographicsModel, PatientGrowthModel, ReportFilter } from '../api/types';
+import {
+  ReportsEmptyState,
+  ReportsLoadingPlaceholder,
+  reportMetricCardSx,
+  reportMetricIconWrapSx,
+  reportPanelCardSx,
+  reportSectionTitleSx,
+} from './reports-ui';
 
 type Props = {
   clinicId?: string | null;
   filter: ReportFilter;
 };
-
-const LoadingPlaceholder = (): JSX.Element => (
-  <Box display="flex" justifyContent="center" alignItems="center" minHeight={120}>
-    <CircularProgress size={28} />
-  </Box>
-);
-
-const EmptyState = ({ label }: { label: string }): JSX.Element => (
-  <Box display="flex" justifyContent="center" alignItems="center" minHeight={100}>
-    <Typography color="text.secondary" variant="body2">{label}</Typography>
-  </Box>
-);
 
 const ReportsPatients: FunctionComponent<Props> = ({ clinicId, filter }): JSX.Element => {
   const [growth, setGrowth] = useState<PatientGrowthModel | null>(null);
@@ -40,39 +29,44 @@ const ReportsPatients: FunctionComponent<Props> = ({ clinicId, filter }): JSX.El
 
   useEffect(() => {
     void HandleGetPatientGrowth(setGrowth, setGrowthLoading, clinicId, filter, true);
-    void HandleGetPatientDemographics(setDemographics, setDemographicsLoading, clinicId, filter, true);
+    void HandleGetPatientDemographics(
+      setDemographics,
+      setDemographicsLoading,
+      clinicId,
+      filter,
+      true
+    );
   }, [clinicId, filter]);
 
   return (
     <Stack spacing={3}>
-      {/* Summary KPI Cards */}
       <Stack direction="row" spacing={2} flexWrap="wrap" useFlexGap>
         {[
           {
             label: 'Total Patients',
-            value: growth ? growth.totalPatients.toLocaleString() : '—',
+            value: growth ? growth.totalPatients.toLocaleString() : '--',
             icon: <GroupRoundedIcon sx={{ color: '#3b75ac' }} />,
             loading: growthLoading,
           },
           {
             label: 'New in Period',
-            value: growth ? growth.newThisPeriod.toLocaleString() : '—',
-            icon: <PersonAddRoundedIcon sx={{ color: '#2E6F40' }} />,
+            value: growth ? growth.newThisPeriod.toLocaleString() : '--',
+            icon: <PersonAddRoundedIcon sx={{ color: '#2e6f40' }} />,
             loading: growthLoading,
           },
         ].map((item) => (
-          <Card key={item.label} sx={{ flex: '1 1 180px', minWidth: 160 }}>
+          <Card key={item.label} sx={reportMetricCardSx}>
             <CardContent>
               <Stack direction="row" spacing={1} alignItems="center" mb={1}>
-                {item.icon}
-                <Typography variant="caption" color="text.secondary">
+                <Box sx={reportMetricIconWrapSx}>{item.icon}</Box>
+                <Typography variant="caption" color="#698097" fontWeight={700}>
                   {item.label}
                 </Typography>
               </Stack>
               {item.loading ? (
-                <CircularProgress size={20} />
+                <ReportsLoadingPlaceholder minHeight={36} />
               ) : (
-                <Typography variant="h6" fontWeight={700}>
+                <Typography variant="h6" fontWeight={800} color="#173e67">
                   {item.value}
                 </Typography>
               )}
@@ -81,30 +75,29 @@ const ReportsPatients: FunctionComponent<Props> = ({ clinicId, filter }): JSX.El
         ))}
       </Stack>
 
-      {/* Patient Growth Chart */}
-      <Card>
+      <Card sx={reportPanelCardSx}>
         <CardContent>
-          <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+          <Typography gutterBottom sx={reportSectionTitleSx}>
             New Patients by Month
           </Typography>
           {growthLoading ? (
-            <LoadingPlaceholder />
+            <ReportsLoadingPlaceholder />
           ) : !growth?.byMonth?.length ? (
-            <EmptyState label="No patient data for the selected period." />
+            <ReportsEmptyState label="No patient data for the selected period." />
           ) : (
             <BarChart
               height={260}
-              xAxis={[{ scaleType: 'band', data: growth.byMonth.map((m) => m.month) }]}
+              xAxis={[{ scaleType: 'band', data: growth.byMonth.map((month) => month.month) }]}
               series={[
                 {
-                  data: growth.byMonth.map((m) => m.newPatients),
+                  data: growth.byMonth.map((month) => month.newPatients),
                   label: 'New Patients',
                   color: '#3b75ac',
                 },
                 {
-                  data: growth.byMonth.map((m) => m.cumulative),
+                  data: growth.byMonth.map((month) => month.cumulative),
                   label: 'Cumulative',
-                  color: '#2E6F40',
+                  color: '#2e6f40',
                 },
               ]}
               grid={{ horizontal: true }}
@@ -114,26 +107,25 @@ const ReportsPatients: FunctionComponent<Props> = ({ clinicId, filter }): JSX.El
         </CardContent>
       </Card>
 
-      {/* Demographics */}
       <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
-        <Card sx={{ flex: 1 }}>
+        <Card sx={{ ...reportPanelCardSx, flex: 1 }}>
           <CardContent>
-            <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+            <Typography gutterBottom sx={reportSectionTitleSx}>
               By Gender
             </Typography>
             {demographicsLoading ? (
-              <LoadingPlaceholder />
+              <ReportsLoadingPlaceholder />
             ) : !demographics?.byGender?.length ? (
-              <EmptyState label="No gender data available." />
+              <ReportsEmptyState label="No gender data available." />
             ) : (
               <PieChart
                 height={220}
                 series={[
                   {
-                    data: demographics.byGender.map((g, i) => ({
-                      id: i,
-                      value: g.count,
-                      label: g.label,
+                    data: demographics.byGender.map((item, index) => ({
+                      id: index,
+                      value: item.count,
+                      label: item.label,
                     })),
                     innerRadius: 30,
                     outerRadius: 80,
@@ -147,15 +139,15 @@ const ReportsPatients: FunctionComponent<Props> = ({ clinicId, filter }): JSX.El
           </CardContent>
         </Card>
 
-        <Card sx={{ flex: 1 }}>
+        <Card sx={{ ...reportPanelCardSx, flex: 1 }}>
           <CardContent>
-            <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+            <Typography gutterBottom sx={reportSectionTitleSx}>
               By Age Group
             </Typography>
             {demographicsLoading ? (
-              <LoadingPlaceholder />
+              <ReportsLoadingPlaceholder />
             ) : !demographics?.byAgeGroup?.length ? (
-              <EmptyState label="No age data available." />
+              <ReportsEmptyState label="No age data available." />
             ) : (
               <BarChart
                 layout="horizontal"
@@ -163,15 +155,15 @@ const ReportsPatients: FunctionComponent<Props> = ({ clinicId, filter }): JSX.El
                 yAxis={[
                   {
                     scaleType: 'band',
-                    data: demographics.byAgeGroup.map((g) => g.label),
+                    data: demographics.byAgeGroup.map((item) => item.label),
                     width: 100,
                   },
                 ]}
                 series={[
                   {
-                    data: demographics.byAgeGroup.map((g) => g.count),
+                    data: demographics.byAgeGroup.map((item) => item.count),
                     label: 'Patients',
-                    color: '#8e44ad',
+                    color: '#2d58a6',
                   },
                 ]}
                 grid={{ vertical: true }}
@@ -181,24 +173,24 @@ const ReportsPatients: FunctionComponent<Props> = ({ clinicId, filter }): JSX.El
           </CardContent>
         </Card>
 
-        <Card sx={{ flex: 1 }}>
+        <Card sx={{ ...reportPanelCardSx, flex: 1 }}>
           <CardContent>
-            <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+            <Typography gutterBottom sx={reportSectionTitleSx}>
               By Patient Tag
             </Typography>
             {demographicsLoading ? (
-              <LoadingPlaceholder />
+              <ReportsLoadingPlaceholder />
             ) : !demographics?.byTag?.length ? (
-              <EmptyState label="No tag data available." />
+              <ReportsEmptyState label="No tag data available." />
             ) : (
               <PieChart
                 height={220}
                 series={[
                   {
-                    data: demographics.byTag.map((g, i) => ({
-                      id: i,
-                      value: g.count,
-                      label: g.label,
+                    data: demographics.byTag.map((item, index) => ({
+                      id: index,
+                      value: item.count,
+                      label: item.label,
                     })),
                     innerRadius: 30,
                     outerRadius: 80,

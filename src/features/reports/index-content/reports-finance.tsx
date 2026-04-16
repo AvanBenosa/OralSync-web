@@ -1,18 +1,19 @@
 import { FunctionComponent, JSX, useEffect, useState } from 'react';
-import TrendingUpRoundedIcon from '@mui/icons-material/TrendingUpRounded';
 import AccountBalanceWalletRoundedIcon from '@mui/icons-material/AccountBalanceWalletRounded';
 import ReceiptLongRoundedIcon from '@mui/icons-material/ReceiptLongRounded';
 import ShowChartRoundedIcon from '@mui/icons-material/ShowChartRounded';
+import TrendingUpRoundedIcon from '@mui/icons-material/TrendingUpRounded';
 import {
   Box,
   Card,
   CardContent,
-  CircularProgress,
   Divider,
+  Paper,
   Stack,
   Table,
   TableBody,
   TableCell,
+  TableContainer,
   TableHead,
   TableRow,
   Typography,
@@ -32,25 +33,23 @@ import type {
   ReportFilter,
   RevenueSummaryModel,
 } from '../api/types';
+import {
+  formatCurrency,
+  ReportsEmptyState,
+  ReportsLoadingPlaceholder,
+  reportMetricCardSx,
+  reportMetricIconWrapSx,
+  reportPanelCardSx,
+  reportSectionTitleSx,
+  reportTableBodyCellSx,
+  reportTableContainerSx,
+  reportTableHeaderCellSx,
+} from './reports-ui';
 
 type Props = {
   clinicId?: string | null;
   filter: ReportFilter;
 };
-
-const fmt = (v: number): string => `₱${v.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-
-const LoadingPlaceholder = (): JSX.Element => (
-  <Box display="flex" justifyContent="center" alignItems="center" minHeight={120}>
-    <CircularProgress size={28} />
-  </Box>
-);
-
-const EmptyState = ({ label }: { label: string }): JSX.Element => (
-  <Box display="flex" justifyContent="center" alignItems="center" minHeight={100}>
-    <Typography color="text.secondary" variant="body2">{label}</Typography>
-  </Box>
-);
 
 const ReportsFinance: FunctionComponent<Props> = ({ clinicId, filter }): JSX.Element => {
   const [revenue, setRevenue] = useState<RevenueSummaryModel | null>(null);
@@ -74,46 +73,49 @@ const ReportsFinance: FunctionComponent<Props> = ({ clinicId, filter }): JSX.Ele
 
   return (
     <Stack spacing={3}>
-      {/* Summary KPI Cards */}
       <Stack direction="row" spacing={2} flexWrap="wrap" useFlexGap>
         {[
           {
             label: 'Total Billed',
-            value: revenue ? fmt(revenue.totalBilled) : '—',
+            value: revenue ? formatCurrency(revenue.totalBilled) : '--',
             icon: <ReceiptLongRoundedIcon sx={{ color: '#3b75ac' }} />,
             loading: revenueLoading,
           },
           {
             label: 'Total Collected',
-            value: revenue ? fmt(revenue.totalCollected) : '—',
-            icon: <AccountBalanceWalletRoundedIcon sx={{ color: '#2E6F40' }} />,
+            value: revenue ? formatCurrency(revenue.totalCollected) : '--',
+            icon: <AccountBalanceWalletRoundedIcon sx={{ color: '#2e6f40' }} />,
             loading: revenueLoading,
           },
           {
             label: 'Outstanding Balance',
-            value: revenue ? fmt(revenue.totalOutstanding) : '—',
+            value: revenue ? formatCurrency(revenue.totalOutstanding) : '--',
             icon: <TrendingUpRoundedIcon sx={{ color: '#df6d5d' }} />,
             loading: revenueLoading,
           },
           {
             label: 'Net Profit',
-            value: pnl ? fmt(pnl.netProfit) : '—',
-            icon: <ShowChartRoundedIcon sx={{ color: pnl && pnl.netProfit >= 0 ? '#2E6F40' : '#df6d5d' }} />,
+            value: pnl ? formatCurrency(pnl.netProfit) : '--',
+            icon: (
+              <ShowChartRoundedIcon
+                sx={{ color: pnl && pnl.netProfit >= 0 ? '#2e6f40' : '#df6d5d' }}
+              />
+            ),
             loading: pnlLoading,
           },
         ].map((item) => (
-          <Card key={item.label} sx={{ flex: '1 1 180px', minWidth: 160 }}>
+          <Card key={item.label} sx={reportMetricCardSx}>
             <CardContent>
               <Stack direction="row" spacing={1} alignItems="center" mb={1}>
-                {item.icon}
-                <Typography variant="caption" color="text.secondary">
+                <Box sx={reportMetricIconWrapSx}>{item.icon}</Box>
+                <Typography variant="caption" color="#698097" fontWeight={700}>
                   {item.label}
                 </Typography>
               </Stack>
               {item.loading ? (
-                <CircularProgress size={20} />
+                <ReportsLoadingPlaceholder minHeight={36} />
               ) : (
-                <Typography variant="h6" fontWeight={700} noWrap>
+                <Typography variant="h6" fontWeight={800} color="#173e67" noWrap>
                   {item.value}
                 </Typography>
               )}
@@ -121,33 +123,100 @@ const ReportsFinance: FunctionComponent<Props> = ({ clinicId, filter }): JSX.Ele
           </Card>
         ))}
       </Stack>
-
-      {/* Revenue by Month Chart */}
-      <Card>
+      <Card sx={reportPanelCardSx}>
         <CardContent>
-          <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+          <Stack direction="row" justifyContent="space-between" alignItems="center" mb={1}>
+            <Typography sx={reportSectionTitleSx}>Outstanding Balances</Typography>
+            {balances && (
+              <Typography variant="body2" color="#6d8298" fontWeight={600}>
+                {balances.totalPatients} {balances.totalPatients === 1 ? 'patient' : 'patients'} |{' '}
+                Total: <strong>{formatCurrency(balances.totalOutstanding)}</strong>
+              </Typography>
+            )}
+          </Stack>
+          <Divider sx={{ mb: 1 }} />
+          {balancesLoading ? (
+            <ReportsLoadingPlaceholder />
+          ) : !balances?.items?.length ? (
+            <ReportsEmptyState label="No outstanding balances found." />
+          ) : (
+            <TableContainer component={Paper} elevation={0} sx={reportTableContainerSx}>
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell sx={reportTableHeaderCellSx}>Patient #</TableCell>
+                    <TableCell sx={reportTableHeaderCellSx}>Full Name</TableCell>
+                    <TableCell align="right" sx={reportTableHeaderCellSx}>
+                      Balance
+                    </TableCell>
+                    <TableCell sx={reportTableHeaderCellSx}>Last Visit</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {balances.items.map((item) => (
+                    <TableRow key={item.patientId} hover>
+                      <TableCell sx={reportTableBodyCellSx}>{item.patientNumber}</TableCell>
+                      <TableCell
+                        sx={{
+                          ...reportTableBodyCellSx,
+                          fontWeight: 700,
+                          color: '#1f4467',
+                        }}
+                      >
+                        {item.fullName}
+                      </TableCell>
+                      <TableCell
+                        align="right"
+                        sx={{
+                          ...reportTableBodyCellSx,
+                          color: '#df6d5d',
+                          fontWeight: 700,
+                        }}
+                      >
+                        {formatCurrency(item.totalBalance)}
+                      </TableCell>
+                      <TableCell sx={reportTableBodyCellSx}>
+                        {item.lastVisit
+                          ? new Date(item.lastVisit).toLocaleDateString('en-PH', {
+                              year: 'numeric',
+                              month: 'short',
+                              day: 'numeric',
+                            })
+                          : '--'}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          )}
+        </CardContent>
+      </Card>
+      <Card sx={reportPanelCardSx}>
+        <CardContent>
+          <Typography gutterBottom sx={reportSectionTitleSx}>
             Revenue by Month
           </Typography>
           {revenueLoading ? (
-            <LoadingPlaceholder />
+            <ReportsLoadingPlaceholder />
           ) : !revenue?.byMonth?.length ? (
-            <EmptyState label="No revenue data for the selected period." />
+            <ReportsEmptyState label="No revenue data for the selected period." />
           ) : (
             <BarChart
               height={260}
-              xAxis={[{ scaleType: 'band', data: revenue.byMonth.map((m) => m.month) }]}
+              xAxis={[{ scaleType: 'band', data: revenue.byMonth.map((month) => month.month) }]}
               series={[
                 {
-                  data: revenue.byMonth.map((m) => m.billed),
+                  data: revenue.byMonth.map((month) => month.billed),
                   label: 'Billed',
                   color: '#3b75ac',
-                  valueFormatter: (v) => (v == null ? '' : fmt(v)),
+                  valueFormatter: (value) => (value == null ? '' : formatCurrency(value)),
                 },
                 {
-                  data: revenue.byMonth.map((m) => m.collected),
+                  data: revenue.byMonth.map((month) => month.collected),
                   label: 'Collected',
-                  color: '#2E6F40',
-                  valueFormatter: (v) => (v == null ? '' : fmt(v)),
+                  color: '#2e6f40',
+                  valueFormatter: (value) => (value == null ? '' : formatCurrency(value)),
                 },
               ]}
               grid={{ horizontal: true }}
@@ -157,38 +226,37 @@ const ReportsFinance: FunctionComponent<Props> = ({ clinicId, filter }): JSX.Ele
         </CardContent>
       </Card>
 
-      {/* P&L Chart */}
-      <Card>
+      <Card sx={reportPanelCardSx}>
         <CardContent>
-          <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+          <Typography gutterBottom sx={reportSectionTitleSx}>
             Profit & Loss by Month
           </Typography>
           {pnlLoading ? (
-            <LoadingPlaceholder />
+            <ReportsLoadingPlaceholder />
           ) : !pnl?.byMonth?.length ? (
-            <EmptyState label="No profit/loss data for the selected period." />
+            <ReportsEmptyState label="No profit/loss data for the selected period." />
           ) : (
             <BarChart
               height={260}
-              xAxis={[{ scaleType: 'band', data: pnl.byMonth.map((m) => m.month) }]}
+              xAxis={[{ scaleType: 'band', data: pnl.byMonth.map((month) => month.month) }]}
               series={[
                 {
-                  data: pnl.byMonth.map((m) => m.revenue),
+                  data: pnl.byMonth.map((month) => month.revenue),
                   label: 'Revenue',
-                  color: '#2E6F40',
-                  valueFormatter: (v) => (v == null ? '' : fmt(v)),
+                  color: '#2e6f40',
+                  valueFormatter: (value) => (value == null ? '' : formatCurrency(value)),
                 },
                 {
-                  data: pnl.byMonth.map((m) => m.expenses),
+                  data: pnl.byMonth.map((month) => month.expenses),
                   label: 'Expenses',
                   color: '#df6d5d',
-                  valueFormatter: (v) => (v == null ? '' : fmt(v)),
+                  valueFormatter: (value) => (value == null ? '' : formatCurrency(value)),
                 },
                 {
-                  data: pnl.byMonth.map((m) => m.net),
+                  data: pnl.byMonth.map((month) => month.net),
                   label: 'Net',
-                  color: '#8e44ad',
-                  valueFormatter: (v) => (v == null ? '' : fmt(v)),
+                  color: '#2d58a6',
+                  valueFormatter: (value) => (value == null ? '' : formatCurrency(value)),
                 },
               ]}
               grid={{ horizontal: true }}
@@ -198,28 +266,27 @@ const ReportsFinance: FunctionComponent<Props> = ({ clinicId, filter }): JSX.Ele
         </CardContent>
       </Card>
 
-      {/* Expense Breakdown */}
       <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
-        <Card sx={{ flex: 1 }}>
+        <Card sx={{ ...reportPanelCardSx, flex: 1 }}>
           <CardContent>
-            <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+            <Typography gutterBottom sx={reportSectionTitleSx}>
               Expenses by Category
             </Typography>
             {expensesLoading ? (
-              <LoadingPlaceholder />
+              <ReportsLoadingPlaceholder />
             ) : !expenses?.byCategory?.length ? (
-              <EmptyState label="No expense data for the selected period." />
+              <ReportsEmptyState label="No expense data for the selected period." />
             ) : (
               <PieChart
                 height={240}
                 series={[
                   {
-                    data: expenses.byCategory.map((c, i) => ({
-                      id: i,
-                      value: c.amount,
-                      label: c.category.replace(/([a-z])([A-Z])/g, '$1 $2'),
+                    data: expenses.byCategory.map((category, index) => ({
+                      id: index,
+                      value: category.amount,
+                      label: category.category.replace(/([a-z])([A-Z])/g, '$1 $2'),
                     })),
-                    valueFormatter: ({ value }) => fmt(value ?? 0),
+                    valueFormatter: ({ value }) => formatCurrency(value ?? 0),
                     innerRadius: 40,
                     outerRadius: 90,
                     paddingAngle: 2,
@@ -232,25 +299,25 @@ const ReportsFinance: FunctionComponent<Props> = ({ clinicId, filter }): JSX.Ele
           </CardContent>
         </Card>
 
-        <Card sx={{ flex: 1 }}>
+        <Card sx={{ ...reportPanelCardSx, flex: 1 }}>
           <CardContent>
-            <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+            <Typography gutterBottom sx={reportSectionTitleSx}>
               Expenses by Month
             </Typography>
             {expensesLoading ? (
-              <LoadingPlaceholder />
+              <ReportsLoadingPlaceholder />
             ) : !expenses?.byMonth?.length ? (
-              <EmptyState label="No expense data for the selected period." />
+              <ReportsEmptyState label="No expense data for the selected period." />
             ) : (
               <BarChart
                 height={240}
-                xAxis={[{ scaleType: 'band', data: expenses.byMonth.map((m) => m.month) }]}
+                xAxis={[{ scaleType: 'band', data: expenses.byMonth.map((month) => month.month) }]}
                 series={[
                   {
-                    data: expenses.byMonth.map((m) => m.amount),
+                    data: expenses.byMonth.map((month) => month.amount),
                     label: 'Expenses',
                     color: '#df6d5d',
-                    valueFormatter: (v) => (v == null ? '' : fmt(v)),
+                    valueFormatter: (value) => (value == null ? '' : formatCurrency(value)),
                   },
                 ]}
                 grid={{ horizontal: true }}
@@ -260,62 +327,6 @@ const ReportsFinance: FunctionComponent<Props> = ({ clinicId, filter }): JSX.Ele
           </CardContent>
         </Card>
       </Stack>
-
-      {/* Outstanding Balances Table */}
-      <Card>
-        <CardContent>
-          <Stack direction="row" justifyContent="space-between" alignItems="center" mb={1}>
-            <Typography variant="subtitle1" fontWeight={600}>
-              Outstanding Balances
-            </Typography>
-            {balances && (
-              <Typography variant="body2" color="text.secondary">
-                {balances.totalPatients} {balances.totalPatients === 1 ? 'patient' : 'patients'} &nbsp;·&nbsp;
-                Total: <strong>{fmt(balances.totalOutstanding)}</strong>
-              </Typography>
-            )}
-          </Stack>
-          <Divider sx={{ mb: 1 }} />
-          {balancesLoading ? (
-            <LoadingPlaceholder />
-          ) : !balances?.items?.length ? (
-            <EmptyState label="No outstanding balances found." />
-          ) : (
-            <Box sx={{ overflowX: 'auto' }}>
-              <Table size="small">
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Patient #</TableCell>
-                    <TableCell>Full Name</TableCell>
-                    <TableCell align="right">Balance</TableCell>
-                    <TableCell>Last Visit</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {balances.items.map((item) => (
-                    <TableRow key={item.patientId} hover>
-                      <TableCell>{item.patientNumber}</TableCell>
-                      <TableCell>{item.fullName}</TableCell>
-                      <TableCell align="right" sx={{ color: '#df6d5d', fontWeight: 600 }}>
-                        {fmt(item.totalBalance)}
-                      </TableCell>
-                      <TableCell>
-                        {item.lastVisit
-                          ? new Date(item.lastVisit).toLocaleDateString('en-PH', {
-                              year: 'numeric',
-                              month: 'short',
-                              day: 'numeric',
-                            })
-                          : '—'}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </Box>
-          )}
-        </CardContent>
-      </Card>
     </Stack>
   );
 };
