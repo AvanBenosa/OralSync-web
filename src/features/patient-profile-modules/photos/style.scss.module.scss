@@ -54,6 +54,48 @@
   flex-wrap: wrap;
 }
 
+.deleteSelectionButton {
+  border: 1px solid rgba(228, 176, 186, 0.95);
+  background: linear-gradient(135deg, #fff4f6 0%, #ffe1e7 100%);
+  color: #af3f5a;
+  border-radius: 14px;
+  min-height: 38px;
+  padding: 0 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 12px 20px rgba(187, 91, 113, 0.12);
+  transition: transform 120ms ease, box-shadow 120ms ease, opacity 120ms ease;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 14px 24px rgba(187, 91, 113, 0.16);
+  }
+
+  &:disabled {
+    cursor: default;
+    opacity: 0.58;
+    box-shadow: none;
+  }
+}
+
+.deleteSelectionBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: rgba(175, 63, 90, 0.14);
+  color: #98324a;
+  font-size: 11px;
+  font-weight: 900;
+}
+
 .photoTabs {
   display: inline-flex;
   align-items: center;
@@ -98,6 +140,258 @@
   flex: 1;
   min-height: 0;
   display: flex;
+}
+
+.uploadGalleryPanel {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.uploadGalleryPanel .photoPanel {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.uploadGalleryGrid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 180px);
+  gap: 12px;
+  justify-content: start;
+  align-content: start;
+  min-height: 0;
+  max-height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 6px;
+}
+
+.uploadCard {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid rgba(202, 216, 229, 0.96);
+  border-radius: 22px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.99), rgba(241, 247, 252, 0.97));
+  box-shadow:
+    0 18px 34px rgba(31, 60, 91, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.94);
+  transition: transform 140ms ease, box-shadow 140ms ease, border-color 140ms ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow:
+      0 22px 38px rgba(31, 60, 91, 0.12),
+      inset 0 1px 0 rgba(255, 255, 255, 0.96);
+  }
+}
+
+.uploadCardSelected {
+  border-color: rgba(94, 151, 206, 0.96);
+  box-shadow:
+    0 24px 42px rgba(45, 93, 147, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.96);
+}
+
+.uploadCardPreview {
+  position: relative;
+  height: 156px;
+  background:
+    radial-gradient(circle at top, rgba(110, 169, 220, 0.2), transparent 54%),
+    linear-gradient(180deg, #f4f9fe 0%, #dce9f5 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.uploadCardPreviewInteractive {
+  cursor: zoom-in;
+}
+
+.uploadCardImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.uploadCardPlaceholder {
+  width: 100%;
+  height: 100%;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  text-align: center;
+}
+
+.uploadCardTypeLabel {
+  color: #496680;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.uploadCardSelection {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+
+.uploadCardSelectButton {
+  width: 34px;
+  height: 34px;
+  min-width: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(180, 201, 222, 0.96);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.92);
+  color: #5d7ea0;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+  box-shadow: 0 12px 20px rgba(27, 53, 78, 0.12);
+  transition: transform 120ms ease, box-shadow 120ms ease, border-color 120ms ease,
+    background-color 120ms ease, color 120ms ease;
+
+  &:hover {
+    transform: translateY(-1px);
+  }
+}
+
+.uploadCardSelectButtonActive {
+  border-color: rgba(93, 153, 210, 0.98);
+  background: linear-gradient(180deg, #f0f8ff 0%, #dcecff 100%);
+  color: #2d6ca7;
+}
+
+.uploadCardSelectIcon {
+  font-size: 20px !important;
+}
+
+.uploadCardDate {
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: rgba(19, 49, 77, 0.78);
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.uploadViewerDialog {
+  border-radius: 24px !important;
+  background: rgba(12, 24, 36, 0.96) !important;
+  overflow: hidden;
+  box-shadow: 0 30px 60px rgba(5, 14, 24, 0.45) !important;
+}
+
+.uploadViewerContent {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  gap: 18px;
+  min-height: min(78vh, 820px);
+  padding: 22px;
+  background:
+    radial-gradient(circle at top, rgba(70, 123, 168, 0.16), transparent 55%),
+    linear-gradient(180deg, rgba(18, 31, 46, 0.98), rgba(8, 17, 28, 0.98));
+}
+
+.uploadViewerMediaFrame {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.uploadViewerImage {
+  max-width: 100%;
+  max-height: calc(78vh - 172px);
+  object-fit: contain;
+  display: block;
+  border-radius: 18px;
+  box-shadow: 0 22px 42px rgba(0, 0, 0, 0.28);
+}
+
+.uploadViewerMeta {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 18px;
+  border: 1px solid rgba(91, 123, 151, 0.34);
+  border-radius: 20px;
+  background: linear-gradient(180deg, rgba(20, 35, 52, 0.9), rgba(13, 25, 38, 0.94));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.uploadViewerMetaText {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.uploadViewerTitle {
+  color: #f5f8fc;
+  font-size: 16px !important;
+  font-weight: 800 !important;
+  line-height: 1.4 !important;
+  word-break: break-word;
+}
+
+.uploadViewerRemarksLabel {
+  color: #88a8c8;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase;
+}
+
+.uploadViewerRemarks {
+  color: #d8e6f4;
+  font-size: 13px !important;
+  line-height: 1.6 !important;
+  word-break: break-word;
+}
+
+.uploadViewerDownloadButton {
+  flex: 0 0 auto;
+  min-height: 42px;
+  padding: 0 16px;
+  border: 1px solid rgba(122, 173, 219, 0.5);
+  border-radius: 14px;
+  background: linear-gradient(135deg, #2d79bf 0%, #225f95 100%);
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 800;
+  text-decoration: none;
+  box-shadow: 0 16px 28px rgba(24, 63, 99, 0.28);
+  transition: transform 120ms ease, box-shadow 120ms ease;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 18px 30px rgba(24, 63, 99, 0.34);
+  }
+}
+
+.uploadViewerDownloadIcon {
+  font-size: 18px !important;
 }
 
 .clickableRow {
@@ -293,6 +587,10 @@
     grid-template-columns: minmax(0, 1fr);
   }
 
+  .uploadGalleryGrid {
+    grid-template-columns: repeat(auto-fill, 150px);
+  }
+
   .headerActionCluster {
     width: 100%;
     justify-content: space-between;
@@ -305,5 +603,14 @@
 
   .photoTabButton {
     flex: 1 1 0;
+  }
+
+  .uploadViewerMeta {
+    flex-direction: column;
+  }
+
+  .uploadViewerDownloadButton {
+    width: 100%;
+    justify-content: center;
   }
 }

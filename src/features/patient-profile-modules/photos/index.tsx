@@ -26,7 +26,7 @@ export const PatientDentalPhoto: FunctionComponent<PatientDentalPhotoProps> = (
   const reloadTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const reloadActionRef = useRef<() => void>(() => {});
   const lastLoadedPatientIdRef = useRef<string | undefined>(undefined);
-  const [activeTab, setActiveTab] = useState<DentalImagesTab>('chart-images');
+  const [activeTab, setActiveTab] = useState<DentalImagesTab>('uploads');
 
   const [state, setState] = useState<PatientDentalPhotoStateModel>({
     patientId,
@@ -39,6 +39,7 @@ export const PatientDentalPhoto: FunctionComponent<PatientDentalPhotoProps> = (
     patientId,
     items: [],
     selectedItem: undefined,
+    selectedUploadIds: [],
     load: true,
     openModal: false,
     isUpdate: false,
@@ -194,6 +195,14 @@ export const PatientDentalPhoto: FunctionComponent<PatientDentalPhotoProps> = (
               activeTab={activeTab}
               onTabChange={setActiveTab}
               onReload={handleReload}
+              onDeleteSelection={() =>
+                setUploadState((prev) => ({
+                  ...prev,
+                  openModal: true,
+                  isUpdate: false,
+                  isDelete: true,
+                }))
+              }
               onAddUpload={() =>
                 setUploadState((prev) => ({
                   ...prev,

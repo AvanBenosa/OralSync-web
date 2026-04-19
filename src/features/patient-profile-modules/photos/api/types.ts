@@ -67,6 +67,7 @@ export type PatientUploadStateModel = {
   patientId?: string;
   items: PatientUploadModel[];
   selectedItem?: PatientUploadModel;
+  selectedUploadIds: string[];
   load: boolean;
   openModal: boolean;
   isUpdate?: boolean;

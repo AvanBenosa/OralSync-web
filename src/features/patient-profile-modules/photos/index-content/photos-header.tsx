@@ -13,17 +13,27 @@ type PatientDentalPhotoHeaderProps = {
   activeTab: DentalImagesTab;
   onTabChange: (tab: DentalImagesTab) => void;
   onReload?: () => void;
+  onDeleteSelection?: () => void;
   onAddUpload?: () => void;
 };
 
 const PatientDentalPhotoHeader: FunctionComponent<PatientDentalPhotoHeaderProps> = (
   props: PatientDentalPhotoHeaderProps
 ): JSX.Element => {
-  const { chartState, uploadState, activeTab, onTabChange, onReload, onAddUpload } = props;
+  const {
+    chartState,
+    uploadState,
+    activeTab,
+    onTabChange,
+    onReload,
+    onDeleteSelection,
+    onAddUpload,
+  } = props;
 
   const activeCount = activeTab === 'uploads' ? uploadState.items.length : chartState.items.length;
   const activeLabel = activeTab === 'uploads' ? 'upload' : 'image';
   const isLoading = activeTab === 'uploads' ? uploadState.load : chartState.load;
+  const selectedUploadCount = uploadState.selectedUploadIds.length;
 
   return (
     <div className={sharedStyles.listHeader}>
@@ -39,16 +49,33 @@ const PatientDentalPhotoHeader: FunctionComponent<PatientDentalPhotoHeaderProps>
         </div>
 
         <div className={localStyles.headerActionCluster}>
-          <div className={localStyles.photoTabs}>
+          {activeTab === 'uploads' ? (
             <button
               type="button"
-              className={`${localStyles.photoTabButton} ${
-                activeTab === 'chart-images' ? localStyles.photoTabButtonActive : ''
-              }`}
-              onClick={() => onTabChange('chart-images')}
+              className={localStyles.deleteSelectionButton}
+              onClick={onDeleteSelection}
+              disabled={selectedUploadCount === 0}
+              title={
+                selectedUploadCount === 0
+                  ? 'Select uploads to delete'
+                  : `Delete ${selectedUploadCount} selected upload${
+                      selectedUploadCount === 1 ? '' : 's'
+                    }`
+              }
+              aria-label={
+                selectedUploadCount === 0
+                  ? 'Select uploads to delete'
+                  : `Delete ${selectedUploadCount} selected uploads`
+              }
             >
-              Dental Chart Images
+              Delete Selection
+              {selectedUploadCount > 0 ? (
+                <span className={localStyles.deleteSelectionBadge}>{selectedUploadCount}</span>
+              ) : null}
             </button>
+          ) : null}
+
+          <div className={localStyles.photoTabs}>
             <button
               type="button"
               className={`${localStyles.photoTabButton} ${
@@ -57,6 +84,15 @@ const PatientDentalPhotoHeader: FunctionComponent<PatientDentalPhotoHeaderProps>
               onClick={() => onTabChange('uploads')}
             >
               Uploads
+            </button>
+            <button
+              type="button"
+              className={`${localStyles.photoTabButton} ${
+                activeTab === 'chart-images' ? localStyles.photoTabButtonActive : ''
+              }`}
+              onClick={() => onTabChange('chart-images')}
+            >
+              Dental Chart Images
             </button>
           </div>
 

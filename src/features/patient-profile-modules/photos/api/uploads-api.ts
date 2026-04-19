@@ -122,7 +122,13 @@ export const DeletePatientUploadItem = async (
   request: Pick<PatientUploadModel, 'id' | 'patientInfoId'>
 ): Promise<void> => {
   try {
-    await apiClient.delete(DELETE_PATIENT_UPLOAD_ENDPOINT, { data: request });
+    await apiClient.delete(DELETE_PATIENT_UPLOAD_ENDPOINT, {
+      params: {
+        Id: request.id,
+        PatientInfoId: request.patientInfoId,
+      },
+      data: request,
+    });
   } catch (error) {
     if (isAxiosError(error)) {
       await ExceptionResponse(error);
