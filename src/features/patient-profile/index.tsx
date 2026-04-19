@@ -104,18 +104,31 @@ const isRecentlyCreated = (createdAt?: string | Date): boolean => {
   return ageInMilliseconds >= 0 && ageInMilliseconds <= sevenDaysInMilliseconds;
 };
 
-const formatCivilStatusValue = (civilStatus?: number): string => {
-  switch (civilStatus) {
-    case 1:
+const formatCivilStatusValue = (civilStatus?: string): string => {
+  const normalizedValue = civilStatus?.trim();
+
+  if (!normalizedValue) {
+    return '--';
+  }
+
+  switch (normalizedValue.toLowerCase()) {
+    case '0':
+    case 'none':
+      return 'None';
+    case '1':
+    case 'single':
       return 'Single';
-    case 2:
+    case '2':
+    case 'married':
       return 'Married';
-    case 3:
+    case '3':
+    case 'divorced':
       return 'Divorced';
-    case 4:
+    case '4':
+    case 'widowed':
       return 'Widowed';
     default:
-      return '--';
+      return normalizedValue;
   }
 };
 

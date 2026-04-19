@@ -17,7 +17,7 @@ export type PatientProfileModel = {
   gender?: string;
   occupation?: string;
   religion?: string;
-  civilStatus?: number;
+  civilStatus?: string;
   age?: number;
   remarks?: string;
   createdAt?: string | Date;

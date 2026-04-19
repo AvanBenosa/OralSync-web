@@ -50,13 +50,31 @@ type PatientProfileFormValues = {
 };
 
 const genderOptions = ['', 'Male', 'Female', 'Other'];
-const civilStatusOptions = [
-  { value: '0', label: 'None' },
-  { value: '1', label: 'Single' },
-  { value: '2', label: 'Married' },
-  { value: '3', label: 'Divorced' },
-  { value: '4', label: 'Widowed' },
-];
+const civilStatusOptions = ['None', 'Single', 'Married', 'Divorced', 'Widowed'];
+
+const normalizeCivilStatusValue = (value?: string | number | null): string => {
+  const normalizedValue = String(value ?? '').trim();
+
+  switch (normalizedValue.toLowerCase()) {
+    case '0':
+    case 'none':
+      return 'None';
+    case '1':
+    case 'single':
+      return 'Single';
+    case '2':
+    case 'married':
+      return 'Married';
+    case '3':
+    case 'divorced':
+      return 'Divorced';
+    case '4':
+    case 'widowed':
+      return 'Widowed';
+    default:
+      return normalizedValue;
+  }
+};
 
 const createInitialValues = (
   selectedItem?: PatientProfileModel | null
@@ -76,10 +94,7 @@ const createInitialValues = (
   gender: selectedItem?.gender || '',
   occupation: selectedItem?.occupation || '',
   religion: selectedItem?.religion || '',
-  civilStatus:
-    selectedItem?.civilStatus !== undefined && selectedItem?.civilStatus !== null
-      ? String(selectedItem.civilStatus)
-      : '0',
+  civilStatus: normalizeCivilStatusValue(selectedItem?.civilStatus),
 });
 
 const PatientProfileForm: FunctionComponent<PatientProfileStateProps> = (
@@ -215,7 +230,7 @@ const PatientProfileForm: FunctionComponent<PatientProfileStateProps> = (
       gender: values.gender.trim(),
       occupation: values.occupation.trim(),
       religion: values.religion.trim(),
-      civilStatus: Number(values.civilStatus),
+      civilStatus: normalizeCivilStatusValue(values.civilStatus),
     };
 
     await HandleUpdatePatientProfile(payload, state, setState);
@@ -381,8 +396,8 @@ const PatientProfileForm: FunctionComponent<PatientProfileStateProps> = (
                           size="small"
                         >
                           {civilStatusOptions.map((option) => (
-                            <MenuItem key={option.value} value={option.value}>
-                              {option.label}
+                            <MenuItem key={option} value={option}>
+                              {option}
                             </MenuItem>
                           ))}
                         </TextField>
