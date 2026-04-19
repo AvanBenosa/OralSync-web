@@ -32,6 +32,7 @@ const AppRoutes = () => {
   return (
     <Routes>
       <Route path="/register-appointment" element={<PublicRegistrationPage />} />
+      <Route path="/unauthorized" element={<NotFoundPage variant="unauthorized" />} />
 
       <Route element={<PublicRoute />}>
         <Route path="/" element={<Login />} />

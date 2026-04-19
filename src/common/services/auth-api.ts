@@ -45,6 +45,7 @@ export interface AuthUser {
   bannerImagePath?: string;
   isDataPrivacyAccepted?: boolean;
   forBetaTestingAccepted?: boolean;
+  showBetaTestingDialog?: boolean;
   isContractPolicyAccepted?: boolean;
   isLocked?: boolean;
   role: string;
@@ -133,6 +134,7 @@ export interface ClinicDataPrivacyStatusResponse {
   clinicName: string;
   isDataPrivacyAccepted: boolean;
   forBetaTestingAccepted?: boolean;
+  showBetaTestingDialog?: boolean;
   isContractPolicyAccepted?: boolean;
   isLocked: boolean;
   trialExpiry?: string;

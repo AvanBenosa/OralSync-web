@@ -8,8 +8,10 @@ export type ActiveSMSConfigValue = (typeof ActiveSMSConfig)[keyof typeof ActiveS
 export type SetupModel = {
   activeSMSConfig: ActiveSMSConfigValue;
   activeSMSConfigLabel: string;
+  showBetaTestingDialog: boolean;
 };
 
 export type UpdateSetupRequest = {
   activeSMSConfig: ActiveSMSConfigValue;
+  showBetaTestingDialog: boolean;
 };

@@ -12,8 +12,6 @@ import {
   useMediaQuery,
   useTheme,
 } from '@mui/material';
-import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
-import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
 import PersonSearchOutlinedIcon from '@mui/icons-material/PersonSearchOutlined';
 import { useNavigate } from 'react-router-dom';
 
@@ -79,7 +77,7 @@ const formatLastVisited = (lastVisitedAt?: string | Date | null): string => {
 const PatientTable: FunctionComponent<PatientStateProps> = (
   props: PatientStateProps
 ): JSX.Element => {
-  const { state, setState } = props;
+  const { state } = props;
   const theme = useTheme();
   const navigate = useNavigate();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));

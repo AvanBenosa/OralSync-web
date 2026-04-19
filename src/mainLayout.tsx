@@ -42,6 +42,7 @@ const MainLayout = () => {
   const isDataPrivacyAccepted = user?.isDataPrivacyAccepted;
   const isContractPolicyAccepted = user?.isContractPolicyAccepted;
   const forBetaTestingAccepted = user?.forBetaTestingAccepted;
+  const isBetaTestingDialogEnabled = user?.showBetaTestingDialog;
   const isLocked = user?.isLocked;
   // const requiresRegistration = useAuthStore((state) => state.requiresRegistration);
   const setRequiresRegistration = useAuthStore((state) => state.setRequiresRegistration);
@@ -196,6 +197,8 @@ const MainLayout = () => {
                   response.isContractPolicyAccepted ?? currentUser.isContractPolicyAccepted,
                 forBetaTestingAccepted:
                   response.forBetaTestingAccepted ?? currentUser.forBetaTestingAccepted,
+                showBetaTestingDialog:
+                  response.showBetaTestingDialog ?? currentUser.showBetaTestingDialog,
                 isLocked: response.isLocked,
                 trialExpiry: response.trialExpiry ?? currentUser.trialExpiry,
                 subscriptionType:
@@ -265,11 +268,19 @@ const MainLayout = () => {
       return;
     }
 
-    if (!forBetaTestingAccepted) {
+    if (isBetaTestingDialogEnabled === true && !forBetaTestingAccepted) {
       setShowClinicLockedDialog(false);
       setShowDataPrivacyDialog(false);
       setShowContractPolicyDialog(false);
       setShowBetaTestingDialog(true);
+      return;
+    }
+
+    if (isBetaTestingDialogEnabled !== false && !forBetaTestingAccepted) {
+      setShowClinicLockedDialog(false);
+      setShowDataPrivacyDialog(false);
+      setShowContractPolicyDialog(false);
+      setShowBetaTestingDialog(false);
       return;
     }
 
@@ -284,6 +295,8 @@ const MainLayout = () => {
                 isDataPrivacyAccepted: response.isDataPrivacyAccepted,
                 isContractPolicyAccepted: response.isContractPolicyAccepted,
                 forBetaTestingAccepted: response.forBetaTestingAccepted,
+                showBetaTestingDialog:
+                  response.showBetaTestingDialog ?? currentUser.showBetaTestingDialog,
                 isLocked: response.isLocked,
                 trialExpiry: response.trialExpiry ?? currentUser.trialExpiry,
               }
@@ -310,6 +323,7 @@ const MainLayout = () => {
     clinicName,
     isDataPrivacyAccepted,
     isContractPolicyAccepted,
+    isBetaTestingDialogEnabled,
     forBetaTestingAccepted,
     isLocked,
     shouldCheckDataPrivacy,
@@ -331,6 +345,8 @@ const MainLayout = () => {
               isDataPrivacyAccepted: response.isDataPrivacyAccepted,
               isContractPolicyAccepted: response.isContractPolicyAccepted,
               forBetaTestingAccepted: response.forBetaTestingAccepted,
+              showBetaTestingDialog:
+                response.showBetaTestingDialog ?? currentUser.showBetaTestingDialog,
               isLocked: response.isLocked,
               trialExpiry: response.trialExpiry ?? currentUser.trialExpiry,
             }
@@ -365,6 +381,8 @@ const MainLayout = () => {
               isDataPrivacyAccepted: response.isDataPrivacyAccepted,
               isContractPolicyAccepted: response.isContractPolicyAccepted,
               forBetaTestingAccepted: response.forBetaTestingAccepted,
+              showBetaTestingDialog:
+                response.showBetaTestingDialog ?? currentUser.showBetaTestingDialog,
               isLocked: response.isLocked,
               trialExpiry: response.trialExpiry ?? currentUser.trialExpiry,
             }
@@ -398,6 +416,8 @@ const MainLayout = () => {
               isDataPrivacyAccepted: response.isDataPrivacyAccepted,
               isContractPolicyAccepted: response.isContractPolicyAccepted,
               forBetaTestingAccepted: response.forBetaTestingAccepted,
+              showBetaTestingDialog:
+                response.showBetaTestingDialog ?? currentUser.showBetaTestingDialog,
               isLocked: response.isLocked,
               trialExpiry: response.trialExpiry ?? currentUser.trialExpiry,
             }
@@ -446,6 +466,8 @@ const MainLayout = () => {
                 response.isContractPolicyAccepted ?? currentUser.isContractPolicyAccepted,
               forBetaTestingAccepted:
                 response.forBetaTestingAccepted ?? currentUser.forBetaTestingAccepted,
+              showBetaTestingDialog:
+                response.showBetaTestingDialog ?? currentUser.showBetaTestingDialog,
               isLocked: response.isLocked,
               trialExpiry: response.trialExpiry ?? currentUser.trialExpiry,
               subscriptionType:
