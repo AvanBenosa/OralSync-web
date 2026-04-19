@@ -445,7 +445,7 @@ const PatientProgressNoteForm: FunctionComponent<PatientProgressNoteFormProps> =
                         helperText={shouldShowError('nextVisit') ? errors.nextVisit : undefined}
                       />
                     </Grid>
-                    <Grid size={{ xs: 12 }}>
+                    {/* <Grid size={{ xs: 12 }}>
                       <TextField
                         label="Clinical Finding"
                         name="clinicalFinding"
@@ -478,7 +478,7 @@ const PatientProgressNoteForm: FunctionComponent<PatientProgressNoteFormProps> =
                         error={shouldShowError('assessment')}
                         helperText={shouldShowError('assessment') ? errors.assessment : undefined}
                       />
-                    </Grid>
+                    </Grid> */}
                     <Grid size={{ xs: 12 }}>
                       <TextField
                         label="Remarks"

@@ -26,6 +26,7 @@ import { GetCurrentClinicProfile } from '../../../settings/clinic-profile/api/ap
 import { toValidDateDisplay } from '../../../../common/helpers/toValidateDateDisplay';
 
 const weekDayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const shortWeekDayNames = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
 
 const getMonthLabel = (date: Date): string => toValidDateDisplay(date, 'MMMM YYYY');
 
@@ -39,6 +40,18 @@ const calendarViews: { value: CalendarViewType; label: string }[] = [
 
 const getDayKey = (date: Date): string =>
   `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+
+const buildMonthGridDates = (monthDate: Date): Date[] => {
+  const monthStart = new Date(monthDate.getFullYear(), monthDate.getMonth(), 1);
+  const gridStart = new Date(monthStart);
+  gridStart.setDate(monthStart.getDate() - monthStart.getDay());
+
+  return Array.from({ length: 42 }, (_, index) => {
+    const nextDate = new Date(gridStart);
+    nextDate.setDate(gridStart.getDate() + index);
+    return nextDate;
+  });
+};
 
 const getAppointmentDate = (value?: string | Date): Date | null => {
   if (!value) {
@@ -141,6 +154,12 @@ const AppointmentCalendar: FunctionComponent<AppointmentStateProps> = (
       .catch(() => undefined);
   }, [clinicId]);
 
+  useEffect(() => {
+    if (calendarView === 'dayGridMonth') {
+      setCalendarTitle(getMonthLabel(displayMonth));
+    }
+  }, [calendarView, displayMonth]);
+
   const { calendarEvents, monthItems, itemsByDay } = useMemo(() => {
     const sortedItems = state.items
       .map((item) => ({
@@ -196,6 +215,15 @@ const AppointmentCalendar: FunctionComponent<AppointmentStateProps> = (
     };
   }, [displayMonth, state.items]);
 
+  const isMonthView = calendarView === 'dayGridMonth';
+
+  const monthGridDates = useMemo(() => buildMonthGridDates(displayMonth), [displayMonth]);
+
+  const todayStart = useMemo(() => {
+    const today = new Date();
+    return new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  }, []);
+
   const handleCreateFromDay = (date: Date): void => {
     const appointmentEndTime =
       clinicClosingTime && clinicClosingTime !== clinicOpeningTime
@@ -245,7 +273,49 @@ const AppointmentCalendar: FunctionComponent<AppointmentStateProps> = (
 
   const changeCalendarView = (view: CalendarViewType): void => {
     setCalendarView(view);
-    calendarRef.current?.getApi().changeView(view);
+  };
+
+  const handlePreviousPeriod = (): void => {
+    if (isMonthView) {
+      setDisplayMonth(
+        (currentMonth) =>
+          new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1)
+      );
+      return;
+    }
+
+    calendarRef.current?.getApi().prev();
+  };
+
+  const handleNextPeriod = (): void => {
+    if (isMonthView) {
+      setDisplayMonth(
+        (currentMonth) =>
+          new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1)
+      );
+      return;
+    }
+
+    calendarRef.current?.getApi().next();
+  };
+
+  const handleMonthDayClick = (date: Date): void => {
+    const clickedDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    const dayItems = itemsByDay.get(getDayKey(clickedDate)) || [];
+
+    if (dayItems.length > 0) {
+      setSelectedDay({
+        date: clickedDate,
+        items: dayItems,
+      });
+      return;
+    }
+
+    if (clickedDate.getTime() < todayStart.getTime()) {
+      return;
+    }
+
+    handleCreateFromDay(clickedDate);
   };
 
   if (state.load) {
@@ -303,152 +373,220 @@ const AppointmentCalendar: FunctionComponent<AppointmentStateProps> = (
                 </button>
               ))}
             </div>
-            <button
-              type="button"
-              className={styles.calendarNavButton}
-              onClick={() => calendarRef.current?.getApi().prev()}
-            >
+            <button type="button" className={styles.calendarNavButton} onClick={handlePreviousPeriod}>
               <ChevronLeftRoundedIcon />
             </button>
             <Typography className={styles.calendarMonthLabel}>{calendarTitle}</Typography>
-            <button
-              type="button"
-              className={styles.calendarNavButton}
-              onClick={() => calendarRef.current?.getApi().next()}
-            >
+            <button type="button" className={styles.calendarNavButton} onClick={handleNextPeriod}>
               <ChevronRightRoundedIcon />
             </button>
           </div>
         </div>
         <div className={styles.calendarFullWrapper}>
-          <FullCalendar
-            ref={calendarRef}
-            plugins={[dayGridPlugin, interactionPlugin, listPlugin, timeGridPlugin]}
-            initialView={calendarView}
-            initialDate={displayMonth}
-            headerToolbar={false}
-            height="auto"
-            fixedWeekCount
-            dayMaxEvents={3}
-            events={calendarEvents}
-            eventDisplay="block"
-            allDaySlot={false}
-            slotMinTime={`${clinicOpeningTime || '09:00'}:00`}
-            slotMaxTime={`${clinicClosingTime || '18:00'}:00`}
-            slotLabelFormat={{
-              hour: 'numeric',
-              minute: '2-digit',
-              meridiem: 'short',
-            }}
-            eventTimeFormat={{
-              hour: 'numeric',
-              minute: '2-digit',
-              meridiem: 'short',
-            }}
-            datesSet={(arg) => {
-              const currentDate = arg.view.calendar.getDate();
-              const nextMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+          {isMonthView ? (
+            <div className={styles.calendarMonthGridShell}>
+              <div className={styles.calendarMonthGridHeader}>
+                {shortWeekDayNames.map((label, index) => {
+                  const isWorkingDay = workingDays.includes(weekDayNames[index]);
 
-              setCalendarView(arg.view.type as CalendarViewType);
-              setCalendarTitle(arg.view.title);
-              setDisplayMonth((currentMonth) => {
-                if (
-                  currentMonth.getFullYear() === nextMonth.getFullYear() &&
-                  currentMonth.getMonth() === nextMonth.getMonth()
-                ) {
-                  return currentMonth;
+                  return (
+                    <div
+                      key={label}
+                      className={`${styles.calendarMonthHeaderCell} ${
+                        isWorkingDay
+                          ? styles.calendarMonthHeaderCellWorking
+                          : styles.calendarMonthHeaderCellRest
+                      }`}
+                    >
+                      {label}
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className={styles.calendarMonthGridBody}>
+                {monthGridDates.map((date) => {
+                  const normalizedDate = new Date(
+                    date.getFullYear(),
+                    date.getMonth(),
+                    date.getDate()
+                  );
+                  const dayItems = itemsByDay.get(getDayKey(normalizedDate)) || [];
+                  const isWorkingDay = workingDays.includes(weekDayNames[normalizedDate.getDay()]);
+                  const isOtherMonth = normalizedDate.getMonth() !== displayMonth.getMonth();
+                  const isPast = normalizedDate.getTime() < todayStart.getTime();
+                  const isToday = normalizedDate.getTime() === todayStart.getTime();
+                  const canInteract = dayItems.length > 0 || !isPast;
+                  const visibleItems = dayItems.slice(0, 2);
+                  const hiddenItemsCount = Math.max(dayItems.length - visibleItems.length, 0);
+
+                  return (
+                    <button
+                      key={getDayKey(normalizedDate)}
+                      type="button"
+                      className={`${styles.calendarMonthDayCell} ${
+                        isWorkingDay ? styles.calendarDayWorking : styles.calendarDayRest
+                      } ${isOtherMonth ? styles.calendarDayCellMuted : ''} ${
+                        isPast ? styles.calendarDayPast : ''
+                      } ${isToday ? styles.calendarDayToday : ''}`}
+                      disabled={!canInteract}
+                      onClick={() => handleMonthDayClick(normalizedDate)}
+                    >
+                      <div className={styles.calendarDayHeader}>
+                        <span className={styles.calendarDayNumber}>{normalizedDate.getDate()}</span>
+                        <span
+                          className={`${styles.calendarDayStatusChip} ${
+                            isToday
+                              ? styles.calendarDayStatusToday
+                              : isWorkingDay
+                              ? styles.calendarDayStatusWorking
+                              : styles.calendarDayStatusRest
+                          }`}
+                        >
+                          {isToday ? 'Today' : isWorkingDay ? 'Working' : 'Rest'}
+                        </span>
+                      </div>
+
+                      <div className={styles.calendarDayEntries}>
+                        {visibleItems.length > 0 ? (
+                          <>
+                            {visibleItems.map((item, index) => (
+                              <div
+                                key={item.id || `${getDayKey(normalizedDate)}-entry-${index}`}
+                                className={styles.calendarEntry}
+                              >
+                                <span className={styles.calendarEntryTime}>
+                                  {formatTimeRange(item)}
+                                </span>
+                                <span className={styles.calendarEntryText}>
+                                  {item.patientName || item.reasonForVisit || 'Appointment'}
+                                </span>
+                              </div>
+                            ))}
+                            {hiddenItemsCount > 0 ? (
+                              <Typography component="span" className={styles.calendarOverflowLabel}>
+                                +{hiddenItemsCount} more appointment
+                                {hiddenItemsCount === 1 ? '' : 's'}
+                              </Typography>
+                            ) : null}
+                          </>
+                        ) : (
+                          <div className={styles.calendarCountCard}>
+                            <span className={styles.calendarCountValue}>0</span>
+                            <span className={styles.calendarCountLabel}>Appointments</span>
+                            <span className={styles.calendarCountHint}>
+                              {isPast ? 'No appointments recorded' : 'Click to add appointment'}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ) : (
+            <FullCalendar
+              key={calendarView}
+              ref={calendarRef}
+              plugins={[dayGridPlugin, interactionPlugin, listPlugin, timeGridPlugin]}
+              initialView={calendarView}
+              initialDate={displayMonth}
+              headerToolbar={false}
+              height="auto"
+              fixedWeekCount
+              dayMaxEvents={3}
+              events={calendarEvents}
+              eventDisplay="block"
+              allDaySlot={false}
+              slotMinTime={`${clinicOpeningTime || '09:00'}:00`}
+              slotMaxTime={`${clinicClosingTime || '18:00'}:00`}
+              slotLabelFormat={{
+                hour: 'numeric',
+                minute: '2-digit',
+                meridiem: 'short',
+              }}
+              eventTimeFormat={{
+                hour: 'numeric',
+                minute: '2-digit',
+                meridiem: 'short',
+              }}
+              datesSet={(arg) => {
+                const currentDate = arg.view.calendar.getDate();
+                const nextMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+
+                setCalendarView(arg.view.type as CalendarViewType);
+                setCalendarTitle(arg.view.title);
+                setDisplayMonth((currentMonth) => {
+                  if (
+                    currentMonth.getFullYear() === nextMonth.getFullYear() &&
+                    currentMonth.getMonth() === nextMonth.getMonth()
+                  ) {
+                    return currentMonth;
+                  }
+
+                  return nextMonth;
+                });
+              }}
+              dayHeaderClassNames={(arg) =>
+                workingDays.includes(weekDayNames[arg.date.getDay()])
+                  ? [styles.calendarFcWeekdayWorking]
+                  : [styles.calendarFcWeekdayRest]
+              }
+              dayCellClassNames={(arg) => {
+                const dayDate = new Date(
+                  arg.date.getFullYear(),
+                  arg.date.getMonth(),
+                  arg.date.getDate()
+                );
+                const classNames = [
+                  workingDays.includes(weekDayNames[arg.date.getDay()])
+                    ? styles.calendarFcDayWorking
+                    : styles.calendarFcDayRest,
+                ];
+
+                if (arg.isOther) {
+                  classNames.push(styles.calendarFcDayOther);
                 }
 
-                return nextMonth;
-              });
-            }}
-            dayHeaderClassNames={(arg) =>
-              workingDays.includes(weekDayNames[arg.date.getDay()])
-                ? [styles.calendarFcWeekdayWorking]
-                : [styles.calendarFcWeekdayRest]
-            }
-            dayCellClassNames={(arg) => {
-              const dayDate = new Date(
-                arg.date.getFullYear(),
-                arg.date.getMonth(),
-                arg.date.getDate()
-              );
-              const today = new Date();
-              const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-              const classNames = [
-                workingDays.includes(weekDayNames[arg.date.getDay()])
-                  ? styles.calendarFcDayWorking
-                  : styles.calendarFcDayRest,
-              ];
+                if (dayDate.getTime() < todayStart.getTime()) {
+                  classNames.push(styles.calendarFcDayPast);
+                }
 
-              if (arg.isOther) {
-                classNames.push(styles.calendarFcDayOther);
-              }
+                if (dayDate.getTime() === todayStart.getTime()) {
+                  classNames.push(styles.calendarFcDayToday);
+                }
 
-              if (dayDate.getTime() < todayStart.getTime()) {
-                classNames.push(styles.calendarFcDayPast);
-              }
-
-              if (dayDate.getTime() === todayStart.getTime()) {
-                classNames.push(styles.calendarFcDayToday);
-              }
-
-              return classNames;
-            }}
-            eventContent={(arg) => (
-              <div className={styles.calendarFcEventContent}>
-                {arg.timeText ? (
-                  <span className={styles.calendarFcEventTime}>{arg.timeText}</span>
-                ) : null}
-                <span className={styles.calendarFcEventTitle}>{arg.event.title}</span>
-              </div>
-            )}
-            dateClick={(arg) => {
-              if (calendarView === 'timeGridDay') {
+                return classNames;
+              }}
+              eventContent={(arg) => (
+                <div className={styles.calendarFcEventContent}>
+                  {arg.timeText ? (
+                    <span className={styles.calendarFcEventTime}>{arg.timeText}</span>
+                  ) : null}
+                  <span className={styles.calendarFcEventTitle}>{arg.event.title}</span>
+                </div>
+              )}
+              dateClick={(arg) => {
                 if (arg.date.getTime() < new Date().getTime()) {
                   return;
                 }
 
                 handleCreateFromSlot(arg.date);
-                return;
-              }
+              }}
+              eventClick={(arg) => {
+                const appointment = arg.event.extendedProps.appointment as
+                  | AppointmentModel
+                  | undefined;
 
-              const clickedDate = new Date(
-                arg.date.getFullYear(),
-                arg.date.getMonth(),
-                arg.date.getDate()
-              );
-              const dayItems = itemsByDay.get(getDayKey(clickedDate)) || [];
+                if (!appointment) {
+                  return;
+                }
 
-              if (dayItems.length > 0) {
-                setSelectedDay({
-                  date: clickedDate,
-                  items: dayItems,
-                });
-                return;
-              }
-
-              const today = new Date();
-              const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-
-              if (clickedDate.getTime() < todayStart.getTime()) {
-                return;
-              }
-
-              handleCreateFromDay(clickedDate);
-            }}
-            eventClick={(arg) => {
-              const appointment = arg.event.extendedProps.appointment as
-                | AppointmentModel
-                | undefined;
-
-              if (!appointment) {
-                return;
-              }
-
-              openUpdateModal(appointment);
-            }}
-          />
+                openUpdateModal(appointment);
+              }}
+            />
+          )}
         </div>
 
         <Paper elevation={0} className={styles.calendarSidebar}>
