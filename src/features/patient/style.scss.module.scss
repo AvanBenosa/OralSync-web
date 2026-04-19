@@ -450,9 +450,42 @@
   border-bottom: 1px solid rgba(230, 236, 242, 0.92) !important;
 }
 
+.patientRow {
+  &:hover .nameButton,
+  &:focus-within .nameButton {
+    color: #1f5d98;
+    background: linear-gradient(180deg, rgba(239, 247, 255, 0.96), rgba(223, 237, 249, 0.96));
+    box-shadow: 0 10px 20px rgba(55, 102, 152, 0.12);
+    transform: translateX(2px);
+  }
+
+  &:hover .nameButtonLabel,
+  &:focus-within .nameButtonLabel {
+    text-decoration: underline;
+    text-decoration-thickness: 1.5px;
+    text-underline-offset: 3px;
+    text-decoration-color: rgba(31, 93, 152, 0.5);
+  }
+
+  &:hover .nameButtonHint,
+  &:focus-within .nameButtonHint {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+
+  &:hover .nameSecondaryText,
+  &:focus-within .nameSecondaryText {
+    color: #4f7eaf !important;
+  }
+}
+
 .nameButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 100%;
   border: 0;
-  padding: 0;
+  padding: 6px 10px;
   margin: 0;
   background: transparent;
   color: inherit;
@@ -461,10 +494,39 @@
   line-height: inherit;
   cursor: pointer;
   text-align: left;
+  border-radius: 999px;
+  transition: color 140ms ease, background 140ms ease, box-shadow 140ms ease,
+    transform 140ms ease;
 
-  &:hover {
-    text-decoration: underline;
+  &:focus-visible {
+    outline: none;
+    color: #1f5d98;
+    background: linear-gradient(180deg, rgba(239, 247, 255, 0.98), rgba(223, 237, 249, 0.98));
+    box-shadow: 0 0 0 3px rgba(74, 129, 186, 0.18), 0 10px 20px rgba(55, 102, 152, 0.12);
   }
+}
+
+.nameButtonLabel {
+  min-width: 0;
+}
+
+.nameButtonHint {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 22px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: rgba(49, 104, 162, 0.1);
+  color: #2d669f;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translateX(-6px) scale(0.96);
+  transition: opacity 140ms ease, transform 140ms ease, background-color 140ms ease;
+  pointer-events: none;
 }
 
 .nameCellStack {
@@ -509,6 +571,14 @@
   margin: 0 !important;
   color: #6f8297 !important;
   font-size: 12px !important;
+  line-height: 1.2 !important;
+}
+
+.mobileMetaNote {
+  margin: 0 !important;
+  color: #53759a !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
   line-height: 1.2 !important;
 }
 
@@ -876,6 +946,15 @@
   .mobileActions .iconEdit,
   .mobileActions .iconDelete {
     font-size: 16px !important;
+  }
+
+  .nameButton {
+    padding: 0;
+    border-radius: 0;
+  }
+
+  .nameButtonHint {
+    display: none;
   }
 
   .emptyState {

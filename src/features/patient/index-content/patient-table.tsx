@@ -48,6 +48,34 @@ const formatPatientName = (patient: PatientModel): string => {
 const formatBirthDate = (birthDate?: string | Date): string =>
   toValidDateDisplay(birthDate, 'MMM DD, YYYY');
 
+const formatLastVisited = (lastVisitedAt?: string | Date | null): string => {
+  if (!lastVisitedAt) {
+    return '--';
+  }
+
+  const date = lastVisitedAt instanceof Date ? lastVisitedAt : new Date(lastVisitedAt);
+  if (Number.isNaN(date.getTime())) {
+    return '--';
+  }
+
+  const today = new Date();
+  const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const startOfVisitDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const dayDifference = Math.round(
+    (startOfToday.getTime() - startOfVisitDay.getTime()) / (24 * 60 * 60 * 1000)
+  );
+
+  if (dayDifference === 0) {
+    return 'Today';
+  }
+
+  if (dayDifference === 1) {
+    return 'Yesterday';
+  }
+
+  return toValidDateDisplay(date, 'MMM DD, YYYY');
+};
+
 const PatientTable: FunctionComponent<PatientStateProps> = (
   props: PatientStateProps
 ): JSX.Element => {
@@ -56,7 +84,7 @@ const PatientTable: FunctionComponent<PatientStateProps> = (
   const navigate = useNavigate();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
-  const columnCount = isMobile ? 1 : 5;
+  const columnCount = isMobile ? 1 : 6;
 
   const handleOpenPatientProfile = (item: PatientModel): void => {
     if (item.id) {
@@ -123,6 +151,7 @@ const PatientTable: FunctionComponent<PatientStateProps> = (
             {!isMobile ? (
               <>
                 <TableCell className={styles.tableHeaderCell}>Patient No.</TableCell>
+                <TableCell className={styles.tableHeaderCell}>Last Visited</TableCell>
                 <TableCell className={styles.tableHeaderCell}>Email Address</TableCell>
                 <TableCell className={styles.tableHeaderCell}>Birth Date</TableCell>
                 <TableCell className={styles.tableHeaderCell} align="right"></TableCell>
@@ -139,6 +168,7 @@ const PatientTable: FunctionComponent<PatientStateProps> = (
               desktopCells={[
                 { width: '68%', height: 26 },
                 { width: '62%' },
+                { width: '48%' },
                 { width: '58%' },
                 { width: '54%' },
                 { kind: 'actions', align: 'right' },
@@ -174,6 +204,7 @@ const PatientTable: FunctionComponent<PatientStateProps> = (
             state.items.map((item, index) => (
               <TableRow
                 hover
+                className={styles.patientRow}
                 key={
                   item.id !== undefined
                     ? `patient-id-${item.id}`
@@ -190,13 +221,20 @@ const PatientTable: FunctionComponent<PatientStateProps> = (
                           <button
                             type="button"
                             className={styles.nameButton}
+                            aria-label={`Open profile for ${formatPatientName(item)}`}
                             onClick={(): void => handleOpenPatientProfile(item)}
                           >
-                            {formatPatientName(item)}
+                            <span className={styles.nameButtonLabel}>
+                              {formatPatientName(item)}
+                            </span>
+                            <span className={styles.nameButtonHint}>View profile</span>
                           </button>
                         </Typography>
                         <Typography component="span" className={styles.mobileContact}>
                           {item.contactNumber || '--'}
+                        </Typography>
+                        <Typography component="span" className={styles.mobileMetaNote}>
+                          Last visited: {formatLastVisited(item.lastVisitedAt)}
                         </Typography>
                       </div>
                       {/* <div className={styles.mobileActions}>{renderActionButtons(item)}</div> */}
@@ -206,9 +244,13 @@ const PatientTable: FunctionComponent<PatientStateProps> = (
                       <button
                         type="button"
                         className={styles.nameButton}
+                        aria-label={`Open profile for ${formatPatientName(item)}`}
                         onClick={(): void => handleOpenPatientProfile(item)}
                       >
-                        <HighlightText query={state.search} text={formatPatientName(item)} />
+                        <span className={styles.nameButtonLabel}>
+                          <HighlightText query={state.search} text={formatPatientName(item)} />
+                        </span>
+                        <span className={styles.nameButtonHint}>View profile</span>
                       </button>
                       <Typography component="span" className={styles.nameSecondaryText}>
                         {item.contactNumber || '--'}
@@ -220,6 +262,9 @@ const PatientTable: FunctionComponent<PatientStateProps> = (
                   <>
                     <TableCell className={styles.tableBodyCell}>
                       {item.patientNumber || '--'}
+                    </TableCell>
+                    <TableCell className={styles.tableBodyCell}>
+                      {formatLastVisited(item.lastVisitedAt)}
                     </TableCell>
                     <TableCell className={styles.tableBodyCell}>
                       {item.emailAddress || '--'}

@@ -34,7 +34,7 @@ export const PatientModule: FunctionComponent<PatientProps> = (
     pageStart: 0,
     pageEnd: 25,
     totalItem: 0,
-    sortBy: 'createdAt',
+    sortBy: 'lastVisited',
     sortDirection: 'desc',
     clinicProfileId: resolvedClinicId,
   });

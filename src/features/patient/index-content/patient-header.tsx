@@ -21,7 +21,7 @@ const PatientHeader: FunctionComponent<PatientStateProps> = (
     state.sortDirection
   );
   const isSortPopoverOpen = Boolean(sortAnchorEl);
-  const hasCustomSort = state.sortBy !== 'createdAt' || state.sortDirection !== 'desc';
+  const hasCustomSort = state.sortBy !== 'lastVisited' || state.sortDirection !== 'desc';
 
   useEffect(() => {
     if (isSortPopoverOpen) {
@@ -53,11 +53,11 @@ const PatientHeader: FunctionComponent<PatientStateProps> = (
   };
 
   const handleResetSort = (): void => {
-    setDraftSortBy('createdAt');
+    setDraftSortBy('lastVisited');
     setDraftSortDirection('desc');
     setState({
       ...state,
-      sortBy: 'createdAt',
+      sortBy: 'lastVisited',
       sortDirection: 'desc',
       pageStart: 0,
     });
@@ -201,6 +201,17 @@ const PatientHeader: FunctionComponent<PatientStateProps> = (
               <button
                 type="button"
                 className={`${styles.filterOptionButton} ${
+                  draftSortBy === 'lastVisited' ? styles.filterOptionButtonActive : ''
+                }`}
+                onClick={(): void => {
+                  setDraftSortBy('lastVisited');
+                }}
+              >
+                Last Visited
+              </button>
+              <button
+                type="button"
+                className={`${styles.filterOptionButton} ${
                   draftSortBy === 'lastName' ? styles.filterOptionButtonActive : ''
                 }`}
                 onClick={(): void => {
@@ -256,7 +267,7 @@ const PatientHeader: FunctionComponent<PatientStateProps> = (
               type="button"
               className={styles.filterSecondaryButton}
               onClick={handleResetSort}
-              disabled={state.sortBy === 'createdAt' && state.sortDirection === 'desc'}
+              disabled={state.sortBy === 'lastVisited' && state.sortDirection === 'desc'}
             >
               Reset
             </button>

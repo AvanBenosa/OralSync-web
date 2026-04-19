@@ -6,6 +6,7 @@ export type PatientModel = {
   id?: string;
   clinicProfileId?: string | null;
   createdBranchId?: string | null;
+  lastVisitedAt?: string | Date | null;
   patientNumber?: string;
   profilePicture?: string;
   firstName?: string;
@@ -35,7 +36,7 @@ export type PatientUploadResultModel = {
   errors: string[];
 };
 
-export type PatientSortField = 'createdAt' | 'lastName';
+export type PatientSortField = 'createdAt' | 'lastName' | 'lastVisited';
 
 export type PatientSortDirection = 'asc' | 'desc';
 
